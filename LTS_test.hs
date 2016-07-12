@@ -45,6 +45,22 @@ prop_reachability   lts s =
                     graph           = getGraph lts
                     initStates      = getInitStates lts
                     
+prop_witnessPath    lts s =
+    elem s (getStates lts) ==>
+        let path = witnessPath lts s
+            states = getStates lts      in 
+            case path of
+                [] -> False == isReachable lts s
+                x:xs -> 
+                    elem x initStates &&                                  -- first states is an nitial state 
+                    all (`elem` transitions) pathTransitions &&             -- all path edges already exist in the LTS
+                    all (\((u0,v0),(u1,v1)) -> v0 == u1) adjTransitions     -- adjacent transitions form a path
+                    where   initStates          = getInitStates lts
+                            transitions         = getTransitions lts
+                            pathTransitions     = zip (x:xs) xs
+                            adjTransitions      = zip pathTransitions (tail pathTransitions)
+
 return [] -- need this for GHC 7.8
+
 
 runTests = $quickCheckAll

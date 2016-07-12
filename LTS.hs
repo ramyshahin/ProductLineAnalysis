@@ -5,6 +5,7 @@
 -------------------------------------------------------------------------------
 module LTS where
 import Data.Graph
+import Data.List
 
 -- abstract Action type
 type Act = Int
@@ -45,3 +46,29 @@ isReachable lts s = any inTree forest
             forest      = dfs graph initStates
             graph       = getGraph lts
             initStates  = getInitStates lts
+            
+-- reachability with witness path
+dfs_ :: [Edge] -> [Vertex] -> Vertex -> Vertex -> [Vertex]
+dfs_ edges path target src =
+    if src == target 
+    then path ++ [target]
+    else let    neighbors = [x | (s, x) <- edges, s == src] 
+                unvisitedNeighbors = neighbors \\ path
+                paths = map (dfs_ edges (path ++ [src]) target) unvisitedNeighbors 
+                nonEmptyPaths = filter (not . null) paths in 
+                    case nonEmptyPaths of
+                       [] -> []
+                       (x:xs) -> x
+                        
+witnessPath :: LTS -> Vertex -> [Vertex]
+witnessPath lts s = 
+    let states      = getStates lts
+        transitions = getTransitions lts
+        initStates  = getInitStates lts
+        paths       = map (dfs_ transitions [] s) initStates
+        nonEmptyPaths = filter (not . null) paths in 
+            case nonEmptyPaths of
+                [] -> []
+                (x:xs) -> x
+                
+        

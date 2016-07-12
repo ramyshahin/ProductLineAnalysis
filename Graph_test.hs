@@ -16,7 +16,7 @@ import Data.List
 --
 generateBounds :: Gen Bounds
 generateBounds = do
-    let maxIndex = 100
+    let maxIndex = 50
     a <- choose(0,maxIndex)
     b <- choose(a,maxIndex)
     return (a,b)
