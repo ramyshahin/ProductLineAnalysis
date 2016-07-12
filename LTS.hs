@@ -34,4 +34,14 @@ getStates = vertices . getGraph
 getTransitions :: LTS -> [Edge]
 getTransitions = edges . getGraph
 
+-------------------------------------------------------------------------------
+-- LTS Algorithms
+-------------------------------------------------------------------------------
 
+-- reachability
+isReachable :: LTS -> Vertex -> Bool
+isReachable lts s = any inTree forest
+    where   inTree      = elem s
+            forest      = dfs graph initStates
+            graph       = getGraph lts
+            initStates  = getInitStates lts
