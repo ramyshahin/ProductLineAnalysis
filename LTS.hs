@@ -48,29 +48,33 @@ getTransitions = edges . getGraph
 
 -- Depth-first Search
 dfs_ :: [Transition]    ->      -- graph edges
-        [State]         ->      -- path prefix so far from source (recursively computed)
+        --[State]         ->      -- path prefix so far from source (recursively computed)
         State           ->      -- target node
         State           ->      -- source node 
         [State]                 -- returns the path from source to target
         
-dfs_ edges pathPrefix target src =
-    if src == target 
-    then pathPrefix ++ [target]
-    else let    neighbors = [x | (s, x) <- edges, s == src] 
-                unvisitedNeighbors = neighbors \\ pathPrefix
-                paths = map (dfs_ edges (pathPrefix ++ [src]) target) unvisitedNeighbors 
-                nonEmptyPaths = filter (not . null) paths in 
-        case nonEmptyPaths of
-                [] -> []
-                (x:xs) -> x
-                       
+dfs_ edges target src =
+    let neighbors   t = [x | (s, x) <- edges, s == t]
+        dfs_rec     pathPrefix st = 
+            if st == target 
+            then 
+                pathPrefix ++ [target] 
+            else 
+                let unvisitedNeighbors = (neighbors st) \\ pathPrefix
+                    paths = map (dfs_rec (pathPrefix ++ [st])) unvisitedNeighbors 
+                    nonEmptyPaths = filter (not . null) paths 
+                in case nonEmptyPaths of
+                    [] -> []
+                    (x:xs) -> x
+    in dfs_rec [] src
+    
 -- reachability
 isReachable ::  LTS     ->  -- input LTS 
                 State  ->   -- state to check if reachable 
                 Bool        -- returns True iff input state is reachable
                 
 isReachable lts s = any (not. null) paths
-    where   paths       = map (dfs_ transitions [] s) initStates
+    where   paths       = map (dfs_ transitions s) initStates
             transitions = getTransitions lts
             initStates  = getInitStates lts
            
@@ -84,7 +88,7 @@ witnessPath lts s =
     let states      = getStates lts
         transitions = getTransitions lts
         initStates  = getInitStates lts
-        paths       = map (dfs_ transitions [] s) initStates
+        paths       = map (dfs_ transitions s) initStates
         nonEmptyPaths = filter (not . null) paths in 
             case nonEmptyPaths of
                 [] -> []
