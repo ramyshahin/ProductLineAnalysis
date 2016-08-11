@@ -4,18 +4,20 @@
 -- Ramy Shahin - July 10th 2016
 -------------------------------------------------------------------------------
 module LTS where
-import Data.Graph
 import Data.List
-import Variability
 
 -- abstract State type
-type State = Vertex
-
--- abstract Transition type
-type Transition = Edge
+type State = Int
 
 -- abstract Action type
 type Act = Int
+
+-- abstract Transition type
+data Transition = Transition {
+    source :: State,
+    target :: State,
+    action :: Act
+    } deriving (Show)
 
 -- abstract abstract proposition type
 type AP = Int
@@ -28,39 +30,34 @@ type AP = Int
 --      TODO: AP is a set of atomic propositions
 --      TODO: L is a a labeling function, mapping states to sets of propositions (AP)
 data LTS = LTS {
-    getGraph    :: Graph,
-    getActions  :: [Act],
-    getInitStates :: [State] 
+    getStates       :: [State],
+    getTransitions  :: [Transition],
+    getActions      :: [Act],
+    getInitStates   :: [State] 
     -- TODO: [AP] 
     -- TODO: (Table [AP])
     } deriving (Show)
-
--- fine-grained accessors
-getStates :: LTS -> [State]
-getStates = vertices . getGraph
-
-getTransitions :: LTS -> [Transition]
-getTransitions = edges . getGraph
-
+ 
 -------------------------------------------------------------------------------
 -- LTS Algorithms
 -------------------------------------------------------------------------------
 
+neighbors :: [Transition] -> State -> [State]
+neighbors ts s = [(target t) | t <- ts, (source t) == s]
+
 -- Depth-first Search
-dfs_ :: [Transition]    ->      -- graph edges
-        --[State]         ->      -- path prefix so far from source (recursively computed)
+dfs ::  [Transition]    ->      -- graph edges
         State           ->      -- target node
         State           ->      -- source node 
         [State]                 -- returns the path from source to target
         
-dfs_ edges target src =
-    let neighbors   t = [x | (s, x) <- edges, s == t]
-        dfs_rec     pathPrefix st = 
+dfs edges target src =
+    let dfs_rec     pathPrefix st = 
             if st == target 
             then 
                 pathPrefix ++ [target] 
             else 
-                let unvisitedNeighbors = (neighbors st) \\ pathPrefix
+                let unvisitedNeighbors = (neighbors edges st) \\ pathPrefix
                     paths = map (dfs_rec (pathPrefix ++ [st])) unvisitedNeighbors 
                     nonEmptyPaths = filter (not . null) paths 
                 in case nonEmptyPaths of
@@ -74,7 +71,7 @@ isReachable ::  LTS     ->  -- input LTS
                 Bool        -- returns True iff input state is reachable
                 
 isReachable lts s = any (not. null) paths
-    where   paths       = map (dfs_ transitions s) initStates
+    where   paths       = map (dfs transitions s) initStates
             transitions = getTransitions lts
             initStates  = getInitStates lts
            
@@ -88,51 +85,9 @@ witnessPath lts s =
     let states      = getStates lts
         transitions = getTransitions lts
         initStates  = getInitStates lts
-        paths       = map (dfs_ transitions s) initStates
+        paths       = map (dfs transitions s) initStates
         nonEmptyPaths = filter (not . null) paths in 
             case nonEmptyPaths of
                 [] -> []
                 (x:xs) -> x
                 
--------------------------------------------------------------------------------
--- LTS Variability Algorithms
--------------------------------------------------------------------------------
-type SPLState = SPLVariable State
-type SPLTransition = SPLVariable (SPLState, SPLState)
-
-root :: Tree a -> a
-root (Node r _) = r
-
-children :: Tree a -> Forest a
-children (Node _ f) = f
-
--- collapse function for result
-collapse :: Forest SPLState -> [SPLState] -> Forest SPLState
-
-collapse f l = 
-    let roots = map root f in 
-        case l of 
-            []   -> f
-            x:xs -> if (elem x roots)
-                    then map (\n@(Node r cs) -> if r == x then (Node r (collapse cs xs)) else n) f
-                    else (Node x (collapse [] xs)) : f 
-                    
--- Variability Depth-first Search
-vdfs_ ::    SPLContext         ->      -- SPL variability context
-            [SPLTransition]    ->      -- graph edges
-            [SPLState]         ->      -- path prefix so far from source (recursively computed)
-            SPLState           ->      -- target node
-            SPLState           ->      -- source node 
-            [SPLState]                 -- returns the path from source to target
-        
-vdfs_ cntxt edges pathPrefix target src =
-    if (get cntxt src) == (get cntxt target) 
-    then pathPrefix ++ [target]
-    else let    neighbors = [SPLVariable x (condE && condT) | SPLVariable (s, SPLVariable x condT) condE <- edges, s == src] 
-                unvisitedNeighbors = neighbors \\ pathPrefix
-                paths = map (vdfs_ cntxt edges (pathPrefix ++ [src]) target) unvisitedNeighbors 
-                nonEmptyPaths = filter (not . null) paths in 
-        case nonEmptyPaths of
-                [] -> []
-                (x:xs) -> x
-    

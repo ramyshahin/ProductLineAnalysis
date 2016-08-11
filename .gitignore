@@ -3,3 +3,10 @@
 *.o
 *.hi
 
+# Tex intermediate files #
+##########################
+*.aux
+*.pdf
+*.log
+*.gz
+

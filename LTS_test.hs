@@ -8,17 +8,16 @@
 module LTS_test where
 import Test.QuickCheck
 import LTS
-import Data.Graph
-import Graph_test
-
+import Data.List
+{-
 -- Generators
 instance Arbitrary LTS where
     arbitrary = do
-       graph <- arbitrary
-       actions <- arbitrary
-       let states = vertices graph
-       initStates <- sublistOf states
-       return (LTS graph actions initStates)
+       states       <- arbitrary
+       transitions  <- [Gen (x,y) | x <- sublistOf states, y <- sublistOf states]
+       actions      <- arbitrary
+       initStates   <- sublistOf states
+       return (LTS (nub states) (nub transitions) (nub actions) (nub initStates))
       
 -- helper functions      
 notEmpty = not . null
@@ -64,3 +63,4 @@ return [] -- need this for GHC 7.8
 
 
 runTests = $quickCheckAll
+-}
