@@ -35,10 +35,52 @@ type SPLOption a = (a, PresenceCondition)
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
 type Lifted a = [SPLOption a]
-    
+
+-- join 2 lifted values
+--join :: Lifted a -> Lifted b -> 
 -- lift a value
-liftValue :: a -> Lifted a
-liftValue x = [(x, True)]
+lift :: PresenceCondition -> a -> Lifted a
+lift pc x = [(x, pc)]
+
+-- apply a unary lifted function
+apply :: Lifted (a -> b) -> Lifted a -> Lifted b
+apply fn a = [(fn' a', conj [fnpc,apc]) | (fn',fnpc) <- fn, (a',apc) <- a, sat(conj[fnpc,apc])] 
+
+-- apply a binary lifted function
+apply2 :: Lifted (a -> b -> c) -> Lifted a -> Lifted b -> Lifted c
+apply2 fn a = apply (apply fn a)
+
+-- apply a ternary lifted function
+apply3 :: Lifted (a -> b -> c -> d) -> Lifted a -> Lifted b -> Lifted c -> Lifted d
+apply3 fn a b = apply (apply2 fn a b)
+
+-- apply a 4-arity lifted function
+apply4 :: Lifted (a -> b -> c -> d -> e) -> Lifted a -> Lifted b -> Lifted c -> Lifted d -> Lifted e
+apply4 fn a b c = apply (apply3 fn a b c)
+
+-- lifting conditional expression
+cond :: Bool -> a -> a -> a
+cond p a b = if p then a else b
+
+condLifted = lift True cond
+
+-- lifted list
+type ListLifted a = Lifted [a]
+
+consListLifted :: PresenceCondition -> Lifted a -> ListLifted a -> ListLifted a
+consListLifted pc x xs = apply2 (lift pc (:)) x xs
+
+headLifted :: Lifted ([a] -> a)
+headLifted = lift True head
+
+tailLifted :: Lifted ([a] -> [a])
+tailLifted = lift True tail
+
+--lift1 :: PresenceCondition -> (a -> b) -> (Lifted a -> Lifted b)
+--lift1 pc fn = (filter (\(v,pc') -> sat pc')) . map (\(v,pc') -> (fn v, (conj [pc, pc'])))
+
+--lift2 :: PresenceCondition -> (a -> b -> c) -> (Lifted a -> Lifted b -> Lifted c)
+--lift2 pc fn = {-(filter (\(v,pc') -> sat pc')) . foldr (++) [] . -} (map (\(v,pc') -> (lift1 pc (fn v))))
 
 -- join (Lifted-Lifted) - join 2 lifted values
 join2 :: PresenceCondition -> Lifted a -> Lifted b -> Lifted (a,b)
@@ -50,12 +92,14 @@ join3 :: PresenceCondition -> Lifted a -> Lifted b -> Lifted c -> Lifted (a,b,c)
 join3 pc a b c = 
     let xProduct = [((aVal, bVal, cVal), (conj [pc, aPC, bPC, cPC])) | (aVal, aPC) <- a, (bVal, bPC) <- b, (cVal, cPC) <- c]
     in  filter (\(_, pc) -> sat pc) xProduct
-    
+
+{-
 apply2 :: PresenceCondition -> (a -> b -> c) -> Lifted a -> Lifted b -> Lifted c
 apply2 cntxt fn a b = [((fn x y), pc) | ((x,y), pc) <- (join2 cntxt a b)]
 
 apply3 :: PresenceCondition -> (a -> b -> c -> d) -> Lifted a -> Lifted b -> Lifted c -> Lifted d
 apply3 cntxt fn a b c = [((fn x y z), pc) | ((x,y,z), pc) <- (join3 cntxt a b c)]
+-}
 
 -- joinUL (Unlifted-Lifted) - join an unlifted value with a lifted value
 {- joinUL :: a -> Lifted b -> Lifted (a,b)

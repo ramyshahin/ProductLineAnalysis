@@ -15,12 +15,23 @@ type StateLifted = Lifted State
 -- lifted Transition type
 type TransitionLifted = Lifted Transition
 
+-- lifted Act type
+type ActLifted = Lifted Act
+
 -- lifted Transition constructor
-consLiftedTransition :: StateLifted -> StateLifted -> Act -> PresenceCondition -> TransitionLifted
-consLiftedTransition s0 s1 a pc = apply3 pc Transition s0 s1 (liftValue a)
+consTransitionLifted :: PresenceCondition -> StateLifted -> StateLifted -> ActLifted -> TransitionLifted
+consTransitionLifted pc s0 s1 a = apply3 (lift pc Transition) s0 s1 a
 
--- lifted neighbors function
--- neighbors ts s = [(target t) | t <- ts, (source t) == s]
+-- lifted Transition accessors
+source :: TransitionLifted -> StateLifted
+source = apply (lift True LTS.source)
 
+target :: TransitionLifted -> StateLifted
+target = apply (lift True LTS.target)
+
+action :: TransitionLifted -> ActLifted
+action = apply (lift True LTS.action)
+
+-- lifted neighbors
 neighborsLifted :: [TransitionLifted] -> StateLifted -> [StateLifted]
-neighborsLifted ts s = [map (\(t',pc) -> (target t',pc)) (filter (\(t',_) -> (source t' == s)) t) | t <- ts]
+neighborsLifted ts s = [(LiftedLTS.target t) | t <- ts, (LiftedLTS.source t) == s]
