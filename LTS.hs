@@ -44,7 +44,14 @@ data LTS = LTS {
 -------------------------------------------------------------------------------
 
 neighbors :: [Transition] -> State -> [State]
-neighbors ts s = [(target t) | t <- ts, (source t) == s]
+neighbors [] s = []
+neighbors ts' s =
+          let  t = head ts'
+               ts = tail ts'
+          in
+               if ((source t) == s)
+               then (target t) : neighbors ts s
+               else neighbors ts s
 
 -- Depth-first Search
 dfs ::  [Transition]    ->      -- graph edges

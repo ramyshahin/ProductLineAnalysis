@@ -34,7 +34,8 @@ type SPLOption a = (a, PresenceCondition)
 -- to the same set of products). This does not affect correctness, but severely
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
-type Lifted a = [SPLOption a]
+type Lifted a = [SPLOption a]    
+type Lifted2 a b = Lifted (a (Lifted b))
 
 -- join 2 lifted values
 --join :: Lifted a -> Lifted b -> 
@@ -62,19 +63,20 @@ apply4 fn a b c = apply (apply3 fn a b c)
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
-condLifted = lift True cond
+condLifted = apply3 (lift True cond)
 
 -- lifted list
-type ListLifted a = Lifted [a]
+consLifted :: Lifted a -> Lifted [Lifted a] -> Lifted [Lifted a]
+consLifted x xs = apply2 (lift True (:)) (lift True x) xs
 
-consListLifted :: PresenceCondition -> Lifted a -> ListLifted a -> ListLifted a
-consListLifted pc x xs = apply2 (lift pc (:)) x xs
+--consListLifted :: PresenceCondition -> Lifted a -> ListLifted a -> ListLifted a
+--consListLifted pc x xs = consLifted x xs
 
-headLifted :: Lifted ([a] -> a)
-headLifted = lift True head
+headLifted :: Lifted [a] -> Lifted a
+headLifted xs = apply (lift True head) xs
 
-tailLifted :: Lifted ([a] -> [a])
-tailLifted = lift True tail
+tailLifted :: Lifted [a] -> Lifted [a]
+tailLifted xs = apply (lift True tail) xs
 
 --lift1 :: PresenceCondition -> (a -> b) -> (Lifted a -> Lifted b)
 --lift1 pc fn = (filter (\(v,pc') -> sat pc')) . map (\(v,pc') -> (fn v, (conj [pc, pc'])))
