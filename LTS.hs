@@ -63,9 +63,9 @@ dfs ::  [Transition]    ->      -- graph edges
 dfs edges visited target src =
     let visited' = visited ++ [src]
     in  if (target == src) then visited'
-    else let ns = (neighbors edges src) \\ visited'
-         in head (map (\n -> let r = (dfs edges visited' target n)
-                             in  if (null r) then [] else (src : r)) ns)
+        else let ns = (neighbors edges src) \\ visited'
+             in head (map (\n -> let r = (dfs edges visited' target n)
+                                 in  if (null r) then [] else (src : r)) ns)
     
 -- reachability
 isReachable ::  LTS     ->  -- input LTS 

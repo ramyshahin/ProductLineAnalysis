@@ -43,17 +43,19 @@ neighborsLifted ts' s =
                (consLifted (targetLifted t) (neighborsLifted ts s))
                (neighborsLifted ts s)
 
--- lifted dfs
-{-dfsLifted :: [TransitionLifted]    ->      -- graph edges
-             [StateLifted]         ->      -- visited states
+-- lifted Depth-first Search
+dfsLifted ::  [TransitionLifted]    ->      -- graph edges
+             Lifted [StateLifted]  ->      -- visited states
              StateLifted           ->      -- target node
              StateLifted           ->      -- source node
-             [StateLifted]                 -- returns the path from source to target
+             Lifted [StateLifted]          -- returns the path from source to target
         
 dfsLifted edges visited target src =
-    let visited' = apply2 (++) visited [src]
-    in  if (target == src) then visited'
-    else let ns = (neighbors edges src) \\ visited'
-         in head (map (\n -> let r = (dfs edges visited' target n)
-                             in  if (null r) then [] else (src : r)) ns)
--}
+    let visited' = apply2 (lift True (++)) visited (lift True [src])
+    in  condLifted (apply2 (lift True (==)) target src) visited'
+        (let ns = (apply2 (lift True (\\)) (neighborsLifted edges src) visited')
+             in headLifted (map (\n -> let r = (dfsLifted edges visited' target n)
+                                       in  condLifted (apply (lift True null) r)
+                                                      [([],True)]
+                                                      (consLifted src r))
+                            ns))

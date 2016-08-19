@@ -35,7 +35,7 @@ type SPLOption a = (a, PresenceCondition)
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
 type Lifted a = [SPLOption a]    
-type Lifted2 a b = Lifted (a (Lifted b))
+--type Lifted2 a b = Lifted (a (Lifted b))
 
 -- join 2 lifted values
 --join :: Lifted a -> Lifted b -> 
@@ -64,6 +64,13 @@ cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
 condLifted = apply3 (lift True cond)
+
+-- lifting higher-order functions
+mapLifted :: Lifted (a -> b) -> Lifted [a] -> Lifted [b]
+mapLifted = apply2 (lift True map)
+
+filterLifted :: Lifted (a -> Bool) -> Lifted [a] -> Lifted [a]
+filterLifted = apply2 (lift True filter)
 
 -- lifted list
 consLifted :: Lifted a -> Lifted [Lifted a] -> Lifted [Lifted a]
