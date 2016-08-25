@@ -33,17 +33,18 @@ actionLifted :: TransitionLifted -> ActLifted
 actionLifted = apply (lift True LTS.action)
 
 -- lifted neighbors
-neighborsLifted :: [TransitionLifted] -> StateLifted -> Lifted [StateLifted]
-neighborsLifted [] s = [([],True)]
+neighborsLifted :: Lifted [Transition] -> StateLifted -> Lifted [State] 
+neighborsLifted [([],_)] s = liftT []
 neighborsLifted ts' s =
-          let  t = head ts'
-               ts = tail ts'
+          let  t = headLifted ts'
+               ts = tailLifted ts'
           in
-               condLifted (apply2 (lift True (==)) (sourceLifted t) s)
+               condLifted (apply2 (liftT (==)) (sourceLifted t) s)
                (consLifted (targetLifted t) (neighborsLifted ts s))
                (neighborsLifted ts s)
 
 -- lifted Depth-first Search
+{-
 dfsLifted ::  [TransitionLifted]    ->      -- graph edges
              Lifted [StateLifted]  ->      -- visited states
              StateLifted           ->      -- target node
@@ -59,3 +60,4 @@ dfsLifted edges visited target src =
                                                       [([],True)]
                                                       (consLifted src r))
                             ns))
+-}

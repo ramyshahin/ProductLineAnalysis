@@ -3,6 +3,9 @@
 -- Software Product Line Variability library
 -- Ramy Shahin - July 14th 2016
 -------------------------------------------------------------------------------
+{-# LANGUAGE PolyKinds #-}
+--{-# LANGUAGE #-}
+
 module Variability where
 
 -- abstract propositional expression
@@ -24,7 +27,8 @@ type SPLOption a = (a, PresenceCondition)
 
 --instance Eq SPLOption a where
 --    (==) a b = (getValue a == getValue b) && sat(getPresenceCondition a && getPresenceCondition b)
-    
+
+
 -- when lifting a product value to a product line value, we might end up with
 -- different values for each product in the product line. This is why a value is
 -- lifted into a set of values, each with a path condition. An important
@@ -34,7 +38,20 @@ type SPLOption a = (a, PresenceCondition)
 -- to the same set of products). This does not affect correctness, but severely
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
-type Lifted a = [SPLOption a]    
+type Lifted a = [SPLOption a]
+--type Lifted2 a b = Lifted (a (Lifted b))
+--type Lifted3 a b c = Lifted (a (Lifted (b (Lifted c))))
+
+--data Proxy t = Proxy
+
+--class CLifted t where
+--  lift :: Proxy t -> TypeRep
+
+--instance CLifted Int  where typeOf _ = TypeRep
+--instance Typeable []   where typeOf _ = TypeRep
+
+--newtype Lifted a b = Lifted a (Lifted b)
+
 --type Lifted2 a b = Lifted (a (Lifted b))
 
 -- join 2 lifted values
@@ -42,6 +59,14 @@ type Lifted a = [SPLOption a]
 -- lift a value
 lift :: PresenceCondition -> a -> Lifted a
 lift pc x = [(x, pc)]
+
+liftT :: a -> Lifted a
+liftT x = lift True x
+
+--lift2 :: Functor a => PresenceCondition -> a b -> Lifted2 a b
+--lift2 pc x = [(fmap (lift pc) x, pc)]
+
+--lift2 :: PresenceCondition -> a b -> Lifted (a (Lifted b))
 
 -- apply a unary lifted function
 apply :: Lifted (a -> b) -> Lifted a -> Lifted b
@@ -73,17 +98,17 @@ filterLifted :: Lifted (a -> Bool) -> Lifted [a] -> Lifted [a]
 filterLifted = apply2 (lift True filter)
 
 -- lifted list
-consLifted :: Lifted a -> Lifted [Lifted a] -> Lifted [Lifted a]
-consLifted x xs = apply2 (lift True (:)) (lift True x) xs
+consLifted :: Lifted a -> Lifted [a] -> Lifted [a]
+consLifted x xs = apply2 (liftT (:)) x xs
 
 --consListLifted :: PresenceCondition -> Lifted a -> ListLifted a -> ListLifted a
 --consListLifted pc x xs = consLifted x xs
 
 headLifted :: Lifted [a] -> Lifted a
-headLifted xs = apply (lift True head) xs
+headLifted xs = apply (liftT head) xs
 
 tailLifted :: Lifted [a] -> Lifted [a]
-tailLifted xs = apply (lift True tail) xs
+tailLifted xs = apply (liftT tail) xs
 
 --lift1 :: PresenceCondition -> (a -> b) -> (Lifted a -> Lifted b)
 --lift1 pc fn = (filter (\(v,pc') -> sat pc')) . map (\(v,pc') -> (fn v, (conj [pc, pc'])))

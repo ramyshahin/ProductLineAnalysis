@@ -23,7 +23,7 @@ absLifted = lift True abs
 addLifted :: Lifted (Integer -> Integer -> Integer)
 addLifted = lift True (+)
 
-state = [1..5]
+states = [1..5]
 ts =          [Transition 1 2 0,
                Transition 2 3 0,
                Transition 2 6 0,
@@ -33,9 +33,9 @@ ts =          [Transition 1 2 0,
                Transition 6 7 0,
                Transition 7 5 0]
 
-statesLifted = map (lift True) state
+statesLifted = liftT states
 
-tsLifted = map (lift True) ts
+tsLifted = liftT ts
 
 n1 = neighborsLifted tsLifted [(1,True)]
 n2 = neighborsLifted tsLifted [(2,True)]
