@@ -20,6 +20,7 @@
 %   read geometry.pdf for detailed page layout information
 
 \usepackage{graphicx} % support the \includegraphics command and options
+\usepackage{amsthm}
 
 % \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
 
@@ -30,6 +31,8 @@
 \usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
 \usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
 % These packages are all incorporated in the memoir class to one degree or another...
+
+\usepackage{minted}
 
 %%% HEADERS & FOOTERS
 \usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
@@ -49,6 +52,8 @@
 \renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
 \renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
 
+%%\usepackage{natbib}
+
 %%% END Article customizations
 
 %%% The "real" document content comes below...
@@ -61,12 +66,262 @@
 \begin{document}
 \maketitle
 
-\section{First section}
+\theoremstyle{definition}
+\newtheorem{exmp}{Example}[section]
 
-Your text goes here.
+\section{Introduction}
 
-\subsection{A subsection}
+%Software Product Lines (SPLs) are configurable sets of software artifacts from which different software products can be generated. SPLs, pretty much like classic manufacturing product lines, are much more economic in terms of time and effort, compared to developing and maintaining different software product variations separately. This is the reason why SPLs are becoming commonly adopted in many software domains, including operating systems, embedded systems, compilers and many others.
 
-More text.
+%SPLs capture product variability in several ways, including annotative mechanisms available in conventional programming languages. One of the most commonly used annotative mechanisms is C preprocessor macro definitions and conditional compilation. Product features are abstracted in terms of preprocessor macros, and feature selection is done using build-time macro definitions. This approach, although ad-hoc compared to more structural approaches provided by SPL language (e.g. Featured-oriented languages), has the benefit of not requiring any tools beyond the conventional C toolchain. 
+
+\section{Background}
+
+\subsection{Software Product Lines}
+
+\subsubsection{Product Variability}
+
+\subsubsection{Features}
+
+\subsubsection{Presence Conditions}
+Software Product Lines (SPLs) are built on top of both common and variable software artifacts. Common artifacts exist in all products of the product line, while variable artifacts exist only in a non-empty subset of valid products. That subset is defined using a \emph{Presence Condition}: a propositional formula over product line features.
+
+\subsubsection{Product Generation}
+
+\subsection{Software Analyses}
+
+\subsection{Typed Lambda Calculus}
+
+\section{Lifting Typed Lambda Calculus}
+
+By lifting Typed Lambda Calculus (TLC), we mean providing syntactic transformation rules that lift any program written in TLC by compositionally lifting TLC syntactic constructs. Those transformation rules can be applied to any software analysis written in TLC, resulting in an equivalent analysis that can be applied to a Software Product Line.
+
+In the following description of the transformation rules we use Haskell syntax. This way we can use several functional constructs (parametric types, lists, pairs) without loss of generality, as the construction of those constructs on top of TLC is standard \cite{Pierce2002}.
+
+When lifting an analysis from products to product lines, we need to appropriately tag variable artifacts with their corresponding presence conditions. We use the \emph{PresenceCondition} abstract data type for this purpose.
+
+\subsection{Lifting Types}
+Given a type \textbf{t}, we lift it into type \textbf{Lifted t} which is:
+
+\begin{minted}{haskell}
+type Lifted t = [(t, PresenceCondition)]
+\end{minted}
+
+where:
+\begin{itemize}
+\item \textbf{t} is a type parameter that can be instantiated with any type
+\item \textbf{(t, PresenceCondition)} is a pair of a value of type \textbf{t} together with a \textbf{PresenceCondition}
+\item \textbf{[(t, PresenceCondition)]} is a list of such pairs
+\item \textbf{Lifted t $\equiv$ [(t, PresenceCondition)]} is a parametric data type, instantiated by passing the type argument \textbf{t} to the type constructor \textbf{Lifted}
+\end{itemize}
+
+A variable of type \textbf{t} in a product line might actually have different values in different products, hence the multiplicity of items in a list. The \textbf{PresenceCondition} tags are used to keep track of which values correspond to which products. For this to be semantically correct we need to make sure that the sets of products represented by those presence conditions do not overlap, otherwise we might end up with a product variable having different values at the same time. This \textbf{disjointness} requirement is formalized in the following invariant:
+
+\newtheorem*{disjInv*}{Disjointness Invariant}
+\begin{disjInv*}
+Given a lifted value $v = [(v_0, pc_0), ... (v_n, pc_n)]$, $\forall i \neq j: {unsat (pc_i \wedge pc_j)}$
+\end{disjInv*}
+
+The invariant simply states that a lifted value can not have different values with presence condition that overlap. The \emph{unsat} function takes a proposition and returns true if and only if that proposition is unsatisfiable. The conjunction of two presence conditions is unsatisfiable if and only if they represent non-overlapping sets of products.
+
+This invariant is a precondition on inputs into the program being lifted, and in the following sections we will show how its validity is maintained by the lifting transformations.
+
+\subsection{Lifting Values}
+
+To lift a value of type \textbf{t}, all we need to is to provide a presence condition for it, and then encapsulate both into a value of type \textbf{Lifted t}. This is what the following \textbf{lift} operator does:
+
+\begin{minted}{haskell}
+lift :: PresenceCondition -> t -> Lifted t
+lift pc x = [(x, pc)]
+\end{minted}
+
+This operator can be applied to values of any type, including functions. The importance of lifting function values will be clear in the following subsection.
+
+In many cases we need to provide the most general presence condition, which is \textbf{True} (the set of all products). For this we provide the following \textbf{liftT} operator:
+
+\begin{minted}{haskell}
+liftT :: t -> Lifted t
+liftT x = lift True x
+\end{minted}
+
+Input values to analyses from product lines will typically be of lifted types. For example, an integer can have one value in a set of products, and a different value in another set. 
+
+\begin{exmp}[Lifted Values]
+
+Assuming we have two features A and B, variables x and y of type \textbf{Lifted Int} and variable z of type \textbf{Lifted String} can have the following values: \\
+
+x = [(1,A),(-2, $\neg A \wedge B$),(3, $\neg A \wedge \neg B$)]
+y = [(5, $A \wedge \neg B$), (4,B), (-3, $\neg A \wedge \neg B$)]
+
+z = [("hello", $\neg A \wedge B$),("helloooo", A)] \\
+
+
+Both x and y satisfy the disjointness invariant. It is worth mentioning that a lifted value does not have to be defined in each product in the product line. For example, z is not defined in the product identified by the presence condition $(\neg A \wedge \neg B)$.
+
+\end{exmp}
+
+\subsection{Applying Lifted Functions}
+
+Now that we have lifted values (both data and functions), we need to provide a way to apply lifted functions to lifted operands. This is how data propagates through a functional program. Starting with the simplest case, where we have a lifted unary function of type \textbf{Lifted (a $\to$ b)} and an argument of type \textbf{Lifted a} we need to provide a way to apply that function to its argument resulting in a \textbf{Lifted b} value.
+Recall that a lifted value of type \textbf{Lifted t} is just a collection of values of type \textbf{t}, each with a corresponding presence condition, and the whole lifted value has to satisfy the disjointness Invariant. So to apply a collection of functions to a collection of values, all we need to is to apply each of the functions to each of the values. Since the result has to be a lifted value, then we also need a presence condition for each of the computed values. This presence condition is simply the conjunction of the presence conditions of the function and the argument used to compute it. If the conjunction of the presence conditions is unsatisfiable (i.e. a contradiction), it means that the corresponding value does not belong to any product, so it can be safely filtered out. This is how the apply function looks in Haskell:
+
+\begin{minted}{haskell}
+apply :: Lifted (a -> b) -> Lifted a -> Lifted b
+apply fn x = [(fnVal xVal, conj [fnPC,xPC]) 
+              | (fnVal,fnPC) <- fn, (xVal,xPC) <- x, sat(conj[fnPC,aPC])] 
+\end{minted}
+
+Here we are using Haskell's list comprehension to build the lifted result of applying a lifted function to a single lifted argument. The function \textbf{conj} takes a list of presence conditions are returns their conjunction, and the function \textbf{sat} takes a presence condition (a symbolic proposition in general) and returns true if its argument is satisfiable, otherwise it returns false.
+
+\begin{exmp}[Unary function application]
+
+Assume that we need to be apply the absolute value function (\emph{abs}) to the lifted variable \emph{x} from the previous example. Since \emph{x} is lifted, we need a lifted version of \emph{abs}, which we can simply get by using the liftT function:
+
+\begin{minted}{haskell}
+liftedAbs = liftT abs
+\end{minted}
+
+Now we can apply \emph{liftedAbs} to \emph{x}:
+
+\begin{minted}{haskell}
+abs_x = apply liftedAbs x
+\end{minted}
+
+The \emph{apply} function applies a lifted function to a lifted value (of matching type), resulting in a lifted value. In this example, the result \emph{abs\_x} will have the value: \\
+
+[(1,A),(2, $\neg A \wedge B$), (3, $\neg A\wedge \neg B$)].
+
+\end{exmp}
+
+\begin{exmp}[Binary function application]
+
+Now assume that we would like to add \emph{x} and \emph{y}. The first step is to get a lifted version of the (+) operator:
+
+\begin{minted}{haskell}
+plus = (+)
+liftedPlus = liftT plus
+\end{minted}
+
+The function \emph{apply} takes a function and a single argument, so how do we extend it beyond unary functions?
+
+Actually this is no different from functions in TLC, where all functions are unary, and functions of higher arities are just Curried higher-order functions \cite{Pierce2002}. If we pass \emph{liftedPlus} and \emph{x} to apply, it will apply the binary lifted operator \emph{liftedPlus} to a single lifted argument \emph{x}:
+
+\begin{minted}{haskell}
+intermediateVal = apply liftedPlus x
+\end{minted}
+
+But since multi-parameter functions are actually Curried unary functions, \emph{intermediateVal} is a lifted unary function [((plus 1), A),((plus -2), $\neg A \wedge B$),((plus 3), $\neg A \wedge \neg B$)].
+
+Now we just need to apply \emph{intermediateVal}, which is actually a lifted unary function, to \emph{y}:
+
+\begin{minted}{haskell}
+finalVal = apply intermediateVal y
+\end{minted}
+
+The result in \emph{finalVal} is: \\
+
+[(6, $A \wedge \neg B$), (5, $A \wedge B$), (2, $\neg A \wedge B$), (0, $\neg A \wedge \neg B$)] \\
+
+Remember that apply generates the cross product of its arguments (each of them a list of values labeled with presence conditions), and excludes the pairs where the conjunction of presence conditions is not satisfiable. This is why finalVal has only four possible values, although the cross product initially had 9.
+
+As a shortcut, we can define a binary version of \emph{apply} (let us call it \emph{apply2}) that implements this pattern of partial function application and Currying:
+
+\begin{minted}{haskell}
+apply2 :: Lifted (a -> b -> c) -> Lifted a -> Lifted b -> Lifted c
+apply2 fn a b = apply (apply fn a) b
+\end{minted}
+
+Versions of \emph{apply} for functions of other aritiies  can be defined similarly:
+
+\begin{minted}{haskell}
+apply3 :: Lifted (a -> b -> c -> d) -> Lifted a -> Lifted b -> Lifted c -> Lifted d
+apply3 fn a b c = apply (apply2 fn a b) c
+
+apply4 :: Lifted (a -> b -> c -> d -> e) -> 
+			Lifted a -> Lifted b -> Lifted c -> Lifted d -> Lifted e
+apply4 fn a b c d = apply (apply3 fn a b c) d
+
+...
+\end{minted}
+
+\end{exmp}
+
+\begin{exmp}[Conditional Expression]
+
+An \emph{if-then-else} expression is just syntactic sugar for a ternary polymorphic function, taking a boolean argument and two arguments of type \emph{t} and returning one of them depending on what the first argument evaluates to. We can easily de-sugar \emph{if-then-else} expressions into the following \emph{cond} function:
+
+\begin{minted}{haskell}
+cond :: Bool -> t -> t -> t
+cond p a b = if p then a else b
+\end{minted}
+
+Now lifting a conditional expression is no different from lifting any other function:
+
+\begin{minted}{haskell}
+condLifted = apply3 (liftT cond)
+\end{minted}
+
+So for example the expression
+
+\begin{minted}{haskell}
+if (x == y) then (x + y) else (x - y)
+\end{minted}
+
+Is lifted into:
+
+\begin{minted}{haskell}
+liftedEq    a b = apply2 (liftT (==)) a b
+liftedPlus  a b = apply2 (liftT (+))  a b
+liftedMinus a b = apply2 (liftT (-))  a b
+
+condLifted (liftedEq x y) (liftedPlus x y) (liftedMinus x y)
+\end{minted}
+
+Please not that Haskell's lazy evaluation makes the de-sugared \emph{cond} function semantically equivalent to a conditional expression because only one of the \emph{then} and \emph{else} expressions is evaluated after the boolean condition is evaluated based on its truth value. However, a language with strict evaluation semantics would evaluate both the \emph{then} and \emph{else} expressions before they are passed to \emph{cond}. This is still fine if both expressions are pure (with no side-effects). However, if any of the expression has side effects, the equivalence between \emph{cond} and the typical conditional expression is broken.
+
+\end{exmp}
+
+\subsubsection{The Disjointness Invariant and Function Application}
+
+Function application is the only way of generating new lifted values out of existing ones. To preserve the soundness of our lifting system, we need to make sure that function application preserves Invariant 1. 
+
+\newtheorem{th1}{Theorem}
+\begin{th1}
+If fn and x satisfy Invariant 1, then the result of (apply fn x) also satisfies the invariant.
+\end{th1}
+
+\begin{proof}
+
+By contradiction:
+
+\begin{itemize}
+\item Assume that both fn and x satisfy the invariant while the result y = (apply fn x) does not
+\item Then there exists at least one pair of presence conditions in y ($pc_i$ and $pc_j$) where sat($pc_i \wedge pc_j$) = true
+\item Since presence conditions $pc_i$ and $pc_j$ where constructed by apply as conjunctions of presence conditions from fn and x, and we know presence conditions of fn are disjoint (same for those of x), then there is no truth assignment that would satisfy the conjunction of any of the pairs of presence conditions in y.
+\end{itemize}
+
+\end{proof}
+
+\subsubsection{Lifting Composite Types}
+
+\subsubsection{Function Rewriting}
+
+\subsection{Lifting Parametric Types}
+
+\section{Examples and Evaluation}
+
+\subsection{LTS Reachability with Witness}
+
+\subsection{TODO: Some other analysis}
+
+\section{Discussion}
+\subsection{Deep vs Shallow Lifting}
+
+\section{Related Work}
+
+\section{Conclusion}
+
+\bibliography{/users/ramy/bib/library} 
+\bibliographystyle{ieeetr}
 
 \end{document}
