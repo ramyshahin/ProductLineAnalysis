@@ -5,6 +5,8 @@
 -------------------------------------------------------------------------------
 module Variability where
 
+import Control.Monad
+
 -- abstract propositional expression
 type Expr = Bool
 
@@ -99,9 +101,10 @@ apply4 fn a b c = apply (apply3 fn a b c)
 --applyFn :: (a -> SPLVariable b) -> SPLVariable a -> SPLVariable b
 --applyFn fn (V x) = (map (\(x', pc) -> ((fn x'), pc)) x)
 
---instance Monad SPLVariable where
---    return x = liftT x
---    x >>= y  = apply y x
+instance Monad SPLVariable where
+    return x = liftT x
+    y >>= f  = case y of 
+                V y' -> V (concat (map (\(y'',pc) -> (f y'', pc)) y'))
 
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a
