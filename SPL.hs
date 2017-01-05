@@ -1,9 +1,11 @@
 -------------------------------------------------------------------------------
--- Variability.hs
--- Software Product Line Variability library
+-- SPL.hs
+-- Software Product Line library
 -- Ramy Shahin - July 14th 2016
 -------------------------------------------------------------------------------
-module Variability where
+{-# LANGUAGE TypeFamilies #-}
+
+module SPL where
 
 import Control.Monad
 
@@ -22,7 +24,7 @@ disj a b = True     -- TODO
 sat :: Expr -> Bool
 sat ex = True
 
-type SPLValue a = (a, PresenceCondition)
+type Val a = (a, PresenceCondition)
 
 --instance Eq SPLOption a where
 --    (==) a b = (getValue a == getValue b) && sat(getPresenceCondition a && getPresenceCondition b)
@@ -31,19 +33,26 @@ type SPLValue a = (a, PresenceCondition)
 -- when lifting a product value to a product line value, we might end up with
 -- different values for each product in the product line. This is why a value is
 -- lifted into a set of values, each with a path condition. An important
--- inSPLVariable here is that the path conditions of those values should not depend
+-- inVar here is that the path conditions of those values should not depend
 -- on each other, i.e. non of them logically implies the other. Violating this
--- inSPLVariable would result in redundant values (i.e. multiple values belonging
+-- inVar would result in redundant values (i.e. multiple values belonging
 -- to the same set of products). This does not affect correctness, but severely
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
-newtype SPLVariable a = V [SPLValue a]
+--newtype Var (a :: *) = V [Val a]
+--type Var1 (a :: * -> *) = [Val (a (Var b))]
 
-instance Show a => Show (SPLVariable a) where
-    show v = case v of V v' -> show v'
+--type Var a = [Val a]
 
-instance Functor SPLVariable where
-    fmap f (V v) = V [(f x, pc) | (x, pc) <- v]
+type family Var a where
+    Var (t :: *) = [(Val t)]
+    --Var ((t :: * -> *) (s :: *))= [(Val (t s))] -- ([(Val s)])))]
+
+--instance Show a => Show (Var a) where
+--    show v = case v of v' -> show v'
+
+--instance Functor Var where
+--    fmap f (v) = [(f x, pc) | (x, pc) <- v]
 
 
 --type Lifted2 a b = Lifted (a (Lifted b))
@@ -64,10 +73,10 @@ instance Functor SPLVariable where
 -- join 2 lifted values
 --join :: Lifted a -> Lifted b -> 
 -- lift a value
-lift :: PresenceCondition -> t -> SPLVariable t
-lift pc x = V [(x, pc)]
+lift :: PresenceCondition -> t -> Var t
+lift pc x = [(x, pc)]
 
-liftT :: t -> SPLVariable t
+liftT :: t -> Var t
 liftT x = lift True x
 
 --lift2 :: Functor a => PresenceCondition -> a b -> Lifted2 a b
@@ -76,35 +85,35 @@ liftT x = lift True x
 --lift2 :: PresenceCondition -> a b -> Lifted (a (Lifted b))
 
 -- apply a unary lifted function
-apply :: SPLVariable (a -> b) -> SPLVariable a -> SPLVariable b
-apply (V fn) (V x) = V [(fnVal xVal, conj [fnPC,xPC]) 
+apply :: Var (a -> b) -> Var a -> Var b
+apply (fn) (x) = [(fnVal xVal, conj [fnPC,xPC]) 
                       | (fnVal,fnPC) <- fn, (xVal,xPC) <- x, sat(conj[fnPC,xPC])] 
 
 -- apply a binary lifted function
-apply2 :: SPLVariable (a -> b -> c) -> SPLVariable a -> SPLVariable b -> SPLVariable c
+apply2 :: Var (a -> b -> c) -> Var a -> Var b -> Var c
 apply2 fn a = apply (apply fn a)
 
 -- apply a ternary lifted function
-apply3 :: SPLVariable (a -> b -> c -> d) -> SPLVariable a -> SPLVariable b -> SPLVariable c -> SPLVariable d
+apply3 :: Var (a -> b -> c -> d) -> Var a -> Var b -> Var c -> Var d
 apply3 fn a b = apply (apply2 fn a b)
 
 -- apply a 4-arity lifted function
-apply4 :: SPLVariable (a -> b -> c -> d -> e) -> SPLVariable a -> SPLVariable b -> SPLVariable c -> SPLVariable d -> SPLVariable e
+apply4 :: Var (a -> b -> c -> d -> e) -> Var a -> Var b -> Var c -> Var d -> Var e
 apply4 fn a b c = apply (apply3 fn a b c)
 
 -------------------------------------
 -- Variability Monad??
 -------------------------------------
---liftFn :: PresenceCondition -> (a -> b) -> (a -> SPLVariable b)
+--liftFn :: PresenceCondition -> (a -> b) -> (a -> Var b)
 --liftFn pc f = (lift pc) . f
 
---applyFn :: (a -> SPLVariable b) -> SPLVariable a -> SPLVariable b
+--applyFn :: (a -> Var b) -> Var a -> Var b
 --applyFn fn (V x) = (map (\(x', pc) -> ((fn x'), pc)) x)
 
-instance Monad SPLVariable where
-    return x = liftT x
-    y >>= f  = case y of 
-                V y' -> V (concat (map (\(y'',pc) -> (f y'', pc)) y'))
+--instance Monad Var where
+--    return x = liftT x
+--    y >>= f  = case y of 
+--                V y' -> V (concat (map (\(y'',pc) -> (f y'', pc)) y'))
 
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a
@@ -113,23 +122,23 @@ cond p a b = if p then a else b
 condLifted = apply3 (liftT cond)
 
 -- lifting higher-order functions
-mapLifted :: SPLVariable (a -> b) -> SPLVariable [a] -> SPLVariable [b]
+mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
 mapLifted = apply2 (lift True map)
 
-filterLifted :: SPLVariable (a -> Bool) -> SPLVariable [a] -> SPLVariable [a]
+filterLifted :: Var (a -> Bool) -> Var [a] -> Var [a]
 filterLifted = apply2 (lift True filter)
 
 -- lifted list
-consLifted :: SPLVariable a -> SPLVariable [a] -> SPLVariable [a]
+consLifted :: Var a -> Var [a] -> Var [a]
 consLifted x xs = apply2 (liftT (:)) x xs
 
 --consListLifted :: PresenceCondition -> Lifted a -> ListLifted a -> ListLifted a
 --consListLifted pc x xs = consLifted x xs
 
-headLifted :: SPLVariable [a] -> SPLVariable a
+headLifted :: Var [a] -> Var a
 headLifted xs = apply (liftT head) xs
 
-tailLifted :: SPLVariable [a] -> SPLVariable [a]
+tailLifted :: Var [a] -> Var [a]
 tailLifted xs = apply (liftT tail) xs
 
 --lift1 :: PresenceCondition -> (a -> b) -> (Lifted a -> Lifted b)
@@ -139,12 +148,12 @@ tailLifted xs = apply (liftT tail) xs
 --lift2 pc fn = {-(filter (\(v,pc') -> sat pc')) . foldr (++) [] . -} (map (\(v,pc') -> (lift1 pc (fn v))))
 
 -- join (Lifted-Lifted) - join 2 lifted values
---join2 :: PresenceCondition -> SPLVariable a -> SPLVariable b -> SPLVariable (a,b)
+--join2 :: PresenceCondition -> Var a -> Var b -> Var (a,b)
 --join2 pc a b = 
 --    let xProduct = [((aVal, bVal), (conj [pc, aPC, bPC])) | (aVal, aPC) <- a, (bVal, bPC) <- b]
 --    in  filter (\(_, pc) -> sat pc) xProduct
     
---join3 :: PresenceCondition -> SPLVariable a -> SPLVariable b -> SPLVariable c -> SPLVariable (a,b,c)
+--join3 :: PresenceCondition -> Var a -> Var b -> Var c -> Var (a,b,c)
 --join3 pc a b c = 
 --    let xProduct = [((aVal, bVal, cVal), (conj [pc, aPC, bPC, cPC])) | (aVal, aPC) <- a, (bVal, bPC) <- b, (cVal, cPC) <- c]
 --    in  filter (\(_, pc) -> sat pc) xProduct
