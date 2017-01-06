@@ -29,7 +29,7 @@ props = [prop1, prop2, prop3, prop4, prop5, prop6, prop7, prop8, prop9, prop10]
 
 run :: IO ()
 run = mapM_ (\p -> do
-                    r <- (checkSAT u p)
+                    r <- (checkSAT p)
                     putStrLn ((show p) ++ "------>" ++ (show r))
             ) props
 

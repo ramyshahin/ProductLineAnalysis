@@ -4,7 +4,7 @@
 module Prop where
 
 import Z3.Monad
-import Data.Vector(Vector, (!), fromList)
+import Data.Vector as V(Vector, (!), fromList, empty, length)
 
 type Universe = Vector String
 
@@ -40,6 +40,25 @@ instance Show Prop where
             Impl p1 p2  -> "(" ++ show p1 ++ " => " ++ show p2 ++ ")"
             Iff  p1 p2  -> "(" ++ show p1 ++ " <=> " ++ show p2 ++ ")"
 
+maxUniverse :: Universe -> Universe -> Universe
+maxUniverse u1 u2 =
+    let l1 = V.length u1
+        l2 = V.length u2
+    in
+        if (l1 >= l2) then u1 else u2
+
+getUniverse :: Prop -> Universe
+getUniverse p = 
+    case p of
+        T -> empty
+        F -> empty
+        Atom u i -> u
+        Not p' -> getUniverse p'
+        Conj ps -> foldr (maxUniverse . getUniverse) empty ps
+        Disj ps -> foldr (maxUniverse . getUniverse) empty ps
+        Impl p1 p2 -> maxUniverse (getUniverse p1) (getUniverse p2)
+        Iff  p1 p2 -> maxUniverse (getUniverse p1) (getUniverse p2)
+
 mkZ3Formula :: Vector AST -> Prop -> Z3 AST
 mkZ3Formula atoms p =
     case p of
@@ -64,11 +83,11 @@ mkZ3Script u p = do
     assert =<< (mkZ3Formula atoms p)
     check
     
-checkSAT :: Universe -> Prop -> IO Result
-checkSAT u p = evalZ3 (mkZ3Script u p)
+checkSAT :: Prop -> IO Result
+checkSAT p = evalZ3 (mkZ3Script (getUniverse p) p)
 
-sat :: Universe -> Prop -> IO Bool
-sat u p = (return . ((==) Sat)) =<< checkSAT u p
+sat :: Prop -> IO Bool
+sat p = (return . ((==) Sat)) =<< checkSAT p
 
-unsat :: Universe -> Prop -> IO Bool
-unsat u p = (return . ((==) Unsat)) =<< checkSAT u p
+unsat :: Prop -> IO Bool
+unsat p = (return . ((==) Unsat)) =<< checkSAT p
