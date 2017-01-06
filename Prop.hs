@@ -4,22 +4,56 @@
 module Prop where
 
 import Z3.Monad
-import qualified Data.Traversable as T
+import Data.Vector(Vector, (!), fromList)
 
-script :: Z3 Result
-script = do
-    p <- mkFreshBoolVar "p"
-    q <- mkFreshBoolVar "q"
-    r <- mkFreshBoolVar "r"
-    s <- mkFreshBoolVar "s"
+type Universe = Vector String
 
-    assert =<< mkAnd =<< T.sequence [(mkNot q), (return q)]
-    assert =<< mkOr =<< T.sequence [(mkNot p), (mkNot s)]
+mkUniverse :: [String] -> Universe
+mkUniverse = fromList
 
+data Prop =
+    T
+  | F
+  | Atom Universe Int
+  | Not Prop
+  | Conj [Prop]
+  | Disj [Prop]
+
+showPropList :: [Prop] -> String
+showPropList ps = 
+    case ps of
+        []  -> ""
+        [p] -> (show p) 
+        p1 : p2 : ps' -> (show p1) ++ ", " ++ showPropList (p2 : ps')
+
+instance Show Prop where
+    show prop = 
+        case prop of
+            T        -> "True"
+            F        -> "False"
+            Atom u i ->  u ! i
+            Not p    -> "Not(" ++ show p ++ ")"
+            Conj ps  -> "And(" ++ showPropList ps ++ ")"
+            Disj ps  -> "Or("  ++ showPropList ps ++ ")"
+
+mkZ3Formula :: Vector AST -> Prop -> Z3 AST
+mkZ3Formula atoms p =
+    case p of
+        T        -> mkTrue
+        F        -> mkFalse
+        Atom _ i -> return (atoms ! i)
+        Not p'   -> mkNot =<< (mkZ3Formula atoms p')
+        Conj ps  -> mkAnd =<< (mapM (mkZ3Formula atoms) ps)
+        Disj ps  -> mkOr  =<< (mapM (mkZ3Formula atoms) ps)
+
+mkZ3Script :: Universe -> Prop -> Z3 Result
+mkZ3Script u p = do
+    atoms <- mapM mkFreshBoolVar u
+    assert =<< (mkZ3Formula atoms p)
     check
     
-run :: IO ()
-run = do
-    result <- evalZ3 script
-    print result
+checkSAT :: Universe -> Prop -> IO Result
+checkSAT u p = evalZ3 (mkZ3Script u p)
+
+
 
