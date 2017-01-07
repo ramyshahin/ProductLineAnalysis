@@ -7,22 +7,14 @@
 
 module SPL where
 
-import Control.Monad
+import Prop
+import Control.Applicative
 
--- abstract propositional expression
-type Expr = Bool
+type FeatureSet         = Universe
+type PresenceCondition  = Prop
 
-type PresenceCondition  = Expr
---type SPLContext         = Expr
-
-conj :: [PresenceCondition] -> PresenceCondition
-conj a = True     -- TODO
-
-disj :: Expr -> Expr -> Expr
-disj a b = True     -- TODO
-
-sat :: Expr -> Bool
-sat ex = True
+sat :: Prop -> Bool
+sat p = True
 
 type Val a = (a, PresenceCondition)
 
@@ -39,14 +31,11 @@ type Val a = (a, PresenceCondition)
 -- to the same set of products). This does not affect correctness, but severely
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
---newtype Var (a :: *) = V [Val a]
---type Var1 (a :: * -> *) = [Val (a (Var b))]
+data family Var a
+data instance Var (t :: *) = Var [(Val t)]
 
---type Var a = [Val a]
-
-type family Var a where
-    Var (t :: *) = [(Val t)]
-    --Var ((t :: * -> *) (s :: *))= [(Val (t s))] -- ([(Val s)])))]
+--    Var ((t :: * -> *) (s :: *))= [(Val (t s))] -- ([(Val s)])))]
+--newtype Var a = Var [(Val a)]
 
 --instance Show a => Show (Var a) where
 --    show v = case v of v' -> show v'
@@ -58,36 +47,18 @@ type family Var a where
 --type Lifted2 a b = Lifted (a (Lifted b))
 --type Lifted3 a b c = Lifted (a (Lifted (b (Lifted c))))
 
---data Proxy t = Proxy
-
---class CLifted t where
---  lift :: Proxy t -> TypeRep
-
---instance CLifted Int  where typeOf _ = TypeRep
---instance Typeable []   where typeOf _ = TypeRep
-
---newtype Lifted a b = Lifted a (Lifted b)
-
---type Lifted2 a b = Lifted (a (Lifted b))
-
--- join 2 lifted values
---join :: Lifted a -> Lifted b -> 
 -- lift a value
 lift :: PresenceCondition -> t -> Var t
-lift pc x = [(x, pc)]
+lift pc x = Var [(x, pc)]
 
 liftT :: t -> Var t
-liftT x = lift True x
+liftT x = lift T x
 
---lift2 :: Functor a => PresenceCondition -> a b -> Lifted2 a b
---lift2 pc x = [(fmap (lift pc) x, pc)]
-
---lift2 :: PresenceCondition -> a b -> Lifted (a (Lifted b))
 
 -- apply a unary lifted function
 apply :: Var (a -> b) -> Var a -> Var b
-apply (fn) (x) = [(fnVal xVal, conj [fnPC,xPC]) 
-                      | (fnVal,fnPC) <- fn, (xVal,xPC) <- x, sat(conj[fnPC,xPC])] 
+apply (Var fn) (Var x) = Var [(fnVal xVal, Conj [fnPC,xPC]) 
+                              | (fnVal,fnPC) <- fn, (xVal,xPC) <- x, SPL.sat(Conj[fnPC,xPC])] 
 
 -- apply a binary lifted function
 apply2 :: Var (a -> b -> c) -> Var a -> Var b -> Var c
@@ -101,6 +72,9 @@ apply3 fn a b = apply (apply2 fn a b)
 apply4 :: Var (a -> b -> c -> d -> e) -> Var a -> Var b -> Var c -> Var d -> Var e
 apply4 fn a b c = apply (apply3 fn a b c)
 
+instance Show a => Show (Var a) where
+    show (Var v) = concat $ map (\(x,pc) -> " (" ++ show x ++ ", " ++ show pc ++ ") ") v
+
 -------------------------------------
 -- Variability Monad??
 -------------------------------------
@@ -110,10 +84,12 @@ apply4 fn a b c = apply (apply3 fn a b c)
 --applyFn :: (a -> Var b) -> Var a -> Var b
 --applyFn fn (V x) = (map (\(x', pc) -> ((fn x'), pc)) x)
 
---instance Monad Var where
---    return x = liftT x
---    y >>= f  = case y of 
---                V y' -> V (concat (map (\(y'',pc) -> (f y'', pc)) y'))
+instance Functor Var where
+    fmap f = apply (liftT f)
+
+instance Applicative Var where
+    pure  = liftT
+    (<*>) = apply
 
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a
@@ -123,10 +99,10 @@ condLifted = apply3 (liftT cond)
 
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
-mapLifted = apply2 (lift True map)
+mapLifted = apply2 (lift T map)
 
 filterLifted :: Var (a -> Bool) -> Var [a] -> Var [a]
-filterLifted = apply2 (lift True filter)
+filterLifted = apply2 (lift T filter)
 
 -- lifted list
 consLifted :: Var a -> Var [a] -> Var [a]
