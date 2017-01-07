@@ -9,6 +9,8 @@ module SPL where
 
 import Prop
 import Control.Applicative
+import Control.Monad
+import Control.Monad.Trans(liftIO)
 
 type FeatureSet         = Universe
 type PresenceCondition  = Prop
@@ -32,7 +34,10 @@ type Val a = (a, PresenceCondition)
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
 data family Var a
-data instance Var (t :: *) = Var [(Val t)]
+data instance Var (t :: *) = Var (IO [(Val t)])
+
+mkVar :: [(Val t)] -> Var t
+mkVar vs = Var (return vs)
 
 --    Var ((t :: * -> *) (s :: *))= [(Val (t s))] -- ([(Val s)])))]
 --newtype Var a = Var [(Val a)]
@@ -49,31 +54,65 @@ data instance Var (t :: *) = Var [(Val t)]
 
 -- lift a value
 lift :: PresenceCondition -> t -> Var t
-lift pc x = Var [(x, pc)]
+lift pc x = Var (return [(x, pc)])
 
 liftT :: t -> Var t
 liftT x = lift T x
 
 
+--triples :: IO (Var (a -> b)) -> IO (Var a) -> IO [(a -> b, a, PresenceCondition)]
+--triples (Var fn) (Var x) = [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = Conj[fnpc, xpc]]
+
+--filteredTriples :: [(a -> b, a, PresenceCondition)] -> IO [(a -> b, a, PresenceCondition)]
+--filteredTriples = filterM (\(f, x, pc) -> Prop.sat pc)
+    
+--compute :: IO [(a -> b, a, PresenceCondition)] -> IO (Var b)
+--compute ts = do
+--                ts' <- ts
+--                return (Var (map (\(fn, x, pc) -> ((fn x), pc)) ts'))
+                
 -- apply a unary lifted function
 apply :: Var (a -> b) -> Var a -> Var b
-apply (Var fn) (Var x) = Var [(fnVal xVal, Conj [fnPC,xPC]) 
-                              | (fnVal,fnPC) <- fn, (xVal,xPC) <- x, SPL.sat(Conj[fnPC,xPC])] 
+--apply fn x = (compute (filteredTriples  (triples fn x)))
+--apply fn_ x_ = 
+--    do
+--        fn__ <- fn_
+--        x__  <- x_
+--        case fn__ of
+--            Var fn -> case x__ of
+--                        Var x -> 
+--                            return (Var [(fn' x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = Conj[fnpc, xpc], SPL.sat c])
+
+apply (Var fn_) (Var x_) = 
+    Var (do
+            fn <- fn_
+            x  <- x_
+            ts <- filterM (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = Conj[fnpc, xpc]]
+            return (map (\(fn, x, pc) -> ((fn x), pc)) ts)
+        )
+
+--Var (do
+--                                (fnVal,fnPC) <- fn
+--                                (xVal,xPC)   <- x
+--                                let c = Conj[fnPC,xPC]
+--                                b  <- liftIO  (sat c)
+--                                [(fnVal xVal, c) | b]
+--                             )    
 
 -- apply a binary lifted function
-apply2 :: Var (a -> b -> c) -> Var a -> Var b -> Var c
-apply2 fn a = apply (apply fn a)
+--apply2 :: Var (a -> b -> c) -> Var a -> Var b -> Var c
+--apply2 fn a = apply (apply fn a)
 
 -- apply a ternary lifted function
-apply3 :: Var (a -> b -> c -> d) -> Var a -> Var b -> Var c -> Var d
-apply3 fn a b = apply (apply2 fn a b)
+--apply3 :: Var (a -> b -> c -> d) -> Var a -> Var b -> Var c -> Var d
+--apply3 fn a b = apply (apply2 fn a b)
 
 -- apply a 4-arity lifted function
-apply4 :: Var (a -> b -> c -> d -> e) -> Var a -> Var b -> Var c -> Var d -> Var e
-apply4 fn a b c = apply (apply3 fn a b c)
+--apply4 :: Var (a -> b -> c -> d -> e) -> Var a -> Var b -> Var c -> Var d -> Var e
+--apply4 fn a b c = apply (apply3 fn a b c)
 
-instance Show a => Show (Var a) where
-    show (Var v) = concat $ map (\(x,pc) -> " (" ++ show x ++ ", " ++ show pc ++ ") ") v
+--instance Show a => Show (Var a) where
+--    show (Var (IO v)) = mapM (concat $ map (\(x,pc) -> " (" ++ show x ++ ", " ++ show pc ++ ") ")) v
 
 -------------------------------------
 -- Variability Monad??
@@ -83,6 +122,12 @@ instance Show a => Show (Var a) where
 
 --applyFn :: (a -> Var b) -> Var a -> Var b
 --applyFn fn (V x) = (map (\(x', pc) -> ((fn x'), pc)) x)
+
+printVar :: Show a => Var a -> IO ()
+printVar (Var v) = 
+    do
+        v' <- v
+        putStrLn . show $ v'
 
 instance Functor Var where
     fmap f = apply (liftT f)
@@ -95,18 +140,19 @@ instance Applicative Var where
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
-condLifted = apply3 (liftT cond)
+condLifted :: Var Bool -> Var a -> Var a -> Var a
+condLifted = liftA3 cond
 
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
-mapLifted = apply2 (lift T map)
+mapLifted = liftA2 map
 
 filterLifted :: Var (a -> Bool) -> Var [a] -> Var [a]
-filterLifted = apply2 (lift T filter)
+filterLifted = liftA2 filter
 
 -- lifted list
 consLifted :: Var a -> Var [a] -> Var [a]
-consLifted x xs = apply2 (liftT (:)) x xs
+consLifted  = liftA2 (:)
 
 --consListLifted :: PresenceCondition -> Lifted a -> ListLifted a -> ListLifted a
 --consListLifted pc x xs = consLifted x xs
