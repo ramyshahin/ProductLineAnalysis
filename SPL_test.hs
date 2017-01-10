@@ -30,3 +30,11 @@ x_plus_y0 = apply (apply (liftT (+)) x) y
 x_plus_y1 = (pure (+)) <*> x <*> y
 x_plus_y2 = (liftA2 (+)) x y
 
+a :: Var Int
+a = mkVar [(0,T)]
+
+l :: Var [Int]
+l = mkVar [([],T)]
+
+--m :: Var [String]
+--m = mkVar [("", T)]

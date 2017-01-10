@@ -4,6 +4,9 @@
 -- Ramy Shahin - July 14th 2016
 -------------------------------------------------------------------------------
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 
 module SPL where
 
@@ -24,7 +27,6 @@ type Val a = (a, PresenceCondition)
 --instance Eq SPLOption a where
 --    (==) a b = (getValue a == getValue b) && sat(getPresenceCondition a && getPresenceCondition b)
 
-
 -- when lifting a product value to a product line value, we might end up with
 -- different values for each product in the product line. This is why a value is
 -- lifted into a set of values, each with a path condition. An important
@@ -34,18 +36,22 @@ type Val a = (a, PresenceCondition)
 -- to the same set of products). This does not affect correctness, but severely
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
-data family Var :: (* -> *)
-data instance Var t         = Var  (IO [(Val t)])
---data instance Var (t s)     = Var2 (IO [(Val (t (Var s)))])
+data Var' t = Var' (IO [(Val t)])
 
-mkVar :: [(Val t)] -> Var t
-mkVar vs = Var (return vs)
+type family Var t where
+    Var ((t :: * -> * -> * -> *) (s1 :: *) (s2 :: *) (s3 :: *))      = Var' (t (Var' s1) (Var' s2) (Var' s3))
+    Var ((t :: * -> * -> *) (s1 :: *) (s2 :: *))      = Var' (t (Var' s1) (Var' s2))
+    Var ((t :: * -> *) (s :: *))      = Var' (t (Var' s))
+    Var (t :: *)                      = Var' t
+
+mkVar :: [(Val t)] -> Var' t
+mkVar vs = Var' (return vs)
 
 -- lift a value
-lift :: PresenceCondition -> t -> Var t
-lift pc x = Var (return [(x, pc)])
+lift :: PresenceCondition -> t -> Var' t
+lift pc x = Var' (return [(x, pc)])
 
-liftT :: t -> Var t
+liftT :: t -> Var' t
 liftT x = lift T x
 
 
@@ -61,7 +67,7 @@ liftT x = lift T x
 --                return (Var (map (\(fn, x, pc) -> ((fn x), pc)) ts'))
                 
 -- apply a unary lifted function
-apply :: Var (a -> b) -> Var a -> Var b
+apply :: Var' (a -> b) -> Var' a -> Var' b
 --apply fn x = (compute (filteredTriples  (triples fn x)))
 --apply fn_ x_ = 
 --    do
@@ -72,8 +78,8 @@ apply :: Var (a -> b) -> Var a -> Var b
 --                        Var x -> 
 --                            return (Var [(fn' x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = Conj[fnpc, xpc], SPL.sat c])
 
-apply (Var fn_) (Var x_) = 
-    Var (do
+apply (Var' fn_) (Var' x_) = 
+    Var' (do
             fn <- fn_
             x  <- x_
             ts <- filterM (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = Conj[fnpc, xpc]]
@@ -112,16 +118,16 @@ apply (Var fn_) (Var x_) =
 --applyFn :: (a -> Var b) -> Var a -> Var b
 --applyFn fn (V x) = (map (\(x', pc) -> ((fn x'), pc)) x)
 
-printVar :: Show a => Var a -> IO ()
-printVar (Var v) = 
+printVar :: Show a => Var' a -> IO ()
+printVar (Var' v) = 
     do
         v' <- v
         putStrLn . show $ v'
 
-instance Functor Var where
+instance Functor Var' where
     fmap f = apply (liftT f)
 
-instance Applicative Var where
+instance Applicative Var' where
     pure  = liftT
     (<*>) = apply
 
@@ -129,28 +135,28 @@ instance Applicative Var where
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
-condLifted :: Var Bool -> Var a -> Var a -> Var a
+condLifted :: Var' Bool -> Var' a -> Var' a -> Var' a
 condLifted = liftA3 cond
 
 -- lifting higher-order functions
-mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
+mapLifted :: Var' (a -> b) -> Var' [a] -> Var' [b]
 mapLifted = liftA2 map
 
-filterLifted :: Var (a -> Bool) -> Var [a] -> Var [a]
+filterLifted :: Var' (a -> Bool) -> Var' [a] -> Var' [a]
 filterLifted = liftA2 filter
 
 -- lifted list
-consLifted :: Var a -> Var [a] -> Var [a]
+consLifted :: Var' a -> Var' [a] -> Var' [a]
 consLifted  = liftA2 (:)
 
 --consListLifted :: PresenceCondition -> Lifted a -> ListLifted a -> ListLifted a
 --consListLifted pc x xs = consLifted x xs
 
-headLifted :: Var [a] -> Var a
-headLifted xs = apply (liftT head) xs
+headLifted :: Var' [a] -> Var' a
+headLifted = liftA head
 
-tailLifted :: Var [a] -> Var [a]
-tailLifted xs = apply (liftT tail) xs
+tailLifted :: Var [Var' a] -> Var [Var' a]
+tailLifted = liftA tail
 
 --lift1 :: PresenceCondition -> (a -> b) -> (Lifted a -> Lifted b)
 --lift1 pc fn = (filter (\(v,pc') -> sat pc')) . map (\(v,pc') -> (fn v, (conj [pc, pc'])))
