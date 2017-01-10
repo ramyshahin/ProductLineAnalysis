@@ -11,6 +11,7 @@ import Prop
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Trans(liftIO)
+import Data.List 
 
 type FeatureSet         = Universe
 type PresenceCondition  = Prop
@@ -33,24 +34,12 @@ type Val a = (a, PresenceCondition)
 -- to the same set of products). This does not affect correctness, but severely
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
-data family Var a
-data instance Var (t :: *) = Var (IO [(Val t)])
+data family Var :: (* -> *)
+data instance Var t         = Var  (IO [(Val t)])
+--data instance Var (t s)     = Var2 (IO [(Val (t (Var s)))])
 
 mkVar :: [(Val t)] -> Var t
 mkVar vs = Var (return vs)
-
---    Var ((t :: * -> *) (s :: *))= [(Val (t s))] -- ([(Val s)])))]
---newtype Var a = Var [(Val a)]
-
---instance Show a => Show (Var a) where
---    show v = case v of v' -> show v'
-
---instance Functor Var where
---    fmap f (v) = [(f x, pc) | (x, pc) <- v]
-
-
---type Lifted2 a b = Lifted (a (Lifted b))
---type Lifted3 a b c = Lifted (a (Lifted (b (Lifted c))))
 
 -- lift a value
 lift :: PresenceCondition -> t -> Var t

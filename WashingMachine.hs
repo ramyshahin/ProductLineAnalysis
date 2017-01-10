@@ -1,15 +1,48 @@
 import LTS
 
-import Data.Vector
+type State = String
+type Guard = String
+type Action = String
 
-states :: Vector String
-states = fromList ["Start", "Locking", "Waiting", "Washing", "Drying", "Unlocking", "Finish"]
+start, locking, waiting, washing, drying, unlocking, finish :: State
+start       = "start"
+locking     = "locking"
+waiting     = "waiting"
+washing     = "washing"
+drying      = "drying"
+unlocking   = "unlocking"
+finish      = "finish"
 
-actions :: Vector String
-actions = fromList ["HeaterOn", "HeaterOff", "wash.Start", "TempCheck", "SetDelay", "QuickCool"]
+states :: [State]
+states = [start, locking, waiting, washing, drying, unlocking, finish]
 
-transitions :: Vector Transition
-transitions = fromList [(Transition 0 1 []),    -- Start    --->            Locking
-                        (Transition 1 2 [0]),   -- Locking  -[HeaterOn]->   Waiting
-                        (Transition 2 3 [1,2])  -- Waiting  -[HeaterOff, wash.Start]-> Washing
-                        ]
+heaterOn, heaterOff, washStart, tempCheck, setDelay, quickCool :: Action
+heaterOn    = "heaterOn"
+heaterOff   = "heaterOff"
+washStart   = "washStart"
+tempCheck   = "tempCheck"
+setDelay    = "setDelay"
+quickCool   = "quickCool"
+
+actions :: [Action]
+actions =  [heaterOn, heaterOff, washStart, tempCheck, setDelay, quickCool]
+
+heatEnabled :: Guard
+heatEnabled = "heatEnabled"
+
+guards :: [Guard]
+guards = [heatEnabled]
+
+transitions :: [Transition State Guard Action]
+--                          from        to          guards          actions
+transitions =  [(Transition start       locking     []              []),
+                (Transition locking     waiting     [heatEnabled]   [heaterOn]),
+                (Transition waiting     washing     []              [heaterOff, washStart]),
+                (Transition washing     unlocking   []              [quickCool]),
+                (Transition washing     drying      []              []),
+                (Transition drying      unlocking   []              [quickCool]),
+                (Transition unlocking   finish      []              [])
+               ]
+
+washingMachine :: LTS State Guard Action
+washingMachine = LTS states guards actions transitions [start]
