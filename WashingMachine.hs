@@ -1,4 +1,5 @@
 import LTS
+import Test.HUnit (Test(..), assertEqual, runTestTT)
 
 type State = String
 type Guard = String
@@ -46,3 +47,15 @@ transitions =  [(Transition start       locking     []              []),
 
 washingMachine :: LTS State Guard Action
 washingMachine = LTS states guards actions transitions [start]
+
+-- neighborsTests
+neighborsStart      = TestCase (assertEqual "neighborsStart"        (neighbors transitions start)       [locking])
+neighborsLocking    = TestCase (assertEqual "neighborsLocking"      (neighbors transitions locking)     [waiting])
+neighborsWaiting    = TestCase (assertEqual "neighborsWaiting"      (neighbors transitions waiting)     [washing])
+neighborsWashing    = TestCase (assertEqual "neighborsWashing"      (neighbors transitions washing)     [unlocking, drying])
+neighborsDrying     = TestCase (assertEqual "neighborsDrying"       (neighbors transitions drying)      [unlocking])
+neighborsUnlocking  = TestCase (assertEqual "neighborsUnlocking"    (neighbors transitions unlocking)   [finish])
+neighborsFinish     = TestCase (assertEqual "neighborsFinish"       (neighbors transitions finish)      [])
+
+neighborsTests = TestList [neighborsStart, neighborsLocking, neighborsWaiting, neighborsWashing, 
+                  neighborsDrying, neighborsUnlocking, neighborsFinish]
