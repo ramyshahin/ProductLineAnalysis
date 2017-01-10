@@ -4,7 +4,8 @@
 -- Ramy Shahin - July 10th 2016
 -------------------------------------------------------------------------------
 module LTS where
-import Data.List
+import Data.List   as L
+import Data.Vector as V
 
 -- abstract State type
 type State = Int
@@ -14,9 +15,9 @@ type Act = Int
 
 -- abstract Transition type
 data Transition = Transition {
-    source :: State,
-    target :: State,
-    action :: Act
+    source  :: State,
+    target  :: State,
+    actions :: [Act]
     } deriving (Show)
 
 -- abstract abstract proposition type
@@ -30,10 +31,10 @@ type AP = Int
 --      TODO: AP is a set of atomic propositions
 --      TODO: L is a a labeling function, mapping states to sets of propositions (AP)
 data LTS = LTS {
-    getStates       :: [State],
-    getTransitions  :: [Transition],
-    getActions      :: [Act],
-    getInitStates   :: [State] 
+    getStates       :: Vector State,
+    getActions      :: Vector Act,
+    getTransitions  :: Vector Transition,
+    getInitStates   :: [Int] 
     -- TODO: [AP] 
     -- TODO: (Table [AP])
     } deriving (Show)
@@ -43,37 +44,38 @@ data LTS = LTS {
 -- LTS Algorithms
 -------------------------------------------------------------------------------
 
-neighbors :: [Transition] -> State -> [State]
-neighbors [] s = []
-neighbors ts' s =
-          let  t = head ts'
-               ts = tail ts'
+neighbors :: Vector Transition -> State -> [State]
+neighbors ts' s = 
+    if V.null ts' then []
+    else
+          let  t = V.head ts'
+               ts = V.tail ts'
           in
                if ((source t) == s)
                then (target t) : neighbors ts s
                else neighbors ts s
 
 -- Depth-first Search
-dfs ::  [Transition]    ->      -- graph edges
-        [State]         ->      -- visited states
-        State           ->      -- target node
-        State           ->      -- source node
-        [State]                 -- returns the path from source to target
+dfs ::  Vector Transition    ->      -- graph edges
+        [State]              ->      -- visited states
+        State                ->      -- target node
+        State                ->      -- source node
+        [State]                      -- returns the path from source to target
         
 dfs edges visited target src =
-    let visited' = visited ++ [src]
+    let visited' = visited L.++ [src]
     in  if (target == src) then visited'
         else let ns = (neighbors edges src) \\ visited'
-             in head (map (\n -> let r = (dfs edges visited' target n)
-                                 in  if (null r) then [] else (src : r)) ns)
+             in L.head (L.map (\n -> let r = (dfs edges visited' target n)
+                                 in  if (L.null r) then [] else (src : r)) ns)
     
 -- reachability
 isReachable ::  LTS     ->  -- input LTS 
                 State  ->   -- state to check if reachable 
                 Bool        -- returns True iff input state is reachable
                 
-isReachable lts s = any (not. null) paths
-    where   paths       = map (dfs transitions [] s) initStates
+isReachable lts s = L.any (not. L.null) paths
+    where   paths       = L.map (dfs transitions [] s) initStates
             transitions = getTransitions lts
             initStates  = getInitStates lts
            
@@ -87,8 +89,8 @@ witnessPath lts s =
     let states      = getStates lts
         transitions = getTransitions lts
         initStates  = getInitStates lts
-        paths       = map (dfs transitions [] s) initStates
-        nonEmptyPaths = filter (not . null) paths in 
+        paths       = L.map (dfs transitions [] s) initStates
+        nonEmptyPaths = L.filter (not . L.null) paths in 
             case nonEmptyPaths of
                 [] -> []
                 (x:xs) -> x
