@@ -7,17 +7,20 @@ module LiftedLTS where
 import LTS
 import Data.List
 import Data.Tree
-import Variability
+import Control.Applicative
+import SPL
 
--- lifted State type
-type StateLifted = Lifted State
+type Transition' s g a= Var (Transition s g a)
 
--- lifted Transition type
-type TransitionLifted = Lifted Transition
+consTransition' :: Eq s => Var (s -> s -> [g] -> [a] -> Transition s g a)
+consTransition' = pure Transition
 
--- lifted Act type
-type ActLifted = Lifted Act
+type LTS' s g a = Var (LTS s g a)
 
+neighbors' :: Eq s => Var ([Transition s g a] -> s -> [s])
+neighbors' = pure neighbors
+
+{-
 -- lifted Transition constructor
 consTransitionLifted :: PresenceCondition -> StateLifted -> StateLifted -> ActLifted -> TransitionLifted
 consTransitionLifted pc s0 s1 a = apply3 (lift pc Transition) s0 s1 a
@@ -44,7 +47,7 @@ neighborsLifted ts' s =
                (neighborsLifted ts s)
 
 -- lifted Depth-first Search
-{-
+
 dfsLifted ::  [TransitionLifted]    ->      -- graph edges
              Lifted [StateLifted]  ->      -- visited states
              StateLifted           ->      -- target node

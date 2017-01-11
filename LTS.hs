@@ -7,15 +7,6 @@
 
 module LTS where
 import Data.List
---import Data.Vector as V
-
--- abstract State type
---type State = Int
-
--- abstract Action type
---type Act = Int
-
---type Guard = Int
 
 -- abstract Transition type
 data Transition s g a = Eq s => Transition {
