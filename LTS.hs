@@ -8,12 +8,16 @@
 module LTS where
 import Data.List
 
+type State = String
+type Guard = String
+type Action = String
+
 -- abstract Transition type
-data Transition s g a = Eq s => Transition {
-    source  :: s,
-    target  :: s,
-    guardBy :: [g],
-    act     :: [a]
+data Transition = Transition {
+    source  :: State,
+    target  :: State,
+    guardBy :: [Guard],
+    act     :: [Action]
     } --deriving (Show)
 
 -- abstract abstract proposition type
@@ -26,12 +30,12 @@ data Transition s g a = Eq s => Transition {
 --      I is the set of initial states (subset of S)
 --      TODO: AP is a set of atomic propositions
 --      TODO: L is a a labeling function, mapping states to sets of propositions (AP)
-data LTS s g a = Eq s => LTS {
-    getStates       :: [s],
-    getGuards       :: [g],
-    getActions      :: [a],
-    getTransitions  :: [Transition s a g],
-    getInitStates   :: [s] 
+data LTS = LTS {
+    getStates       :: [State],
+    getGuards       :: [Guard],
+    getActions      :: [Action],
+    getTransitions  :: [Transition],
+    getInitStates   :: [State] 
     -- TODO: [AP] 
     -- TODO: (Table [AP])
     } --deriving (Show)
@@ -41,7 +45,7 @@ data LTS s g a = Eq s => LTS {
 -- LTS Algorithms
 -------------------------------------------------------------------------------
 
-neighbors :: Eq s => [Transition s g a] -> s -> [s]
+neighbors :: [Transition] -> State -> [State]
 neighbors ts' s = 
     if null ts' then []
     else
@@ -53,12 +57,11 @@ neighbors ts' s =
                else neighbors ts s
 
 -- Depth-first Search
-dfs ::  Eq s =>
-        [Transition s g a]  ->      -- graph edges
-        [s]                 ->      -- visited states
-        s                   ->      -- target node
-        s                   ->      -- source node
-        [s]                         -- returns the path from source to target
+dfs ::  [Transition]        ->      -- graph edges
+        [State]             ->      -- visited states
+        State               ->      -- target node
+        State               ->      -- source node
+        [State]                     -- returns the path from source to target
         
 dfs edges visited target src =
     let visited' = visited ++ [src]
@@ -69,10 +72,9 @@ dfs edges visited target src =
              in head r'
     
 -- reachability
-isReachable ::  Eq s =>
-                LTS s g a   ->  -- input LTS 
-                s           ->  -- state to check if reachable 
-                Bool            -- returns True iff input state is reachable
+isReachable ::  LTS    ->  -- input LTS 
+                State  ->  -- state to check if reachable 
+                Bool       -- returns True iff input state is reachable
                 
 isReachable lts s = any (not. null) paths
     where   paths       = map (dfs transitions [] s) initStates
@@ -81,10 +83,9 @@ isReachable lts s = any (not. null) paths
            
 
 -- reachability with witness path                       
-witnessPath ::  Eq s =>
-                LTS s g a   ->      -- input LTS
-                s           ->      -- state to find a witness path to
-                [s]                 -- returns a path or an empty list of none exist
+witnessPath ::  LTS   ->      -- input LTS
+                State ->      -- state to find a witness path to
+                [State]       -- returns a path or an empty list of none exist
                 
 witnessPath lts s = 
     let states      = getStates lts

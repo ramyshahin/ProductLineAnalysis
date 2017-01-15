@@ -10,57 +10,43 @@ import Data.Tree
 import Control.Applicative
 import SPL
 
-type Transition' s g a= Var (Transition s g a)
+type State' = Var State
+type Guard' = Var Guard
+type Action' = Var Action
 
-consTransition' :: Eq s => Var (s -> s -> [g] -> [a] -> Transition s g a)
-consTransition' = pure Transition
+-- abstract Transition type
+--data Transition = Transition {
+--    source   :: State',
+--    target   :: State',
+--    guardBy  :: [Guard'],
+--    act      :: [Action']
+--    } --deriving (Show)
 
-type LTS' s g a = Var (LTS s g a)
+source' = liftA source
+target' = liftA target
 
-neighbors' :: Eq s => Var ([Transition s g a] -> s -> [s])
-neighbors' = pure neighbors
+type Transition' = Var Transition
 
-{-
--- lifted Transition constructor
-consTransitionLifted :: PresenceCondition -> StateLifted -> StateLifted -> ActLifted -> TransitionLifted
-consTransitionLifted pc s0 s1 a = apply3 (lift pc Transition) s0 s1 a
+--data LTS = LTS {
+--    getStates'       :: [State'],
+--    getGuards'       :: [Guard'],
+--    getActions'      :: [Action'],
+--    getTransitions'  :: [Transition'],
+--    getInitStates'   :: [State'] 
+--    -- TODO: [AP] 
+--    -- TODO: (Table [AP])
+--    } --deriving (Show)
 
--- lifted Transition accessors
-sourceLifted :: TransitionLifted -> StateLifted
-sourceLifted = apply (lift True LTS.source)
+type LTS' = Var LTS
 
-targetLifted :: TransitionLifted -> StateLifted
-targetLifted = apply (lift True LTS.target)
-
-actionLifted :: TransitionLifted -> ActLifted
-actionLifted = apply (lift True LTS.action)
-
--- lifted neighbors
-neighborsLifted :: Lifted [Transition] -> StateLifted -> Lifted [State] 
-neighborsLifted [([],_)] s = liftT []
-neighborsLifted ts' s =
-          let  t = headLifted ts'
-               ts = tailLifted ts'
+neighbors' :: Var [Transition'] -> State' -> Var [State']
+neighbors' ts' s = 
+    cond' (null' ts') e
+    (
+          let  t = head' ts'
+               ts = tail' ts'
           in
-               condLifted (apply2 (liftT (==)) (sourceLifted t) s)
-               (consLifted (targetLifted t) (neighborsLifted ts s))
-               (neighborsLifted ts s)
-
--- lifted Depth-first Search
-
-dfsLifted ::  [TransitionLifted]    ->      -- graph edges
-             Lifted [StateLifted]  ->      -- visited states
-             StateLifted           ->      -- target node
-             StateLifted           ->      -- source node
-             Lifted [StateLifted]          -- returns the path from source to target
-        
-dfsLifted edges visited target src =
-    let visited' = apply2 (lift True (++)) visited (lift True [src])
-    in  condLifted (apply2 (lift True (==)) target src) visited'
-        (let ns = (apply2 (lift True (\\)) (neighborsLifted edges src) visited')
-             in headLifted (map (\n -> let r = (dfsLifted edges visited' target n)
-                                       in  condLifted (apply (lift True null) r)
-                                                      [([],True)]
-                                                      (consLifted src r))
-                            ns))
--}
+               cond' ((source' t) |==| s)
+                     ((target' t) |:| neighbors' ts s)
+                     (neighbors' ts s)
+    )

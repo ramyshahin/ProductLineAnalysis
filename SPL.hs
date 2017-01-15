@@ -39,13 +39,19 @@ type Val a = (a, PresenceCondition)
 data Var' t = Var' (IO [(Val t)])
 
 type family Var t where
-    Var ((t :: * -> * -> * -> *) (s1 :: *) (s2 :: *) (s3 :: *))      = Var' (t (Var' s1) (Var' s2) (Var' s3))
-    Var ((t :: * -> * -> *) (s1 :: *) (s2 :: *))      = Var' (t (Var' s1) (Var' s2))
-    Var ((t :: * -> *) (s :: *))      = Var' (t (Var' s))
+--    Var ((t :: * -> * -> * -> *) (s1 :: *) (s2 :: *) (s3 :: *))      = Var' (t (Var' s1) (Var' s2) (Var' s3))
+--    Var ((t :: * -> * -> *) (s1 :: *) (s2 :: *))      = Var' (t (Var' s1) (Var' s2))
+--    Var ((t :: * -> *) (s :: *))      = Var' (t (Var' s))
     Var (t :: *)                      = Var' t
 
-mkVar :: [(Val t)] -> Var' t
-mkVar vs = Var' (return vs)
+mkVar :: t -> PresenceCondition -> Var' t
+mkVar v pc = Var' (return [(v,pc)])
+
+mkVarT :: t -> Var' t
+mkVarT v = mkVar v T
+
+mkVars :: [(t,PresenceCondition)] -> Var' t
+mkVars vs = Var' (return vs)
 
 -- lift a value
 lift :: PresenceCondition -> t -> Var' t
@@ -68,21 +74,11 @@ liftT x = lift T x
                 
 -- apply a unary lifted function
 apply :: Var' (a -> b) -> Var' a -> Var' b
---apply fn x = (compute (filteredTriples  (triples fn x)))
---apply fn_ x_ = 
---    do
---        fn__ <- fn_
---        x__  <- x_
---        case fn__ of
---            Var fn -> case x__ of
---                        Var x -> 
---                            return (Var [(fn' x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = Conj[fnpc, xpc], SPL.sat c])
-
 apply (Var' fn_) (Var' x_) = 
     Var' (do
             fn <- fn_
             x  <- x_
-            ts <- filterM (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = Conj[fnpc, xpc]]
+            ts <- filterM (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = conj[fnpc, xpc]]
             return (map (\(fn, x, pc) -> ((fn x), pc)) ts)
         )
 
@@ -135,8 +131,8 @@ instance Applicative Var' where
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
-condLifted :: Var' Bool -> Var' a -> Var' a -> Var' a
-condLifted = liftA3 cond
+cond' :: Var' Bool -> Var' a -> Var' a -> Var' a
+cond' = liftA3 cond
 
 -- lifting higher-order functions
 mapLifted :: Var' (a -> b) -> Var' [a] -> Var' [b]
@@ -146,17 +142,10 @@ filterLifted :: Var' (a -> Bool) -> Var' [a] -> Var' [a]
 filterLifted = liftA2 filter
 
 -- lifted list
-consLifted :: Var' a -> Var' [a] -> Var' [a]
-consLifted  = liftA2 (:)
+
 
 --consListLifted :: PresenceCondition -> Lifted a -> ListLifted a -> ListLifted a
 --consListLifted pc x xs = consLifted x xs
-
-headLifted :: Var' [a] -> Var' a
-headLifted = liftA head
-
-tailLifted :: Var [Var' a] -> Var [Var' a]
-tailLifted = liftA tail
 
 --lift1 :: PresenceCondition -> (a -> b) -> (Lifted a -> Lifted b)
 --lift1 pc fn = (filter (\(v,pc') -> sat pc')) . map (\(v,pc') -> (fn v, (conj [pc, pc'])))
@@ -208,3 +197,29 @@ joinLU a b =
     
 --data VarOption a =
     
+-- Bool operation lifting
+(|==|) :: (Eq a) => Var a -> Var a -> Var Bool
+(|==|) = liftA2 (==)
+
+-- List lifting
+data List' t =
+    Empty'
+  | Cons' t (Var' (List' t))
+
+--e :: Var [a]
+--e = mkVarT []
+
+--(|:|) :: Var a -> Var [a] -> Var [a]
+(|:|) = Cons' --liftA2 (:)
+
+--mkVarList :: [Var t] -> Var [t]
+--mkVarList = foldr (|:|) e
+
+null' :: Foldable t => Var (t a) -> Var Bool
+null' = liftA null
+
+head' :: Var' [a] -> Var' a
+head' = liftA head
+
+tail' :: Var [Var' a] -> Var [Var' a]
+tail' = liftA tail
