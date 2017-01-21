@@ -15,6 +15,7 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.Trans(liftIO)
 import Data.List 
+import Data.Maybe
 
 type FeatureSet         = Universe
 type PresenceCondition  = Prop
@@ -22,7 +23,7 @@ type PresenceCondition  = Prop
 sat :: Prop -> Bool
 sat p = True
 
-type Val a = (a, PresenceCondition)
+type Val a = (Maybe a, PresenceCondition)
 
 --instance Eq SPLOption a where
 --    (==) a b = (getValue a == getValue b) && sat(getPresenceCondition a && getPresenceCondition b)
@@ -45,20 +46,22 @@ type family Var t where
     Var (t :: *)                      = Var' t
 
 mkVar :: t -> PresenceCondition -> Var' t
-mkVar v pc = Var' (return [(v,pc)])
+mkVar v pc = Var' (return [(Just v,pc), (Nothing, neg pc)])
 
 mkVarT :: t -> Var' t
 mkVarT v = mkVar v T
 
 mkVars :: [(t,PresenceCondition)] -> Var' t
-mkVars vs = Var' (return vs)
+mkVars vs = let nothingPC = (neg . disj) (map snd vs) 
+                vs'       = map (\(v,pc) -> (Just v, pc)) vs
+            in  Var' (return ((Nothing, nothingPC) : vs'))
 
 -- lift a value
-lift :: PresenceCondition -> t -> Var' t
-lift pc x = Var' (return [(x, pc)])
+--lift :: PresenceCondition -> t -> Var' t
+--lift pc x = Var' (return [(x, pc)])
 
-liftT :: t -> Var' t
-liftT x = lift T x
+--liftT :: t -> Var' t
+--liftT x = lift T x
 
 
 --triples :: IO (Var (a -> b)) -> IO (Var a) -> IO [(a -> b, a, PresenceCondition)]
@@ -79,7 +82,10 @@ apply (Var' fn_) (Var' x_) =
             fn <- fn_
             x  <- x_
             ts <- filterM (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = conj[fnpc, xpc]]
-            return (map (\(fn, x, pc) -> ((fn x), pc)) ts)
+            return (fmap (\(fn, x, pc) -> case (fn, x) of
+                                            (Just fn', Just x') -> (Just (fn' x'), pc)
+                                            (_, _)              -> (Nothing, pc)
+                   ) ts)
         )
 
 --Var (do
@@ -121,10 +127,10 @@ printVar (Var' v) =
         putStrLn . show $ v'
 
 instance Functor Var' where
-    fmap f = apply (liftT f)
+    fmap f = apply (mkVarT f)
 
 instance Applicative Var' where
-    pure  = liftT
+    pure  = mkVarT
     (<*>) = apply
 
 -- lifting conditional expression
@@ -201,6 +207,7 @@ joinLU a b =
 (|==|) :: (Eq a) => Var a -> Var a -> Var Bool
 (|==|) = liftA2 (==)
 
+{-
 -- List lifting
 data List' t =
     Empty'
@@ -223,3 +230,4 @@ head' = liftA head
 
 tail' :: Var [Var' a] -> Var [Var' a]
 tail' = liftA tail
+-}

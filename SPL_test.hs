@@ -15,18 +15,26 @@ s = Atom u 3
 
 pq = conj[p,q]
 p_q = conj[p, neg q]
+_pq = conj[neg p, q]
+_p_q = conj[neg p, neg q]
 _p = neg p
 
+w :: Var Int
+w = mkVars [(12, pq), (2, p_q), (3, _p_q)]
+
 x :: Var Int
-x = mkVars [(3, pq), (-6, p_q), (-2, _p)]
+x = mkVars [(7, pq), (-3, p_q), (-8, _pq), (0, _p_q)]
 
 y :: Var Int
-y = mkVars [(-7, pq), (2, p_q), (-1, _p)]
+y = mkVars [(-11, _p)]
 
-xAbs = apply (liftT abs) x
-yAbs = apply (liftT abs) y
+z :: Var Int
+z = mkVars [(6, q)]
 
-x_plus_y0 = apply (apply (liftT (+)) x) y
+xAbs = apply (pure abs) x
+yAbs = apply (pure abs) y
+
+x_plus_y0 = apply (apply (pure (+)) x) y
 x_plus_y1 = (pure (+)) <*> x <*> y
 x_plus_y2 = (liftA2 (+)) x y
 
@@ -36,5 +44,7 @@ a = mkVarT 0
 l :: Var [Int]
 l = mkVarT []
 
+(|:|) :: Var t -> Var [t] -> Var [t]
+(|:|) = (liftA2 (:))
 --m :: Var [String]
 --m = mkVar [("", T)]

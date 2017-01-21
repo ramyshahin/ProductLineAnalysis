@@ -37,7 +37,7 @@ disj'' [] = F
 disj'' [p] = p
 disj'' ps = Disj' ps
 disj' ps = if (any (\p -> p == T) ps) then T else disj'' ps
-disj ps =  conj' (filter (\p -> p /= F) ((map head . group . sort) ps)) 
+disj ps =  disj' (filter (\p -> p /= F) ((map head . group . sort) ps)) 
 
 {-
 impl F p = T
