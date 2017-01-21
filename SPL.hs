@@ -37,24 +37,24 @@ type Val a = (Maybe a, PresenceCondition)
 -- to the same set of products). This does not affect correctness, but severely
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
-data Var' t = Var' (IO [(Val t)])
+data Var t = Var [(Val t)]
 
-type family Var t where
+--type family Var t where
 --    Var ((t :: * -> * -> * -> *) (s1 :: *) (s2 :: *) (s3 :: *))      = Var' (t (Var' s1) (Var' s2) (Var' s3))
 --    Var ((t :: * -> * -> *) (s1 :: *) (s2 :: *))      = Var' (t (Var' s1) (Var' s2))
 --    Var ((t :: * -> *) (s :: *))      = Var' (t (Var' s))
-    Var (t :: *)                      = Var' t
+--    Var (t :: *)                      = Var' t
 
-mkVar :: t -> PresenceCondition -> Var' t
-mkVar v pc = Var' (return [(Just v,pc), (Nothing, neg pc)])
+mkVar :: t -> PresenceCondition -> Var t
+mkVar v pc = Var [(Just v,pc), (Nothing, neg pc)]
 
-mkVarT :: t -> Var' t
+mkVarT :: t -> Var t
 mkVarT v = mkVar v T
 
-mkVars :: [(t,PresenceCondition)] -> Var' t
+mkVars :: [(t,PresenceCondition)] -> Var t
 mkVars vs = let nothingPC = (neg . disj) (map snd vs) 
                 vs'       = map (\(v,pc) -> (Just v, pc)) vs
-            in  Var' (return ((Nothing, nothingPC) : vs'))
+            in  Var ((Nothing, nothingPC) : vs')
 
 -- lift a value
 --lift :: PresenceCondition -> t -> Var' t
@@ -76,17 +76,13 @@ mkVars vs = let nothingPC = (neg . disj) (map snd vs)
 --                return (Var (map (\(fn, x, pc) -> ((fn x), pc)) ts'))
                 
 -- apply a unary lifted function
-apply :: Var' (a -> b) -> Var' a -> Var' b
-apply (Var' fn_) (Var' x_) = 
-    Var' (do
-            fn <- fn_
-            x  <- x_
-            ts <- filterM (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = conj[fnpc, xpc]]
-            return (fmap (\(fn, x, pc) -> case (fn, x) of
+apply :: Var (a -> b) -> Var a -> Var b
+apply (Var fn) (Var x) = 
+    let ts = filter (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = conj[fnpc, xpc]]
+    in  Var (fmap (\(fn, x, pc) -> case (fn, x) of
                                             (Just fn', Just x') -> (Just (fn' x'), pc)
                                             (_, _)              -> (Nothing, pc)
                    ) ts)
-        )
 
 --Var (do
 --                                (fnVal,fnPC) <- fn
@@ -120,16 +116,13 @@ apply (Var' fn_) (Var' x_) =
 --applyFn :: (a -> Var b) -> Var a -> Var b
 --applyFn fn (V x) = (map (\(x', pc) -> ((fn x'), pc)) x)
 
-printVar :: Show a => Var' a -> IO ()
-printVar (Var' v) = 
-    do
-        v' <- v
-        putStrLn . show $ v'
+instance Show a => Show (Var a) where
+    show (Var v) = "{" ++ (foldr (++) "" (map show v)) ++ "}" 
 
-instance Functor Var' where
+instance Functor Var where
     fmap f = apply (mkVarT f)
 
-instance Applicative Var' where
+instance Applicative Var where
     pure  = mkVarT
     (<*>) = apply
 
@@ -137,14 +130,14 @@ instance Applicative Var' where
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
-cond' :: Var' Bool -> Var' a -> Var' a -> Var' a
+cond' :: Var Bool -> Var a -> Var a -> Var a
 cond' = liftA3 cond
 
 -- lifting higher-order functions
-mapLifted :: Var' (a -> b) -> Var' [a] -> Var' [b]
+mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
 mapLifted = liftA2 map
 
-filterLifted :: Var' (a -> Bool) -> Var' [a] -> Var' [a]
+filterLifted :: Var (a -> Bool) -> Var [a] -> Var [a]
 filterLifted = liftA2 filter
 
 -- lifted list

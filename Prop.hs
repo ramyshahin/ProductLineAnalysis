@@ -6,6 +6,7 @@ module Prop where
 import Z3.Monad
 import Data.Vector as V(Vector, (!), fromList, empty, length)
 import Data.List
+import System.IO.Unsafe
 
 type Universe = Vector String
 
@@ -39,7 +40,6 @@ disj'' ps = Disj' ps
 disj' ps = if (any (\p -> p == T) ps) then T else disj'' ps
 disj ps =  disj' (filter (\p -> p /= F) ((map head . group . sort) ps)) 
 
-{-
 impl F p = T
 impl p T = T
 impl p q = Impl' p q
@@ -49,7 +49,6 @@ iff p T = p
 iff F p = neg p
 iff p F = neg p
 iff p q = Iff' p q
--}
 
 showPropList :: [Prop] -> String
 showPropList ps = 
@@ -67,8 +66,8 @@ instance Show Prop where
             Not' p       -> "Not(" ++ show p ++ ")"
             Conj' ps     -> "And(" ++ showPropList ps ++ ")"
             Disj' ps     -> "Or("  ++ showPropList ps ++ ")"
-            --Impl' p1 p2  -> "(" ++ show p1 ++ " => " ++ show p2 ++ ")"
-            --Iff'  p1 p2  -> "(" ++ show p1 ++ " <=> " ++ show p2 ++ ")"
+            Impl' p1 p2  -> "(" ++ show p1 ++ " => " ++ show p2 ++ ")"
+            Iff'  p1 p2  -> "(" ++ show p1 ++ " <=> " ++ show p2 ++ ")"
 
 instance Ord Prop where
     compare T p = case p of
@@ -120,8 +119,8 @@ getUniverse p =
         Not' p' -> getUniverse p'
         Conj' ps -> foldr (maxUniverse . getUniverse) empty ps
         Disj' ps -> foldr (maxUniverse . getUniverse) empty ps
-        --Impl' p1 p2 -> maxUniverse (getUniverse p1) (getUniverse p2)
-        --Iff'  p1 p2 -> maxUniverse (getUniverse p1) (getUniverse p2)
+        Impl' p1 p2 -> maxUniverse (getUniverse p1) (getUniverse p2)
+        Iff'  p1 p2 -> maxUniverse (getUniverse p1) (getUniverse p2)
 
 mkZ3Formula :: Vector AST -> Prop -> Z3 AST
 mkZ3Formula atoms p =
@@ -132,7 +131,6 @@ mkZ3Formula atoms p =
         Not' p'      -> mkNot =<< (mkZ3Formula atoms p')
         Conj' ps     -> mkAnd =<< (mapM (mkZ3Formula atoms) ps)
         Disj' ps     -> mkOr  =<< (mapM (mkZ3Formula atoms) ps)
-        {-
         Impl' p1 p2  -> do
                         p1' <- mkZ3Formula atoms p1
                         p2' <- mkZ3Formula atoms p2
@@ -140,7 +138,7 @@ mkZ3Formula atoms p =
         Iff' p1 p2   -> do
                         p1' <- mkZ3Formula atoms p1
                         p2' <- mkZ3Formula atoms p2
-                        mkIff p1' p2'-}
+                        mkIff p1' p2'
 
 mkZ3Script :: Universe -> Prop -> Z3 Result
 mkZ3Script u p = do
@@ -148,11 +146,11 @@ mkZ3Script u p = do
     assert =<< (mkZ3Formula atoms p)
     check
     
-checkSAT :: Prop -> IO Result
-checkSAT p = evalZ3 (mkZ3Script (getUniverse p) p)
+checkSAT :: Prop -> Result
+checkSAT p = unsafePerformIO (evalZ3 (mkZ3Script (getUniverse p) p))
 
-sat :: Prop -> IO Bool
-sat p = (return . ((==) Sat)) =<< checkSAT p
+sat :: Prop -> Bool
+sat p = (checkSAT p) == Sat
 
-unsat :: Prop -> IO Bool
-unsat p = (return . ((==) Unsat)) =<< checkSAT p
+unsat :: Prop -> Bool
+unsat p = (checkSAT p) == Unsat
