@@ -117,7 +117,7 @@ apply (Var fn) (Var x) =
 --applyFn fn (V x) = (map (\(x', pc) -> ((fn x'), pc)) x)
 
 instance Show a => Show (Var a) where
-    show (Var v) = "{" ++ (foldr (++) "" (map show v)) ++ "}" 
+    show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "}" 
 
 instance Functor Var where
     fmap f = apply (mkVarT f)
@@ -193,7 +193,28 @@ joinLU a b =
 --get :: SPLContext -> SPLOption a -> Maybe a
 --get cntxt v = case v of
 --    SPLOption val pc -> if sat (cntxt && pc) then Just val else Nothing
-    
+
+liftA4 :: Applicative f => (a -> b -> c -> d -> e) -> f a -> f b -> f c -> f d -> f e
+liftA4 f a b c d = fmap f a <*> b <*> c <*> d
+
+liftA5 :: Applicative f => (a -> b -> c -> d -> e -> g) -> f a -> f b -> f c -> f d -> f e -> f g
+liftA5 f a b c d e = fmap f a <*> b <*> c <*> d <*> e
+
+liftV :: (a -> b) -> Var a -> Var b
+liftV = liftA
+
+liftV2 :: (a -> b -> c) -> Var a -> Var b -> Var c
+liftV2 = liftA2
+
+liftV3 :: (a -> b -> c -> d) -> Var a -> Var b -> Var c -> Var d
+liftV3 = liftA3
+
+liftV4 :: (a -> b -> c -> d -> e) -> Var a -> Var b -> Var c -> Var d -> Var e
+liftV4 = liftA4
+
+liftV5 :: (a -> b -> c -> d -> e -> f) -> Var a -> Var b -> Var c -> Var d -> Var e -> Var f
+liftV5 = liftA5
+
 --data VarOption a =
     
 -- Bool operation lifting
@@ -205,22 +226,27 @@ joinLU a b =
 data List' t =
     Empty'
   | Cons' t (Var' (List' t))
+-}
+e :: Var [a]
+e = mkVarT []
 
---e :: Var [a]
---e = mkVarT []
+(|:|) :: Var a -> Var [a] -> Var [a]
+(|:|) (Var v) (Var vs) = --liftA2 (:)
+    let ts = filter (\(_, _, pc) -> Prop.sat pc) [(v', vs', c) | (v', vpc) <- v, (vs', vspc) <- vs, let c = conj[vpc, vspc]]
+    in  Var (map (\(v', vs', pc) -> case (v', vs') of
+                                            (Just v'', Just vs'') -> (Just (v'' : vs''), pc)
+                                            (Nothing, Just vs'')  -> (Just vs'', pc)
+                                            (_, _)                -> (Nothing, pc)
+                   ) ts)
 
---(|:|) :: Var a -> Var [a] -> Var [a]
-(|:|) = Cons' --liftA2 (:)
-
---mkVarList :: [Var t] -> Var [t]
---mkVarList = foldr (|:|) e
+mkVarList :: [Var t] -> Var [t]
+mkVarList = foldr (|:|) e
 
 null' :: Foldable t => Var (t a) -> Var Bool
 null' = liftA null
 
-head' :: Var' [a] -> Var' a
+head' :: Var [a] -> Var a
 head' = liftA head
 
-tail' :: Var [Var' a] -> Var [Var' a]
+tail' :: Var [a] -> Var [a]
 tail' = liftA tail
--}

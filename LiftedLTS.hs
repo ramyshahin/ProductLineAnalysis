@@ -22,10 +22,13 @@ type Action' = Var Action
 --    act      :: [Action']
 --    } --deriving (Show)
 
-source' = liftA source
-target' = liftA target
-
 type Transition' = Var Transition
+
+mkTransition = liftV4 Transition
+source' = liftV source
+target' = liftV target
+guardBy' = liftV guardBy
+act' = liftV act
 
 --data LTS = LTS {
 --    getStates'       :: [State'],
@@ -39,7 +42,9 @@ type Transition' = Var Transition
 
 type LTS' = Var LTS
 
-neighbors' :: Var [Transition'] -> State' -> Var [State']
+mkLTS = liftV5 LTS
+
+neighbors' :: Var [Transition] -> State' -> Var [State]
 neighbors' ts' s = 
     cond' (null' ts') e
     (

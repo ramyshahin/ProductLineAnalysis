@@ -18,7 +18,7 @@ data Transition = Transition {
     target  :: State,
     guardBy :: [Guard],
     act     :: [Action]
-    } --deriving (Show)
+    } deriving (Show)
 
 -- abstract abstract proposition type
 --type AP = Int
@@ -38,7 +38,7 @@ data LTS = LTS {
     getInitStates   :: [State] 
     -- TODO: [AP] 
     -- TODO: (Table [AP])
-    } --deriving (Show)
+    } deriving (Show)
 
  
 -------------------------------------------------------------------------------

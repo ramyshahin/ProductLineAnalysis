@@ -1,3 +1,4 @@
+import LTS
 import LiftedLTS
 import Prop
 import SPL
@@ -22,8 +23,8 @@ drying      = mkVar "drying" dry
 unlocking   = mkVar "unlocking" T
 finish      = mkVar "finish" T
 
-states :: [State']
-states = [start, locking, waiting, washing, drying, unlocking, finish]
+states :: Var [State]
+states = mkVarList [start, locking, waiting, washing, drying, unlocking, finish]
 
 heaterOn, heaterOff, washStart, tempCheck, setDelay, quickCool :: Action'
 heaterOn    = mkVar "heaterOn" heat
@@ -33,33 +34,34 @@ tempCheck   = mkVar "tempCheck" T
 setDelay    = mkVar "setDelay" delay
 quickCool   = mkVar "quickCool" T
 
-actions :: [Action']
-actions =  [heaterOn, heaterOff, washStart, tempCheck, setDelay, quickCool]
+actions :: Var [Action]
+actions =  mkVarList [heaterOn, heaterOff, washStart, tempCheck, setDelay, quickCool]
 
 heatEnabled, delayEnabled :: Guard'
 heatEnabled = mkVar "heatEnabled" heat
 delayEnabled = mkVar "delayEnabled" delay
 
-guards :: [Guard']
-guards = [heatEnabled, delayEnabled]
+guards :: Var [Guard]
+guards = mkVarList [heatEnabled, delayEnabled]
 
 start2locking, locking2waiting :: Transition'
 
---                                           from         to       guards        actions
-start2locking       = mkVar (Transition     start        locking  []               [])  T
-locking2waiting     = mkVar (Transition     locking      waiting  [heatEnabled]    [heaterOn]) (disj[heat, delay])
-waiting2washing     = mkVar (Transition     waiting      washing  []               [heaterOff, washStart]) (disj[heat, delay])
-washing2unlocking   = mkVar (Transition     washing      unlocking []              [quickCool]) (neg dry)
-washing2drying      = mkVar (Transition     washing      drying       []                []) dry
-drying2unlocking    = mkVar (Transition     drying       unlocking    []           [quickCool]) dry
-unlocking2finish    = mkVar (Transition     unlocking    finish       []                []) T
+--                                     from         to       guards        actions
+start2locking       = mkTransition     start        locking  e               e -- T
+locking2waiting     = mkTransition     locking      waiting  (mkVarList [heatEnabled])    (mkVarList [heaterOn]) -- (disj[heat, delay])
+waiting2washing     = mkTransition     waiting      washing  e               (mkVarList [heaterOff, washStart]) -- (disj[heat, delay])
+washing2unlocking   = mkTransition     washing      unlocking e              (mkVarList [quickCool]) -- (neg dry)
+washing2drying      = mkTransition     washing      drying       e                e -- dry
+drying2unlocking    = mkTransition     drying       unlocking    e           (mkVarList [quickCool]) -- dry
+unlocking2finish    = mkTransition     unlocking    finish       e                e -- T
 
-transitions :: [Transition']
+transitions :: Var [Transition]
 
-transitions =  [start2locking, locking2waiting, waiting2washing, washing2unlocking, washing2drying, drying2unlocking, unlocking2finish]
+transitions =  mkVarList [start2locking, locking2waiting, waiting2washing, washing2unlocking, washing2drying, drying2unlocking, unlocking2finish]
 
 washingMachine :: LTS'
-washingMachine = mkVar (LTS  states  guards  actions  transitions  [start]) T
+washingMachine = mkLTS  states  guards  actions  transitions  (mkVarList [start]) --T
+
 {-
 -- neighborsTests
 neighborsStart      = TestCase (assertEqual "neighborsStart"        (neighbors'  transitions  start)       [locking])
