@@ -7,6 +7,7 @@
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE InstanceSigs #-}
 
 module SPL where
 
@@ -56,6 +57,14 @@ mkVars vs = let nothingPC = (neg . disj) (map snd vs)
                 vs'       = map (\(v,pc) -> (Just v, pc)) vs
             in  Var ((Nothing, nothingPC) : vs')
 
+compact :: (Eq t) => Var t -> Var t
+compact (Var v) = 
+    let gs = groupBy (\(v1, _) (v2, _) -> (v1 == v2)) v
+    in  Var (map (\g -> let (vs, pcs) = unzip g
+                        in  (head vs, disj pcs)) 
+
+            gs)
+
 -- lift a value
 --lift :: PresenceCondition -> t -> Var' t
 --lift pc x = Var' (return [(x, pc)])
@@ -76,13 +85,21 @@ mkVars vs = let nothingPC = (neg . disj) (map snd vs)
 --                return (Var (map (\(fn, x, pc) -> ((fn x), pc)) ts'))
                 
 -- apply a unary lifted function
+--apply :: Var (a -> b) -> Var a -> Var b
+--apply (Var fn) (Var x) = 
+--    let ts = filter (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = conj[fnpc, xpc]]
+--    in  Var (fmap (\(fn, x, pc) -> case (fn, x) of
+--                                            (Just fn', Just x') -> (Just (fn' x'), pc)
+--                                            (_, _)              -> (Nothing, pc)
+--                   ) ts)
+
 apply :: Var (a -> b) -> Var a -> Var b
 apply (Var fn) (Var x) = 
     let ts = filter (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = conj[fnpc, xpc]]
     in  Var (fmap (\(fn, x, pc) -> case (fn, x) of
                                             (Just fn', Just x') -> (Just (fn' x'), pc)
                                             (_, _)              -> (Nothing, pc)
-                   ) ts)
+    ) ts)
 
 --Var (do
 --                                (fnVal,fnPC) <- fn
@@ -120,6 +137,7 @@ instance Show a => Show (Var a) where
     show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "}" 
 
 instance Functor Var where
+    fmap :: (a -> b) -> Var a -> Var b
     fmap f = apply (mkVarT f)
 
 instance Applicative Var where
@@ -215,11 +233,17 @@ liftV4 = liftA4
 liftV5 :: (a -> b -> c -> d -> e -> f) -> Var a -> Var b -> Var c -> Var d -> Var e -> Var f
 liftV5 = liftA5
 
+cliftV  f a = compact $ (liftV f) a
+cliftV2 f a b = compact $ (liftV2 f) a b
+cliftV3 f a b c = compact $ (liftV3 f) a b c
+cliftV4 f a b c d = compact $ (liftV4 f) a b c d
+cliftV5 f a b c d e = compact $ (liftV5 f) a b c d e
+
 --data VarOption a =
     
 -- Bool operation lifting
 (|==|) :: (Eq a) => Var a -> Var a -> Var Bool
-(|==|) = liftA2 (==)
+(|==|) = cliftV2 (==)
 
 {-
 -- List lifting
@@ -243,10 +267,10 @@ mkVarList :: [Var t] -> Var [t]
 mkVarList = foldr (|:|) e
 
 null' :: Foldable t => Var (t a) -> Var Bool
-null' = liftA null
+null' = cliftV null
 
-head' :: Var [a] -> Var a
-head' = liftA head
+head' :: Eq a => Var [a] -> Var a
+head' = cliftV head
 
-tail' :: Var [a] -> Var [a]
-tail' = liftA tail
+tail' :: Eq a => Var [a] -> Var [a]
+tail' = cliftV tail

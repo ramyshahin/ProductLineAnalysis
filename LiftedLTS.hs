@@ -24,11 +24,11 @@ type Action' = Var Action
 
 type Transition' = Var Transition
 
-mkTransition = liftV4 Transition
-source' = liftV source
-target' = liftV target
-guardBy' = liftV guardBy
-act' = liftV act
+mkTransition = cliftV4 Transition
+source' = cliftV source
+target' = cliftV target
+guardBy' = cliftV guardBy
+act' = cliftV act
 
 --data LTS = LTS {
 --    getStates'       :: [State'],
@@ -42,7 +42,17 @@ act' = liftV act
 
 type LTS' = Var LTS
 
-mkLTS = liftV5 LTS
+mkLTS = cliftV5 LTS
+
+--neighbors ts' s = 
+--    if null ts' then []
+--    else
+--          let  t = head ts'
+--               ts = tail ts'
+--          in
+--               if ((source t) == s)
+--               then (target t) : neighbors ts s
+--               else neighbors ts s
 
 neighbors' :: Var [Transition] -> State' -> Var [State]
 neighbors' ts' s = 
