@@ -24,31 +24,42 @@ data Prop =
   | Iff'  Prop Prop
   deriving Eq
 
-neg T = F
-neg F = T
-neg p = Not' p
+simplify :: Prop -> Prop
+simplify p =
+    case p of
+        Not' p' -> 
+            case p' of
+                T -> F
+                F -> T
+                Not' p'' -> p'' 
+                _ -> p'
+        Conj' ps -> let ps'' = filter (\p -> p /= T) ps
+                        ps'  = nub $ foldr (++) [] (map (\p -> case p of
+                                                                  Conj' ps' -> ps'
+                                                                  _ -> [p]) ps'')
+                    in case ps' of
+                        [] -> T
+                        [p] -> p
+                        _ -> Conj' ps' 
+        Disj' ps -> let ps'' = filter (\p -> p /= F) ps
+                        ps'  = nub $ foldr (++) [] (map (\p -> case p of
+                                                                  Disj' ps' -> ps'
+                                                                  _ -> [p]) ps'')
+                    in case ps' of
+                        [] -> F
+                        [p] -> p
+                        _ -> Disj' ps'
+        _ -> p
 
-conj'' [] = T
-conj'' [p] = p
-conj'' ps  = Conj' ps
-conj' ps = if (any (\p -> p == F) ps) then F else conj'' ps
-conj  ps = conj' (filter (\p -> p /=T) ((map head . group . sort) ps))
+neg p = simplify (Not' p)
 
-disj'' [] = F
-disj'' [p] = p
-disj'' ps = Disj' ps
-disj' ps = if (any (\p -> p == T) ps) then T else disj'' ps
-disj ps =  disj' (filter (\p -> p /= F) ((map head . group . sort) ps)) 
+conj  ps = simplify(Conj' ps)
 
-impl F p = T
-impl p T = T
-impl p q = Impl' p q
+disj ps =  simplify(Disj' ps)
 
-iff T p = p
-iff p T = p
-iff F p = neg p
-iff p F = neg p
-iff p q = Iff' p q
+impl p q = simplify(Impl' p q)
+
+iff p q = simplify(Iff' p q)
 
 showPropList :: [Prop] -> String
 showPropList ps = 
