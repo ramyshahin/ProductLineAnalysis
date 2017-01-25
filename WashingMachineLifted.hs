@@ -1,9 +1,11 @@
+module WashingMachineLifted where
 import LTS
 import LiftedLTS
 import Prop
 import SPL
 import Test.HUnit (Test(..), assertEqual, runTestTT)
 import Control.Applicative
+import Debug.Hood.Observe
 
 -- Features
 f :: Universe

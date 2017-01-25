@@ -9,6 +9,7 @@ import Data.List
 import Data.Tree
 import Control.Applicative
 import SPL
+import Debug.Trace
 
 type State' = Var State
 type Guard' = Var Guard
@@ -54,14 +55,18 @@ mkLTS = cliftV5 LTS
 --               then (target t) : neighbors ts s
 --               else neighbors ts s
 
-neighbors' :: Var [Transition] -> State' -> Var [State]
-neighbors' ts' s = 
-    cond' (null' ts') e
-    (
-          let  t = head' ts'
-               ts = tail' ts'
-          in
-               cond' ((source' t) |==| s)
-                     ((target' t) |:| neighbors' ts s)
-                     (neighbors' ts s)
-    )
+len :: Var t -> Int
+len (Var v) = length v
+
+neighbors' :: Int -> Var [Transition] -> State' -> Var [State]
+neighbors' i ts' s = 
+    let hd = head' ts'
+        tl = tail' ts'
+        empty = null' ts'
+        src = source' hd
+        tgt = target' hd
+        fls = (
+                let ns = neighbors' (i+1) tl s
+                in cond' (src |==| s) (tgt |:| ns) ns
+                )
+    in cond' empty e fls

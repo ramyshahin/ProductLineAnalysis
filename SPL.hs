@@ -8,6 +8,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE BangPatterns #-}
 
 module SPL where
 
@@ -17,14 +18,13 @@ import Control.Monad
 import Control.Monad.Trans(liftIO)
 import Data.List 
 import Data.Maybe
+import Debug.Trace
+--import Data.Strict.Tuple
 
 type FeatureSet         = Universe
 type PresenceCondition  = Prop
 
-sat :: Prop -> Bool
-sat p = True
-
-type Val a = (Maybe a, PresenceCondition)
+type Val a = ((Maybe a), PresenceCondition)
 
 --instance Eq SPLOption a where
 --    (==) a b = (getValue a == getValue b) && sat(getPresenceCondition a && getPresenceCondition b)
@@ -62,7 +62,6 @@ compact (Var v) =
     let gs = groupBy (\(v1, _) (v2, _) -> (v1 == v2)) v
     in  Var (map (\g -> let (vs, pcs) = unzip g
                         in  (head vs, disj pcs)) 
-
             gs)
 
 -- lift a value
@@ -95,11 +94,16 @@ compact (Var v) =
 
 apply :: Var (a -> b) -> Var a -> Var b
 apply (Var fn) (Var x) = 
-    let ts = filter (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = conj[fnpc, xpc]]
-    in  Var (fmap (\(fn, x, pc) -> case (fn, x) of
-                                            (Just fn', Just x') -> (Just (fn' x'), pc)
-                                            (_, _)              -> (Nothing, pc)
-    ) ts)
+    Var [(if (sat c) then Just(fn' x') else Nothing, c)
+        | (Just fn', fnpc) <- fn,
+          (Just x', xpc) <- x,
+          let c= conj[fnpc, xpc]     
+        ]
+    --let ts = filter (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = conj[fnpc, xpc]]
+    --in  Var (fmap (\(fn, x, pc) -> case (fn, x) of
+    --                                        (Just fn', Just x') -> (Just (fn' x'), pc)
+    --                                        (_, _)              -> (Nothing, pc)
+    --) ts)
 
 --Var (do
 --                                (fnVal,fnPC) <- fn
@@ -144,12 +148,22 @@ instance Applicative Var where
     pure  = mkVarT
     (<*>) = apply
 
+valIndex :: Var t -> PresenceCondition -> [Val t]
+valIndex (Var v) pc =
+    filter (\(v',pc') -> sat (conj[pc, pc'])) v
+
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
 cond' :: Var Bool -> Var a -> Var a -> Var a
-cond' = liftA3 cond
+
+cond' (Var c) a b = 
+    let ts = filter (\(Just b, pc) -> b) c
+        fs = filter (\(Just b, pc) -> not b) c
+        tEls = foldr (++) [] $ map (\(_,pc) -> valIndex a pc) ts
+        fEls = foldr (++) [] $ map (\(_,pc) -> valIndex b pc) fs
+    in  Var (tEls ++ fEls)
 
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]

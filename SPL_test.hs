@@ -38,6 +38,14 @@ x_plus_y0 = apply (apply (pure (+)) x) y
 x_plus_y1 = (pure (+)) <*> x <*> y
 x_plus_y2 = (liftA2 (+)) x y
 
+safeDiv :: Int -> Int -> Int
+safeDiv a b = if b == 0 then 0 else (div a b)
+div' = cliftV2 div
+
+zero = (mkVarT 0)
+safeDiv' :: Var Int -> Var Int -> Var Int
+safeDiv' a b = cond' (b |==| zero) zero (div' a b) 
+
 a :: Var Int
 a = mkVarT 0
 
