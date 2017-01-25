@@ -32,7 +32,7 @@ simplify p =
                 T -> F
                 F -> T
                 Not' p'' -> p'' 
-                _ -> p'
+                _ -> Not' p'
         Conj' ps -> let ps'' = filter (\p -> p /= T) ps
                         ps'  = nub $ foldr (++) [] (map (\p -> case p of
                                                                   Conj' ps' -> ps'
