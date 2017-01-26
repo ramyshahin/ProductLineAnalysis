@@ -19,12 +19,12 @@ import Control.Monad.Trans(liftIO)
 import Data.List 
 import Data.Maybe
 import Debug.Trace
---import Data.Strict.Tuple
+import Control.Exception
 
 type FeatureSet         = Universe
 type PresenceCondition  = Prop
 
-type Val a = ((Maybe a), PresenceCondition)
+type Val a = (Maybe a, PresenceCondition)
 
 --instance Eq SPLOption a where
 --    (==) a b = (getValue a == getValue b) && sat(getPresenceCondition a && getPresenceCondition b)
@@ -64,78 +64,31 @@ compact (Var v) =
                         in  (head vs, disj pcs)) 
             gs)
 
--- lift a value
---lift :: PresenceCondition -> t -> Var' t
---lift pc x = Var' (return [(x, pc)])
+valIndex :: Var t -> PresenceCondition -> [Val t]
+valIndex (Var v) pc =
+    filter (\(_,pc') -> sat (conj[pc, pc'])) v
 
---liftT :: t -> Var' t
---liftT x = lift T x
+narrow :: Var t -> PresenceCondition -> [Val t]
+narrow v pc =
+    let xs = valIndex v pc
+    in  map (\(x',pc') -> (x', conj[pc,pc'])) xs
 
+pairs :: [t] -> [(t,t)]
+pairs [] = []
+pairs xs = zip xs (tail xs)
 
---triples :: IO (Var (a -> b)) -> IO (Var a) -> IO [(a -> b, a, PresenceCondition)]
---triples (Var fn) (Var x) = [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = Conj[fnpc, xpc]]
-
---filteredTriples :: [(a -> b, a, PresenceCondition)] -> IO [(a -> b, a, PresenceCondition)]
---filteredTriples = filterM (\(f, x, pc) -> Prop.sat pc)
-    
---compute :: IO [(a -> b, a, PresenceCondition)] -> IO (Var b)
---compute ts = do
---                ts' <- ts
---                return (Var (map (\(fn, x, pc) -> ((fn x), pc)) ts'))
-                
--- apply a unary lifted function
---apply :: Var (a -> b) -> Var a -> Var b
---apply (Var fn) (Var x) = 
---    let ts = filter (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = conj[fnpc, xpc]]
---    in  Var (fmap (\(fn, x, pc) -> case (fn, x) of
---                                            (Just fn', Just x') -> (Just (fn' x'), pc)
---                                            (_, _)              -> (Nothing, pc)
---                   ) ts)
+inv :: Show t => Var t -> Bool
+inv (Var v) = {-trace ("inv: " ++ (show (Var v))) $-} 
+    all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
 
 apply :: Var (a -> b) -> Var a -> Var b
+
 apply (Var fn) (Var x) = 
     Var [(if (sat c) then Just(fn' x') else Nothing, c)
         | (Just fn', fnpc) <- fn,
           (Just x', xpc) <- x,
           let c= conj[fnpc, xpc]     
         ]
-    --let ts = filter (\(f, x, pc) -> Prop.sat pc) [(fn', x', c) | (fn', fnpc) <- fn, (x', xpc) <- x, let c = conj[fnpc, xpc]]
-    --in  Var (fmap (\(fn, x, pc) -> case (fn, x) of
-    --                                        (Just fn', Just x') -> (Just (fn' x'), pc)
-    --                                        (_, _)              -> (Nothing, pc)
-    --) ts)
-
---Var (do
---                                (fnVal,fnPC) <- fn
---                                (xVal,xPC)   <- x
---                                let c = Conj[fnPC,xPC]
---                                b  <- liftIO  (sat c)
---                                [(fnVal xVal, c) | b]
---                             )    
-
--- apply a binary lifted function
---apply2 :: Var (a -> b -> c) -> Var a -> Var b -> Var c
---apply2 fn a = apply (apply fn a)
-
--- apply a ternary lifted function
---apply3 :: Var (a -> b -> c -> d) -> Var a -> Var b -> Var c -> Var d
---apply3 fn a b = apply (apply2 fn a b)
-
--- apply a 4-arity lifted function
---apply4 :: Var (a -> b -> c -> d -> e) -> Var a -> Var b -> Var c -> Var d -> Var e
---apply4 fn a b c = apply (apply3 fn a b c)
-
---instance Show a => Show (Var a) where
---    show (Var (IO v)) = mapM (concat $ map (\(x,pc) -> " (" ++ show x ++ ", " ++ show pc ++ ") ")) v
-
--------------------------------------
--- Variability Monad??
--------------------------------------
---liftFn :: PresenceCondition -> (a -> b) -> (a -> Var b)
---liftFn pc f = (lift pc) . f
-
---applyFn :: (a -> Var b) -> Var a -> Var b
---applyFn fn (V x) = (map (\(x', pc) -> ((fn x'), pc)) x)
 
 instance Show a => Show (Var a) where
     show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "}" 
@@ -148,22 +101,20 @@ instance Applicative Var where
     pure  = mkVarT
     (<*>) = apply
 
-valIndex :: Var t -> PresenceCondition -> [Val t]
-valIndex (Var v) pc =
-    filter (\(v',pc') -> sat (conj[pc, pc'])) v
-
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
-cond' :: Var Bool -> Var a -> Var a -> Var a
+cond' :: Show a => Var Bool -> Var a -> Var a -> Var a
 
 cond' (Var c) a b = 
     let ts = filter (\(Just b, pc) -> b) c
         fs = filter (\(Just b, pc) -> not b) c
-        tEls = foldr (++) [] $ map (\(_,pc) -> valIndex a pc) ts
-        fEls = foldr (++) [] $ map (\(_,pc) -> valIndex b pc) fs
-    in  Var (tEls ++ fEls)
+        tEls = foldr (++) [] $ map (\(_,pc) -> narrow a pc) ts
+        fEls = foldr (++) [] $ map (\(_,pc) -> narrow b pc) fs
+        res = Var (tEls ++ fEls)
+    in  res
+
 
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
@@ -171,60 +122,6 @@ mapLifted = liftA2 map
 
 filterLifted :: Var (a -> Bool) -> Var [a] -> Var [a]
 filterLifted = liftA2 filter
-
--- lifted list
-
-
---consListLifted :: PresenceCondition -> Lifted a -> ListLifted a -> ListLifted a
---consListLifted pc x xs = consLifted x xs
-
---lift1 :: PresenceCondition -> (a -> b) -> (Lifted a -> Lifted b)
---lift1 pc fn = (filter (\(v,pc') -> sat pc')) . map (\(v,pc') -> (fn v, (conj [pc, pc'])))
-
---lift2 :: PresenceCondition -> (a -> b -> c) -> (Lifted a -> Lifted b -> Lifted c)
---lift2 pc fn = {-(filter (\(v,pc') -> sat pc')) . foldr (++) [] . -} (map (\(v,pc') -> (lift1 pc (fn v))))
-
--- join (Lifted-Lifted) - join 2 lifted values
---join2 :: PresenceCondition -> Var a -> Var b -> Var (a,b)
---join2 pc a b = 
---    let xProduct = [((aVal, bVal), (conj [pc, aPC, bPC])) | (aVal, aPC) <- a, (bVal, bPC) <- b]
---    in  filter (\(_, pc) -> sat pc) xProduct
-    
---join3 :: PresenceCondition -> Var a -> Var b -> Var c -> Var (a,b,c)
---join3 pc a b c = 
---    let xProduct = [((aVal, bVal, cVal), (conj [pc, aPC, bPC, cPC])) | (aVal, aPC) <- a, (bVal, bPC) <- b, (cVal, cPC) <- c]
---    in  filter (\(_, pc) -> sat pc) xProduct
-
-{-
-apply2 :: PresenceCondition -> (a -> b -> c) -> Lifted a -> Lifted b -> Lifted c
-apply2 cntxt fn a b = [((fn x y), pc) | ((x,y), pc) <- (join2 cntxt a b)]
-
-apply3 :: PresenceCondition -> (a -> b -> c -> d) -> Lifted a -> Lifted b -> Lifted c -> Lifted d
-apply3 cntxt fn a b c = [((fn x y z), pc) | ((x,y,z), pc) <- (join3 cntxt a b c)]
--}
-
--- joinUL (Unlifted-Lifted) - join an unlifted value with a lifted value
-{- joinUL :: a -> Lifted b -> Lifted (a,b)
-joinUL a b =
-    let xProduct = [SPLOption (a, bVal) bPC | (SPLOption bVal bPC) <- b]
-    in  filter (\(SPLOption _ pc) -> sat pc) xProduct -}
-    
--- joinLU (Lifted-Unlifted) - join an lifed value with a unlifted value
-{-joinLU :: Lifted a -> b -> Lifted (a,b)
-joinLU a b =
-    let xProduct = [SPLOption (aVal, b) aPC | (SPLOption aVal aPC) <- a]
-    in  filter (\(SPLOption _ pc) -> sat pc) xProduct -}
-    
---liftVal :: a -> Lifted a
---liftVal a = [(a,True)]
-
---liftFun :: (a -> b -> c) -> Lifted a -> Lifted b -> Lifted c
---liftFun fn a b = 
---    map (\(SPLOption(x,y) pc) -> SPLOption (fn x y) pc) (joinLL a b)
-  
---get :: SPLContext -> SPLOption a -> Maybe a
---get cntxt v = case v of
---    SPLOption val pc -> if sat (cntxt && pc) then Just val else Nothing
 
 liftA4 :: Applicative f => (a -> b -> c -> d -> e) -> f a -> f b -> f c -> f d -> f e
 liftA4 f a b c d = fmap f a <*> b <*> c <*> d
@@ -268,19 +165,20 @@ data List' t =
 e :: Var [a]
 e = mkVarT []
 
-(|:|) :: Var a -> Var [a] -> Var [a]
-(|:|) (Var v) (Var vs) = --liftA2 (:)
-    let ts = filter (\(_, _, pc) -> Prop.sat pc) [(v', vs', c) | (v', vpc) <- v, (vs', vspc) <- vs, let c = conj[vpc, vspc]]
-    in  Var (map (\(v', vs', pc) -> case (v', vs') of
+(|:|) :: (Show a) => Var a -> Var [a] -> Var [a]
+(|:|) (Var v) (Var vs) = 
+    let ts = filter (\(_, _, pc) -> sat pc) [(v', vs', c) | (v', vpc) <- v, (vs', vspc) <- vs, let c = conj[vpc, vspc]]
+        v' = Var (map (\(v', vs', pc) -> case (v', vs') of
                                             (Just v'', Just vs'') -> (Just (v'' : vs''), pc)
                                             (Nothing, Just vs'')  -> (Just vs'', pc)
                                             (_, _)                -> (Nothing, pc)
-                   ) ts)
+                ) ts)
+    in {-trace ((show v) ++ " : " ++ (show vs) ++ " = " ++ (show v'))-} v'
 
-mkVarList :: [Var t] -> Var [t]
+mkVarList :: (Show t) => [Var t] -> Var [t]
 mkVarList = foldr (|:|) e
 
-null' :: Foldable t => Var (t a) -> Var Bool
+null' :: (Foldable t, Show (t a)) => Var (t a) -> Var Bool
 null' = cliftV null
 
 head' :: Eq a => Var [a] -> Var a

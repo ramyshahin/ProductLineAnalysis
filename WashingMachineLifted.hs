@@ -5,7 +5,6 @@ import Prop
 import SPL
 import Test.HUnit (Test(..), assertEqual, runTestTT)
 import Control.Applicative
-import Debug.Hood.Observe
 
 -- Features
 f :: Universe
@@ -51,6 +50,7 @@ start2locking, locking2waiting :: Transition'
 --                                     from         to       guards        actions
 start2locking       = mkTransition     start        locking  e               e -- T
 locking2waiting     = mkTransition     locking      waiting  (mkVarList [heatEnabled])    (mkVarList [heaterOn]) -- (disj[heat, delay])
+locking2washing     = mkTransition     locking      washing  e              (mkVarList [setDelay, washStart])
 waiting2washing     = mkTransition     waiting      washing  e               (mkVarList [heaterOff, washStart]) -- (disj[heat, delay])
 washing2unlocking   = mkTransition     washing      unlocking e              (mkVarList [quickCool]) -- (neg dry)
 washing2drying      = mkTransition     washing      drying       e                e -- dry
@@ -59,7 +59,7 @@ unlocking2finish    = mkTransition     unlocking    finish       e              
 
 transitions :: Var [Transition]
 
-transitions =  mkVarList [start2locking, locking2waiting, waiting2washing, washing2unlocking, washing2drying, drying2unlocking, unlocking2finish]
+transitions =  mkVarList [start2locking, locking2waiting]--, locking2washing, waiting2washing, washing2unlocking, washing2drying, drying2unlocking, unlocking2finish]
 
 washingMachine :: LTS'
 washingMachine = mkLTS  states  guards  actions  transitions  (mkVarList [start]) --T
