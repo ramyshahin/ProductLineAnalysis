@@ -70,7 +70,7 @@ neighbors' ts s =
                     res =   cond'   ((source' hd) |==| s)
                                     ((target' hd) |:| ns)
                                     ns
-                in  trace ("neighbors': " ++ (show res)) res
+                in  {-trace ("neighbors': " ++ (show res))-} res
             )
 {-
 neighbors' :: Var [Transition] -> State' -> Var [State]

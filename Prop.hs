@@ -24,6 +24,9 @@ data Prop =
   | Iff'  Prop Prop
   deriving Eq
 
+hasConflict :: [Prop] -> Bool
+hasConflict ps = any (\(Not' p) -> (any (\p' -> p == p')) ps) ps
+
 simplify :: Prop -> Prop
 simplify p =
     case p of
@@ -40,7 +43,8 @@ simplify p =
                     in case ps' of
                         [] -> T
                         [p] -> p
-                        _ -> Conj' ps' 
+                        ps -> if (any (== F) ps') || (hasConflict ps) then F else Conj' ps'
+
         Disj' ps -> let ps'' = filter (\p -> p /= F) ps
                         ps'  = nub $ foldr (++) [] (map (\p -> case p of
                                                                   Disj' ps' -> ps'
@@ -48,7 +52,7 @@ simplify p =
                     in case ps' of
                         [] -> F
                         [p] -> p
-                        _ -> Disj' ps'
+                        _ -> if ((any (== T) ps') || (hasConflict ps)) then T else Disj' ps'
         _ -> p
 
 neg p = simplify (Not' p)
