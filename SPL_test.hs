@@ -29,7 +29,7 @@ y :: Var Int
 y = mkVars [(-11, _p)]
 
 z :: Var Int
-z = mkVars [(6, q)]
+z = mkVars [(6, p)]
 
 xAbs = apply (pure abs) x
 yAbs = apply (pure abs) y
@@ -43,8 +43,13 @@ safeDiv a b = if b == 0 then 0 else (div a b)
 div' = cliftV2 div
 
 zero = (mkVarT 0)
+one = (mkVarT 1)
+(|+|) = liftV2 (+)
+ 
 safeDiv' :: Var Int -> Var Int -> Var Int
-safeDiv' a b = cond' (b |==| zero) zero (div' a b) 
+safeDiv' a b = cond'    <*> (b |==| zero) 
+                        <*> zero 
+                        <*> (div' a b) 
 
 a :: Var Int
 a = mkVarT 0
@@ -52,7 +57,18 @@ a = mkVarT 0
 l :: Var [Int]
 l = mkVarT []
 
-(|:|) :: Var t -> Var [t] -> Var [t]
-(|:|) = (liftA2 (:))
---m :: Var [String]
---m = mkVar [("", T)]
+xs = mkVarList [w,x,y,z]
+xs' = mkVarList' (mkVarT [w, x, y, z])
+
+length' :: Var [a] -> Var Int
+length' = cliftV length
+
+listLength :: [a] -> Int
+listLength [] = 0
+listLength (x:xs) = 1 + (listLength xs)
+
+listLength' :: (Show a, Eq a) => Var [a] -> Var Int
+listLength' xs = 
+    cond'   <*> (null' xs)
+            <*> zero
+            <*> (one |+| ((tail' xs) `seq` (listLength' (tail' xs))))

@@ -25,7 +25,8 @@ data Prop =
   deriving Eq
 
 hasConflict :: [Prop] -> Bool
-hasConflict ps = any (\(Not' p) -> (any (\p' -> p == p')) ps) ps
+--hasConflict ps = any (\(Not' p) -> (any (\p' -> p == p')) ps) ps
+hasConflict _ = False
 
 simplify :: Prop -> Prop
 simplify p =

@@ -56,33 +56,14 @@ mkLTS = cliftV5 LTS
 --               then (target t) : neighbors ts s
 --               else neighbors ts s
 
-len :: Var t -> Int
-len (Var v) = length v
-
 neighbors' :: Var [Transition] -> State' -> Var [State]
 neighbors' ts s = 
     cond'   (null' ts) 
             e
             (
-                let hd = head' ts
-                    tl = tail' ts
-                    ns = (neighbors' tl s)
-                    res =   cond'   ((source' hd) |==| s)
-                                    ((target' hd) |:| ns)
-                                    ns
-                in  {-trace ("neighbors': " ++ (show res))-} res
+                let t' = head' ts
+                    ts' = tail' ts
+                in  cond'   ((source' t') |==| s)
+                            ((target' t') |:| (neighbors' ts' s))
+                            (neighbors' ts' s)
             )
-{-
-neighbors' :: Var [Transition] -> State' -> Var [State]
-neighbors' ts' s = 
-    let hd = head' ts'
-        tl = tail' ts'
-        empty = assert (inv ts') (null' ts')
-        src = source' hd
-        tgt = target' hd
-        fls = (
-                let ns = neighbors' tl s
-                in cond' (src |==| s) (tgt |:| ns) ns
-                )
-    in cond' empty e fls
-    -}
