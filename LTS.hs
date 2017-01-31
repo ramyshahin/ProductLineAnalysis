@@ -69,7 +69,7 @@ dfs edges visited target src =
         else let    ns = (neighbors edges src) \\ visited'
                     r' = (map (\n -> let r = (dfs edges visited' target n)
                                  in  if (null r) then [] else r) ns)
-             in head r'
+             in if (null r') then [] else head r'
     
 -- reachability
 isReachable ::  LTS    ->  -- input LTS 

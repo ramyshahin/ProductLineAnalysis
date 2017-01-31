@@ -47,9 +47,9 @@ one = (mkVarT 1)
 (|+|) = liftV2 (+)
  
 safeDiv' :: Var Int -> Var Int -> Var Int
-safeDiv' a b = cond'    <*> (b |==| zero) 
-                        <*> zero 
-                        <*> (div' a b) 
+safeDiv' a b = cond'    (b |==| zero) 
+                        zero 
+                        (div' a b) 
 
 a :: Var Int
 a = mkVarT 0
@@ -69,6 +69,6 @@ listLength (x:xs) = 1 + (listLength xs)
 
 listLength' :: (Show a, Eq a) => Var [a] -> Var Int
 listLength' xs = 
-    cond'   <*> (null' xs)
-            <*> zero
-            <*> (one |+| ((tail' xs) `seq` (listLength' (tail' xs))))
+    cond'   (null' xs)
+            zero
+            (one |+| (listLength' (tail' xs)))

@@ -62,27 +62,25 @@ mkVars vs = let nothingPC = (neg . disj) (map snd vs)
 
 -- compaction seems to be turning some lazy expressions into strict,
 -- resulting in condiitional expression bugs
-{-
+
 compact :: (Eq t) => Var t -> Var t
 compact (Var v) = 
     let gs = groupBy (\(v1, _) (v2, _) -> (v1 == v2)) v
     in  Var (map (\g -> let (vs, pcs) = unzip g
                         in  (head vs, disj pcs)) 
             gs)
--}
-compact = id
 
 valIndex :: Var t -> PresenceCondition -> [Val t]
 valIndex (Var v) pc =
     filter (\(_,pc') -> sat (conj[pc, pc'])) v
 
-narrow :: Show t => Var t -> PresenceCondition -> [Val t]
-narrow v pc =
-    let xs = valIndex v pc
-        (xs',pcs') = unzip xs
-        pcs'' = map (\pc' -> conj[pc,pc']) pcs'
-        res = zip xs' pcs''
-    in  res
+subst :: Show t => Var t -> PresenceCondition -> Var t
+subst (Var v) pc =
+    Var (filter (\(v',pc') -> sat (conj [pc,pc'])) v)
+
+union :: Var t -> Var t -> Var t
+union (Var a) (Var b) =
+    Var (a ++ b)
 
 pairs :: [t] -> [(t,t)]
 pairs [] = []
@@ -130,7 +128,7 @@ instance Applicative Var where
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
-cond' :: Show a => Var (Bool -> a -> a -> a)
+cond' :: Show a => Var Bool -> Var a -> Var a -> Var a
 
 {-
 cond' (Var c) a b = 
@@ -142,20 +140,15 @@ cond' (Var c) a b =
         --nEls = [(Nothing, pc) | (_,pc) <- ns]
         res = tEls ++ fEls -- ++ nEls
     in  trace ("cond': " ++ (show ts) ++ "\t" ++ (show fs)) (Var res)
--}
 
-{-
-cond' (Var c) a b =
-    let xss = map (\(c',pc') -> case c' of
-                                    Just True ->    narrow a pc'
-                                    Just False ->   narrow b pc'
-                                    Nothing ->      [(Nothing, pc')]
-                                    ) c
-        ret = foldr (++) [] xss
-    in  Var ret
+cond' (Var c) (Var a) (Var b) =
+    Var [(Just (if c' then a' else b'), pc)    | (Just c', cpc) <- c,
+                                          (Just a', apc) <- a,
+                                          (Just b', bpc) <- b,
+                                          let pc = (conj [cpc, apc, bpc]),
+                                          sat pc]
 -}
-
-cond' = pure cond
+cond' = liftV3 cond
 
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
@@ -218,7 +211,7 @@ e = mkVarT []
                                         (_, _)                -> Nothing
                                     , pc)
                 ) ts
-    in {-trace ((show v) ++ " : " ++ (show vs) ++ " = " ++ (show v'))-} Var res
+    in Var res
 
 --(|:|) = liftV2 (:)
 
@@ -231,9 +224,9 @@ foldr_ f e xs =
 foldr' :: (Show a, Show b) => Var (a -> b -> b) -> Var b -> Var [a] -> Var b
 --foldr' = liftV3 foldr
 foldr' f' e' xs' =
-    cond'   <*> (null' xs')
-            <*> e'
-            <*> (f' <*> (head' xs') <*> (foldr' f' e' (tail' xs')))
+    cond'   (null' xs')
+            e'
+            (f' <*> (head' xs') <*> (foldr' f' e' (tail' xs')))
 
 mkVarList :: (Show t) => [Var t] -> Var [t]
 mkVarList = foldr (|:|) e

@@ -59,7 +59,7 @@ unlocking2finish    = mkTransition     unlocking    finish       e              
 
 transitions :: Var [Transition]
 
-transitions =  mkVarList [start2locking, locking2waiting]--, locking2washing, waiting2washing, washing2unlocking, washing2drying, drying2unlocking, unlocking2finish]
+transitions =  mkVarList [start2locking, locking2waiting, locking2washing, waiting2washing, washing2unlocking, washing2drying, drying2unlocking, unlocking2finish]
 
 washingMachine :: LTS'
 washingMachine = mkLTS  states  guards  actions  transitions  (mkVarList [start]) --T

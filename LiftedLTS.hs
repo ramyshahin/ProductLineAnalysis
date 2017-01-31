@@ -57,6 +57,12 @@ mkLTS = cliftV5 LTS
 --               else neighbors ts s
 
 neighbors' :: Var [Transition] -> State' -> Var [State]
+
+neighbors' = cliftV2 neighbors
+
+isReachable' = cliftV2 isReachable
+
+{-
 neighbors' ts s = 
     cond'   (null' ts) 
             e
@@ -66,4 +72,4 @@ neighbors' ts s =
                 in  cond'   ((source' t') |==| s)
                             ((target' t') |:| (neighbors' ts' s))
                             (neighbors' ts' s)
-            )
+            ) -}
