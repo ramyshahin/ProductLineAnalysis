@@ -10,13 +10,16 @@ import Data.List
 
 type State = String
 type Guard = String
-type Action = String
+
+data Action = Action {
+    action :: String,
+    guards :: [Guard]
+    } deriving (Eq, Show)
 
 -- abstract Transition type
 data Transition = Transition {
     source  :: State,
     target  :: State,
-    guardBy :: [Guard],
     act     :: [Action]
     } deriving (Eq, Show)
 
@@ -32,7 +35,6 @@ data Transition = Transition {
 --      TODO: L is a a labeling function, mapping states to sets of propositions (AP)
 data LTS = LTS {
     getStates       :: [State],
-    getGuards       :: [Guard],
     getActions      :: [Action],
     getTransitions  :: [Transition],
     getInitStates   :: [State] 
@@ -67,8 +69,7 @@ dfs edges visited target src =
     let visited' = visited ++ [src]
     in  if (target == src) then visited'
         else let    ns = (neighbors edges src) \\ visited'
-                    r' = (map (\n -> let r = (dfs edges visited' target n)
-                                 in  if (null r) then [] else r) ns)
+                    r' = filter (not . null) (map (\n -> dfs edges visited' target n) ns)
              in if (null r') then [] else head r'
     
 -- reachability

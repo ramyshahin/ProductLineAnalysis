@@ -31,12 +31,16 @@ y = mkVars [(-11, _p)]
 z :: Var Int
 z = mkVars [(6, p)]
 
-xAbs = apply (pure abs) x
-yAbs = apply (pure abs) y
+abs' = pure abs
+
+xAbs = abs' <*> x
+yAbs = abs' <*> y
+
+(|+|) = cliftV2 (+)
 
 x_plus_y0 = apply (apply (pure (+)) x) y
 x_plus_y1 = (pure (+)) <*> x <*> y
-x_plus_y2 = (liftA2 (+)) x y
+x_plus_y2 = x |+| y
 
 safeDiv :: Int -> Int -> Int
 safeDiv a b = if b == 0 then 0 else (div a b)
@@ -44,12 +48,9 @@ div' = cliftV2 div
 
 zero = (mkVarT 0)
 one = (mkVarT 1)
-(|+|) = liftV2 (+)
  
 safeDiv' :: Var Int -> Var Int -> Var Int
-safeDiv' a b = cond'    (b |==| zero) 
-                        zero 
-                        (div' a b) 
+safeDiv' = cliftV2 safeDiv 
 
 a :: Var Int
 a = mkVarT 0
@@ -62,13 +63,3 @@ xs' = mkVarList' (mkVarT [w, x, y, z])
 
 length' :: Var [a] -> Var Int
 length' = cliftV length
-
-listLength :: [a] -> Int
-listLength [] = 0
-listLength (x:xs) = 1 + (listLength xs)
-
-listLength' :: (Show a, Eq a) => Var [a] -> Var Int
-listLength' xs = 
-    cond'   (null' xs)
-            zero
-            (one |+| (listLength' (tail' xs)))
