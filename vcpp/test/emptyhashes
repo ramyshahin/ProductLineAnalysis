@@ -1,0 +1,5 @@
+this is a test with a hash on a line of its own
+#
+with no command after it.
+#define FOO
+and ending here
