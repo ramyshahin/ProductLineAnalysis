@@ -10,3 +10,10 @@
 *.log
 *.gz
 
+# Stack files/dirs #
+####################
+.stack-work
+
+#temp files
+*~
+

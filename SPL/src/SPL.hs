@@ -15,7 +15,7 @@ module SPL where
 import Prop
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Trans(liftIO)
+--import Control.Monad.Trans(liftIO)
 import Data.List 
 import Data.Maybe
 --import Debug.Trace

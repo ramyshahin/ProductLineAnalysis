@@ -24,7 +24,7 @@ Extra-Source-Files: README, LICENCE-GPL, LICENCE-commercial, CHANGELOG, docs/cpp
 
 Library
     hs-source-dirs: src
-    Build-Depends: base>3&&<6, old-locale, old-time, directory, polyparse 
+    Build-Depends: base>3&&<6, old-locale, old-time, directory, polyparse, SPL 
     Exposed-Modules:
         Language.Preprocessor.Cpphs
         Language.Preprocessor.Unlit
@@ -41,7 +41,7 @@ Library
 
 Executable cpphs
     hs-source-dirs: src
-    Build-Depends: base>3&&<6, old-locale, old-time, directory
+    Build-Depends: base>3&&<6, old-locale, old-time, directory, SPL
     Main-Is: vcpp.hs
     Other-Modules:
         Language.Preprocessor.Cpphs
