@@ -1,10 +1,6 @@
 import LTS
 import Test.HUnit (Test(..), assertEqual, runTestTT)
 
-type State = String
-type Guard = String
-type Action = String
-
 start, locking, waiting, washing, drying, unlocking, finish :: State
 start       = "start"
 locking     = "locking"
@@ -31,10 +27,7 @@ actions =  [heaterOn, heaterOff, washStart, tempCheck, setDelay, quickCool]
 heatEnabled :: Guard
 heatEnabled = "heatEnabled"
 
-guards :: [Guard]
-guards = [heatEnabled]
-
-transitions :: [Transition State Guard Action]
+transitions :: [Transition]
 --                          from        to          guards          actions
 transitions =  [(Transition start       locking     []              []),
                 (Transition locking     waiting     [heatEnabled]   [heaterOn]),
@@ -45,8 +38,8 @@ transitions =  [(Transition start       locking     []              []),
                 (Transition unlocking   finish      []              [])
                ]
 
-washingMachine :: LTS State Guard Action
-washingMachine = LTS states guards actions transitions [start]
+washingMachine :: LTS
+washingMachine = LTS states actions transitions [start]
 
 -- neighborsTests
 neighborsStart      = TestCase (assertEqual "neighborsStart"        (neighbors transitions start)       [locking])
