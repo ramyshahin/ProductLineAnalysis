@@ -4,7 +4,7 @@
 module Prop where
 
 import Z3.Monad
-import Data.Vector as V(Vector, (!), fromList, empty, length)
+import Data.Vector as V(Vector, (!), fromList, empty, length, snoc, findIndex)
 import Data.List
 import System.IO.Unsafe
 
@@ -13,6 +13,13 @@ type Universe = Vector String
 mkUniverse :: [String] -> Universe
 mkUniverse = fromList
 
+queryOrUpdate :: Universe -> String -> (Universe, Int)
+queryOrUpdate u q =
+    let i = V.findIndex (== q) u
+    in  case i of
+            Nothing -> (V.snoc u q, V.length u)
+            Just i' -> (u, i')
+         
 data Prop =
     T
   | F

@@ -24,37 +24,17 @@ Extra-Source-Files: README, LICENCE-GPL, LICENCE-commercial, CHANGELOG, docs/cpp
 
 Library
     hs-source-dirs: src
-    Build-Depends: base>3&&<6, old-locale, old-time, directory, polyparse, SPL 
+    Build-Depends: base>3&&<6, Stack, MissingH, SPL 
     Exposed-Modules:
-        Language.Preprocessor.Cpphs
-        Language.Preprocessor.Unlit
+        VCPP
     Other-Modules:
-        Language.Preprocessor.Cpphs.CppIfdef,
-        Language.Preprocessor.Cpphs.HashDefine,
-        Language.Preprocessor.Cpphs.MacroPass,
-        Language.Preprocessor.Cpphs.Options,
-        Language.Preprocessor.Cpphs.Position,
-        Language.Preprocessor.Cpphs.ReadFirst,
-        Language.Preprocessor.Cpphs.RunCpphs,
-        Language.Preprocessor.Cpphs.SymTab,
-        Language.Preprocessor.Cpphs.Tokenise
-
-Executable cpphs
+        
+Executable vcpp
     hs-source-dirs: src
-    Build-Depends: base>3&&<6, old-locale, old-time, directory, SPL
-    Main-Is: vcpp.hs
+    Build-Depends: base>3&&<6, Stack, MissingH, SPL
+    Main-Is: main.hs
     Other-Modules:
-        Language.Preprocessor.Cpphs
-        Language.Preprocessor.Unlit
-        Language.Preprocessor.Cpphs.CppIfdef,
-        Language.Preprocessor.Cpphs.HashDefine,
-        Language.Preprocessor.Cpphs.MacroPass,
-        Language.Preprocessor.Cpphs.Options,
-        Language.Preprocessor.Cpphs.Position,
-        Language.Preprocessor.Cpphs.ReadFirst,
-        Language.Preprocessor.Cpphs.RunCpphs,
-        Language.Preprocessor.Cpphs.SymTab,
-        Language.Preprocessor.Cpphs.Tokenise
+        VCPP
 
 Source-Repository head
     Type:     darcs
