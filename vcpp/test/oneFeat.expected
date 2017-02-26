@@ -1,0 +1,19 @@
+#A#
+int x=0;
+
+int y=1;
+
+
+void main()
+{
+}
+
+#Not(A)#
+int x=0;
+
+
+
+
+void main()
+{
+}

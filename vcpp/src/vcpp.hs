@@ -29,11 +29,20 @@ lineByLine (x:xs) (CPPEnv feats env) =
         envProp = envToProp env
     in  if (null tokens) || (head token0) /= '#' 
         then (mkVar x envProp) |:| (lineByLine xs (CPPEnv feats env))
+        -- #ifdef
         else if token0 == "#ifdef"
         then let (feats', i) = queryOrUpdate feats token1
                  p = Atom feats' i
                  env' = stackPush env p 
              in  (mkVar "\n" envProp) |:| (lineByLine xs (CPPEnv feats' env'))
+        -- #else
+        else if token0 == "#else"
+        then let e' = stackPop env
+             in  case e' of
+                    Nothing        -> error ("error: " ++ x) 
+                    Just (env', t) -> let env'' = stackPush env' (neg t)
+                                      in  (mkVar "\n" envProp) |:| (lineByLine xs (CPPEnv feats env''))
+        -- #endif
         else if token0 == "#endif"
         then let e' = stackPop env
              in  case e' of
