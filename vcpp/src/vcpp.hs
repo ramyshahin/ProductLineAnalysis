@@ -19,6 +19,8 @@ envToProp env =
             Nothing -> T 
             Just (env', t) -> conj[t, envToProp env'] -- TODO: make this tail-recursive
  
+emptyLine = mkVar "" T
+
 lineByLine :: [String] -> CPPEnv -> Var [String]
 lineByLine [] _ = mkVarT []
 lineByLine (x:xs) (CPPEnv feats env) = 
@@ -28,25 +30,25 @@ lineByLine (x:xs) (CPPEnv feats env) =
         token1 = tokens!!1
         envProp = envToProp env
     in  if (null tokens) || (head token0) /= '#' 
-        then (mkVar x envProp) |:| (lineByLine xs (CPPEnv feats env))
+        then (mkVars [(x,envProp), ("", neg envProp)]) |:| (lineByLine xs (CPPEnv feats env))
         -- #ifdef
         else if token0 == "#ifdef"
         then let (feats', i) = queryOrUpdate feats token1
                  p = Atom feats' i
                  env' = stackPush env p 
-             in  (mkVar "\n" envProp) |:| (lineByLine xs (CPPEnv feats' env'))
+             in  emptyLine |:| (lineByLine xs (CPPEnv feats' env'))
         -- #else
         else if token0 == "#else"
         then let e' = stackPop env
              in  case e' of
                     Nothing        -> error ("error: " ++ x) 
                     Just (env', t) -> let env'' = stackPush env' (neg t)
-                                      in  (mkVar "\n" envProp) |:| (lineByLine xs (CPPEnv feats env''))
+                                      in  emptyLine |:| (lineByLine xs (CPPEnv feats env''))
         -- #endif
         else if token0 == "#endif"
         then let e' = stackPop env
              in  case e' of
-                    Just (env', _) -> (mkVar "\n" envProp) |:| (lineByLine xs (CPPEnv feats env'))
+                    Just (env', _) -> emptyLine |:| (lineByLine xs (CPPEnv feats env'))
                     Nothing        -> error ("error: " ++ x)
         else error ("error: " ++ x)
 

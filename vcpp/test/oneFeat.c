@@ -6,4 +6,3 @@ int y=1;
 void main()
 {
 }
-

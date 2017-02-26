@@ -17,3 +17,6 @@
 #temp files
 *~
 
+#test output files
+*.out
+

@@ -3,7 +3,7 @@ Version: 0.1
 Copyright: 2004-2012, Malcolm Wallace
 License: LGPL
 License-File: LICENCE-LGPL
-Cabal-Version: >= 1.6
+Cabal-Version: >= 1.8
 Author: Malcolm Wallace <Malcolm.Wallace@me.com>
 Maintainer: Malcolm Wallace <Malcolm.Wallace@me.com>
 Homepage: http://haskell.org/cpphs/
@@ -30,11 +30,10 @@ Library
     Other-Modules:
         
 Executable vcpp
-    hs-source-dirs: src
-    Build-Depends: base>3&&<6, Stack, MissingH, SPL
-    Main-Is: main.hs
+    hs-source-dirs: app
+    Build-Depends: base>3&&<6, Stack, MissingH, SPL, vcpp
+    Main-Is: Main.hs
     Other-Modules:
-        VCPP
 
 Source-Repository head
     Type:     darcs
