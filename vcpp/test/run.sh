@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FILES="plain oneFeat else"
+FILES="plain splice oneFeat else include1"
 
 for F in $FILES
 do

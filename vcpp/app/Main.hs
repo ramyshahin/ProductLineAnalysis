@@ -11,7 +11,7 @@ main :: IO ()
 main = do 
     args <- getArgs
     file <- readFile (args!!0)
-    let (Var v) = vcpp file
+    Var v <- vcpp file
     mapM_ (\(x,pc) -> case x of
                         Just x' -> putStrLn ("#" ++ (show pc) ++ "#\n" ++ x' ++ "#---#")
                         Nothing -> putStrLn ((show pc) ++ ": Nothing\n#---#")) v
