@@ -20,15 +20,16 @@ Description:
     off macro-expansion.
 Category: Development
 Build-type: Simple
-Extra-Source-Files: README, LICENCE-GPL, LICENCE-commercial, CHANGELOG, docs/cpphs.1, docs/index.html
+Extra-Source-Files: README, LICENCE-GPL, LICENCE-commercial, CHANGELOG, docs/cpphs.1, docs/index.html, lexer.x
 
 Library
     hs-source-dirs: src
-    Build-Depends: base>3&&<6, Stack, MissingH, SPL 
+    Build-Depends: base>3&&<6, Stack, MissingH, SPL, parsec, array
     Exposed-Modules:
         VCPP
-    Other-Modules:
-        
+    Other-Modules: Lexer
+    build-tools: alex
+
 Executable vcpp
     hs-source-dirs: app
     Build-Depends: base>3&&<6, Stack, MissingH, SPL, vcpp
