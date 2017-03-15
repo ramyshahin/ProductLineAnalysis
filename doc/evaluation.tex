@@ -1,0 +1,46 @@
+\documentclass[12pt]{article}
+\begin{document}
+\section{Evaluation}
+\subsection{Benchmarks}
+\subsubsection{Parsing C Code}
+
+\begin{itemize}
+	\item Case studies from SPLVerifier (contributed to SVComp)
+	\begin{itemize}
+		\item email client
+		\item elevator
+		\item minepump
+	\end{itemize}
+	
+	\item \emph{Stretch goal:} x86 Linux kernel files (about 7600 files) used in the evaluation of Typechef and SuperC
+\end{itemize}
+
+\subsubsection{C Code Typechecking}
+On the same case studies used in C code parsing.
+We need a C type checker written in a functional language though to lift.
+
+\subsubsection{Simple LTS Algorithms}
+\begin{itemize}
+	\item State reachability
+	\item State reachability with witness
+\end{itemize}
+
+\subsubsection{Model Transformations (graph rules)}
+ICSE'14 paper
+
+\subsection{Evaluation Metrics}
+\subsubsection{Correctness}
+Especially for the parsing case study, we can compare against Typechef and SuperC.
+
+\subsubsection{Performance}
+With respect to number of features and number of valid products.
+
+Performance is evaluated for the baseline (black-box shallow lifting) and any optimizations that might be implemented. Possible optimizations include:
+\begin{itemize}
+	\item Using Binary Decision Diagrams (BDDs) instead of SAT solvers
+	\item Deep-lifting of the List data structure for space optimization and data redundancy elimination
+	\item Deep-lifting of other data structures
+	\item Depp-lifting of algorithms (as needed, based on profiling results) 
+\end{itemize}
+
+\end{document}
