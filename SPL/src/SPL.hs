@@ -70,13 +70,16 @@ compact (Var v) =
                         in  (head vs, disj pcs)) 
             gs)
 
-valIndex :: Var t -> PresenceCondition -> [Val t]
-valIndex (Var v) pc =
-    filter (\(_,pc') -> sat (conj[pc, pc'])) v
+valIndex :: Eq t => Var t -> t -> [Val t]
+valIndex (Var v) x =
+    filter (\(x',pc') -> case x' of 
+                            Just x'' -> x'' == x
+                            _        -> False) 
+                        v
 
 subst :: Show t => Var t -> PresenceCondition -> Var t
 subst (Var v) pc =
-    Var (filter (\(v',pc') -> sat (conj [pc,pc'])) v)
+    Var (filter (\(_,pc') -> sat (conj [pc,pc'])) v)
 
 union :: Var t -> Var t -> Var t
 union (Var a) (Var b) =
@@ -91,7 +94,6 @@ inv (Var v) = {-trace ("inv: " ++ (show (Var v))) $-}
     all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
 
 apply :: Var (a -> b) -> Var a -> Var b
-
 apply (Var fn) (Var x) =
     Var [(case (fn', x') of
         (Just fn'', Just x'') -> Just (fn'' x'')
@@ -101,17 +103,6 @@ apply (Var fn) (Var x) =
                     (x', xpc) <- x,
                     let pc = conj[fnpc, xpc],
                     sat pc]
-{-
-apply (Var fn) (Var x) = 
-    let triples = [(fn', x', c) |   (fn', fnpc) <- fn,
-                                    (x', xpc) <- x,
-                                    let c= conj[fnpc, xpc],
-                                    sat c                   ]
-    in  Var (map (\(fn', x', c) ->  (case (fn', x') of
-                                        (Just fn'', Just x'') -> fn'' `seq` Just (fn'' x'')
-                                        (_,_) -> Nothing
-    , c)) triples)
-  -}      
 
 instance Show a => Show (Var a) where
     show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "}" 
@@ -129,25 +120,6 @@ cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
 cond' :: Show a => Var Bool -> Var a -> Var a -> Var a
-
-{-
-cond' (Var c) a b = 
-    let ts = filter (\(p, _) -> p == Just True) c
-        fs = filter (\(p, _) -> p == Just False) c
-        --ns = filter (\(p, _) -> p == Nothing) c
-        tEls = foldr (++) [] $ map (\(_,pc) -> narrow a pc) ts
-        fEls = foldr (++) [] $ map (\(_,pc) -> narrow b pc) fs
-        --nEls = [(Nothing, pc) | (_,pc) <- ns]
-        res = tEls ++ fEls -- ++ nEls
-    in  trace ("cond': " ++ (show ts) ++ "\t" ++ (show fs)) (Var res)
-
-cond' (Var c) (Var a) (Var b) =
-    Var [(Just (if c' then a' else b'), pc)    | (Just c', cpc) <- c,
-                                          (Just a', apc) <- a,
-                                          (Just b', bpc) <- b,
-                                          let pc = (conj [cpc, apc, bpc]),
-                                          sat pc]
--}
 cond' = liftV3 cond
 
 -- lifting higher-order functions
@@ -178,17 +150,22 @@ liftV4 = liftA4
 liftV5 :: (a -> b -> c -> d -> e -> f) -> Var a -> Var b -> Var c -> Var d -> Var e -> Var f
 liftV5 = liftA5
 
+{-
 cliftV  f a = compact $ (liftV f) a
 cliftV2 f a b = compact $ (liftV2 f) a b
 cliftV3 f a b c = compact $ (liftV3 f) a b c
 cliftV4 f a b c d = compact $ (liftV4 f) a b c d
 cliftV5 f a b c d e = compact $ (liftV5 f) a b c d e
+-}
 
 --data VarOption a =
     
 -- Bool operation lifting
 (|==|) :: (Eq a) => Var a -> Var a -> Var Bool
-(|==|) = cliftV2 (==)
+(|==|) = liftV2 (==)
+
+(|+|) :: Num a => Var a -> Var a -> Var a
+(|+|) = liftV2 (+)
 
 {-
 -- List lifting
@@ -235,7 +212,7 @@ mkVarList' :: (Show t) => Var [t] -> Var [t]
 mkVarList' = foldr' (pure (:)) e
 
 null' :: (Foldable t, Show (t a)) => Var (t a) -> Var Bool
-null' xs = let res = ((cliftV null) xs)
+null' xs = let res = ((liftV null) xs)
             in {-trace ("null': " ++ (show res))-} res
 
 head' :: Var [a] -> Var a

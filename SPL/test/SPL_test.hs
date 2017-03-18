@@ -1,7 +1,7 @@
 -- SPL unit tests
 import SPL
 import Prop
-import Test.HUnit
+--import Test.HUnit
 import Control.Applicative
 
 u :: Universe
@@ -36,7 +36,7 @@ abs' = pure abs
 xAbs = abs' <*> x
 yAbs = abs' <*> y
 
-(|+|) = cliftV2 (+)
+(|+|) = liftV2 (+)
 
 x_plus_y0 = apply (apply (pure (+)) x) y
 x_plus_y1 = (pure (+)) <*> x <*> y
@@ -44,13 +44,13 @@ x_plus_y2 = x |+| y
 
 safeDiv :: Int -> Int -> Int
 safeDiv a b = if b == 0 then 0 else (div a b)
-div' = cliftV2 div
+div' = liftV2 div
 
 zero = (mkVarT 0)
 one = (mkVarT 1)
  
 safeDiv' :: Var Int -> Var Int -> Var Int
-safeDiv' = cliftV2 safeDiv 
+safeDiv' a b = cond' (b |==| zero) zero (div' a b)
 
 a :: Var Int
 a = mkVarT 0
@@ -62,4 +62,4 @@ xs = mkVarList [w,x,y,z]
 xs' = mkVarList' (mkVarT [w, x, y, z])
 
 length' :: Var [a] -> Var Int
-length' = cliftV length
+length' = liftV length
