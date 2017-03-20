@@ -12,6 +12,11 @@ import SPL
 import Debug.Trace
 import Control.Exception
 
+mkVarStates :: Int -> Int -> Var [State]
+mkStates begin end =
+    if begin > end then e else (mkVarT s) |:| mkVarStates (begin + 1) end
+    where s = "s" ++ (show begin)
+
 type State' = Var State
 type Guard' = Var Guard
 type Action' = Var Action

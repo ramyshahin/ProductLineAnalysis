@@ -11,6 +11,11 @@ import Data.List
 type State = String
 type Guard = String
 
+mkStates :: Int -> Int -> [State]
+mkStates begin end =
+    if begin > end then [] else s : mkStates (begin + 1) end
+    where s = "s" ++ (show begin)
+     
 data Action = Action {
     action :: String,
     guards :: [Guard]
