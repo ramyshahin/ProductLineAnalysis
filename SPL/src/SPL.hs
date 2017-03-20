@@ -150,13 +150,12 @@ liftV4 = liftA4
 liftV5 :: (a -> b -> c -> d -> e -> f) -> Var a -> Var b -> Var c -> Var d -> Var e -> Var f
 liftV5 = liftA5
 
-{-
-cliftV  f a = compact $ (liftV f) a
-cliftV2 f a b = compact $ (liftV2 f) a b
-cliftV3 f a b c = compact $ (liftV3 f) a b c
-cliftV4 f a b c d = compact $ (liftV4 f) a b c d
-cliftV5 f a b c d e = compact $ (liftV5 f) a b c d e
--}
+cliftV  f a         = compact $! (liftV  f) a
+cliftV2 f a b       = compact $! (liftV2 f) a b
+cliftV3 f a b c     = compact $! (liftV3 f) a b c
+cliftV4 f a b c d   = compact $! (liftV4 f) a b c d
+cliftV5 f a b c d e = compact $! (liftV5 f) a b c d e
+
 
 --data VarOption a =
     

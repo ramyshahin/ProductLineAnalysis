@@ -36,7 +36,7 @@ abs' = pure abs
 xAbs = abs' <*> x
 yAbs = abs' <*> y
 
-(|+|) = liftV2 (+)
+--(|+|) = liftV2 (+)
 
 x_plus_y0 = apply (apply (pure (+)) x) y
 x_plus_y1 = (pure (+)) <*> x <*> y

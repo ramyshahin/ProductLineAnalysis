@@ -14,12 +14,12 @@ states :: [State]
 states = [start, locking, waiting, washing, drying, unlocking, finish]
 
 heaterOn, heaterOff, washStart, tempCheck, setDelay, quickCool :: Action
-heaterOn    = "heaterOn"
-heaterOff   = "heaterOff"
-washStart   = "washStart"
-tempCheck   = "tempCheck"
-setDelay    = "setDelay"
-quickCool   = "quickCool"
+heaterOn    = Action "heaterOn" []
+heaterOff   = Action "heaterOff" []
+washStart   = Action "washStart" []
+tempCheck   = Action "tempCheck" []
+setDelay    = Action "setDelay"  []
+quickCool   = Action "quickCool" []
 
 actions :: [Action]
 actions =  [heaterOn, heaterOff, washStart, tempCheck, setDelay, quickCool]
@@ -28,14 +28,14 @@ heatEnabled :: Guard
 heatEnabled = "heatEnabled"
 
 transitions :: [Transition]
---                          from        to          guards          actions
-transitions =  [(Transition start       locking     []              []),
-                (Transition locking     waiting     [heatEnabled]   [heaterOn]),
-                (Transition waiting     washing     []              [heaterOff, washStart]),
-                (Transition washing     unlocking   []              [quickCool]),
-                (Transition washing     drying      []              []),
-                (Transition drying      unlocking   []              [quickCool]),
-                (Transition unlocking   finish      []              [])
+--                          from        to          actions
+transitions =  [(Transition start       locking     []),
+                (Transition locking     waiting     [heaterOn]),
+                (Transition waiting     washing     [heaterOff, washStart]),
+                (Transition washing     unlocking   [quickCool]),
+                (Transition washing     drying      []),
+                (Transition drying      unlocking   [quickCool]),
+                (Transition unlocking   finish      [])
                ]
 
 washingMachine :: LTS
@@ -52,3 +52,7 @@ neighborsFinish     = TestCase (assertEqual "neighborsFinish"       (neighbors t
 
 neighborsTests = TestList [neighborsStart, neighborsLocking, neighborsWaiting, neighborsWashing, 
                   neighborsDrying, neighborsUnlocking, neighborsFinish]
+
+main :: IO ()
+main = do
+    putStrLn "TODO"

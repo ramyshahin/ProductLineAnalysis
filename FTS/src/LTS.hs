@@ -3,8 +3,6 @@
 -- Labeled Transition System (LTS) library
 -- Ramy Shahin - July 10th 2016
 -------------------------------------------------------------------------------
-{-# LANGUAGE ExistentialQuantification #-}
-
 module LTS where
 import Data.List
 
