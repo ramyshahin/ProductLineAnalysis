@@ -20,6 +20,7 @@ import Data.List
 import Data.Maybe
 --import Debug.Trace
 import Control.Exception
+import Control.Parallel.Strategies
 
 type FeatureSet         = Universe
 type PresenceCondition  = Prop
@@ -50,7 +51,7 @@ mkVar :: t -> PresenceCondition -> Var t
 mkVar v pc = Var [(Just v,pc), (Nothing, neg pc)]
 
 mkVarT :: t -> Var t
-mkVarT v = mkVar v T
+mkVarT v = Var [(Just v,T)]
 
 mkVars :: [(t,PresenceCondition)] -> Var t
 mkVars vs = let nothingPC = (neg . disj) (map snd vs) 
@@ -81,6 +82,10 @@ subst :: Show t => Var t -> PresenceCondition -> Var t
 subst (Var v) pc =
     Var (filter (\(_,pc') -> sat (conj [pc,pc'])) v)
 
+restrict :: PresenceCondition -> Var t -> Var t
+restrict pc (Var v) =
+    Var $ map (\(x,pc') -> (x, conj[pc',pc])) v
+
 union :: Var t -> Var t -> Var t
 union (Var a) (Var b) =
     Var (a ++ b)
@@ -102,7 +107,7 @@ apply (Var fn) (Var x) =
                   | (fn', fnpc) <- fn,
                     (x', xpc) <- x,
                     let pc = conj[fnpc, xpc],
-                    sat pc]
+                    (sat pc)] --`using` parList rpar)
 
 instance Show a => Show (Var a) where
     show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "}" 
@@ -120,8 +125,14 @@ cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
 cond' :: Show a => Var Bool -> Var a -> Var a -> Var a
-cond' = liftV3 cond
-
+--cond' = liftV3 cond
+cond' !(Var c) x y = agg
+    where parts = map (\c' -> case c' of
+                                (Just True, pc) -> restrict pc x
+                                (Just False, pc) -> restrict pc y 
+                                (_, pc)          -> Var [(Nothing, pc)]) c
+          agg = foldr SPL.union (Var []) parts
+         
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
 mapLifted = liftA2 map
@@ -175,6 +186,7 @@ data List' t =
 e :: Var [a]
 e = mkVarT []
 
+{-
 (|:|) :: (Show a) => Var a -> Var [a] -> Var [a]
 (|:|) (Var v) (Var vs) = 
     let ts = [(v', vs', c) |    (v', vpc) <- v, 
@@ -188,9 +200,11 @@ e = mkVarT []
                                     , pc)
                 ) ts
     in Var res
+-}
 
---(|:|) = liftV2 (:)
+(|:|) = liftV2 (:)
 
+{-
 foldr_ :: (a -> b -> b) -> b -> [a] -> b
 foldr_ f e xs =
     if (null xs)
@@ -203,19 +217,20 @@ foldr' f' e' xs' =
     cond'   (null' xs')
             e'
             (f' <*> (head' xs') <*> (foldr' f' e' (tail' xs')))
+-}
 
-mkVarList :: (Show t) => [Var t] -> Var [t]
-mkVarList = foldr (|:|) e
+-- Lifted List (VList)
+type VList a = Var [a]
 
-mkVarList' :: (Show t) => Var [t] -> Var [t]
-mkVarList' = foldr' (pure (:)) e
+vnull :: VList a -> Var Bool
+vnull = liftV null
 
-null' :: (Foldable t, Show (t a)) => Var (t a) -> Var Bool
-null' xs = let res = ((liftV null) xs)
-            in {-trace ("null': " ++ (show res))-} res
+vhead = liftV head
 
-head' :: Var [a] -> Var a
-head' = liftV head
+vtail = liftV tail
 
-tail' :: Var [a] -> Var [a]
-tail' = liftV tail
+mkVList :: (Show t) => [Var t] -> Var [t]
+mkVList = foldr (|:|) e
+
+--mkVarList' :: (Show t) => Var [t] -> Var [t]
+--mkVarList' = foldr' (pure (:)) e

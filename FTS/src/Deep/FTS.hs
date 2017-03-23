@@ -4,43 +4,73 @@
 -- Ramy Shahin - July 20th 2016
 -------------------------------------------------------------------------------
 module Deep.FTS where
-import LTS
-import Data.List
---import Data.Tree
-import Control.Applicative
 import SPL
-import Debug.Trace
-import Control.Exception
+import Data.List
 
-mkVarStates :: Int -> Int -> Var [State]
-mkVarStates begin end =
-    if begin > end then e else (mkVarT s) |:| mkVarStates (begin + 1) end
-    where s = "s" ++ (show begin)
+type State' = String
+type State = Var State'
 
-type State' = Var State
-type Guard' = Var Guard
-type Action' = Var Action
+type Guard = String
 
-mkAction = liftV2 Action
+mkStates :: Int -> Int -> [State]
+mkStates begin end =
+    if begin > end then [] else s : mkStates (begin + 1) end
+    where s = mkVarT ("s" ++ (show begin))
 
-type Transition' = Var Transition
+data Action = Action {
+    action :: String,
+    guards :: [Guard]
+    } deriving (Eq, Show)
 
-mkTransition = liftV3 Transition
-source' = liftV source
-target' = liftV target
-act' = liftV act
+-- abstract Transition type
+data Transition' = Transition' {
+    source' :: State',
+    target' :: State',
+    act'    :: [Action]
+    } deriving (Show)
+type Transition = Var Transition'
 
-type LTS' = Var LTS
+mkTransition :: State -> State -> VList Action -> PresenceCondition -> Transition
+mkTransition source target act pc = restrict pc $ (liftV3 Transition') source target act 
+source = liftV source'
+target = liftV target'
+act    = liftV act'
 
-mkLTS = liftV4 LTS
+-- abstract abstract proposition type
+--type AP = Int
 
-neighbors' :: Var [Transition] -> State' -> Var [State]
+-- an LTS a tuple <S, Act, ->, I, AP, L> where: 
+--      S is a set of states (graph nodes)
+--      Act is a set of actions (labels for edges)
+--      -> is a transition relation (graph edges)
+--      I is the set of initial states (subset of S)
+--      TODO: AP is a set of atomic propositions
+--      TODO: L is a a labeling function, mapping states to sets of propositions (AP)
+data FTS' = FTS' {
+    getStates       :: [State'],
+    getActions      :: [Action],
+    getTransitions  :: [Transition'],
+    getInitStates   :: [State'] 
+    -- TODO: [AP] 
+    -- TODO: (Table [AP])
+    } deriving (Show)
+type FTS = Var FTS'
 
-neighbors' = liftV2 neighbors
+mkFTS :: VList State' -> VList Action -> VList Transition' -> VList State' -> PresenceCondition -> FTS
+mkFTS states actions transitions initStates pc = restrict pc $ (liftV4 FTS') states actions transitions initStates
 
-isReachable' = liftV2 isReachable
+-------------------------------------------------------------------------------
+-- LTS Algorithms
+-------------------------------------------------------------------------------
 
-witnessPath' = liftV2 witnessPath
-
-dfs' = liftV4 dfs
-
+neighbors :: VList Transition' -> State -> VList State'
+neighbors ts' s = 
+    cond'   (vnull ts') 
+            e
+            (let    t = vhead ts'
+                    ts = vtail ts'
+             in
+                    cond' ((source t) |==| s)
+                        ((target t) |:| neighbors ts s)
+                        (neighbors ts s)
+            )

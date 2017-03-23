@@ -16,7 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Prop, SPL
-  build-depends:       base >= 4.7 && < 5, z3, vector
+  build-depends:       base >= 4.7 && < 5, z3, vector, parallel
   default-language:    Haskell2010
 
 test-suite var-test
