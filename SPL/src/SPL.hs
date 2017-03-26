@@ -186,8 +186,7 @@ data List' t =
 e :: Var [a]
 e = mkVarT []
 
-{-
-(|:|) :: (Show a) => Var a -> Var [a] -> Var [a]
+(|:|) :: Var a -> Var [a] -> Var [a]
 (|:|) (Var v) (Var vs) = 
     let ts = [(v', vs', c) |    (v', vpc) <- v, 
                                 (vs', vspc) <- vs, 
@@ -200,9 +199,8 @@ e = mkVarT []
                                     , pc)
                 ) ts
     in Var res
--}
 
-(|:|) = liftV2 (:)
+--(|:|) = liftV2 (:)
 
 {-
 foldr_ :: (a -> b -> b) -> b -> [a] -> b

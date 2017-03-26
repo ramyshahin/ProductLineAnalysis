@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Prop, SPL
+  exposed-modules:     Prop, SPL, Shallow.VList, Deep.VList
   build-depends:       base >= 4.7 && < 5, z3, vector, parallel
   default-language:    Haskell2010
 
