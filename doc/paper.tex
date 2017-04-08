@@ -1,73 +1,401 @@
-% !TEX TS-program = pdflatex
-% !TEX encoding = UTF-8 Unicode
 
-% This is a simple template for a LaTeX document using the "article" class.
-% See "book", "report", "letter" for other types of document.
+%% bare_conf.tex
+%% V1.4b
+%% 2015/08/26
+%% by Michael Shell
+%% See:
+%% http://www.michaelshell.org/
+%% for current contact information.
+%%
+%% This is a skeleton file demonstrating the use of IEEEtran.cls
+%% (requires IEEEtran.cls version 1.8b or later) with an IEEE
+%% conference paper.
+%%
+%% Support sites:
+%% http://www.michaelshell.org/tex/ieeetran/
+%% http://www.ctan.org/pkg/ieeetran
+%% and
+%% http://www.ieee.org/
 
-\documentclass[11pt]{article} % use larger type; default would be 10pt
+%%*************************************************************************
+%% Legal Notice:
+%% This code is offered as-is without any warranty either expressed or
+%% implied; without even the implied warranty of MERCHANTABILITY or
+%% FITNESS FOR A PARTICULAR PURPOSE! 
+%% User assumes all risk.
+%% In no event shall the IEEE or any contributor to this code be liable for
+%% any damages or losses, including, but not limited to, incidental,
+%% consequential, or any other damages, resulting from the use or misuse
+%% of any information contained here.
+%%
+%% All comments are the opinions of their respective authors and are not
+%% necessarily endorsed by the IEEE.
+%%
+%% This work is distributed under the LaTeX Project Public License (LPPL)
+%% ( http://www.latex-project.org/ ) version 1.3, and may be freely used,
+%% distributed and modified. A copy of the LPPL, version 1.3, is included
+%% in the base LaTeX documentation of all distributions of LaTeX released
+%% 2003/12/01 or later.
+%% Retain all contribution notices and credits.
+%% ** Modified files should be clearly indicated as such, including  **
+%% ** renaming them and changing author support contact information. **
+%%*************************************************************************
 
-\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
 
-%%% Examples of Article customizations
-% These packages are optional, depending whether you want the features they provide.
-% See the LaTeX Companion or other references for full information.
+% *** Authors should verify (and, if needed, correct) their LaTeX system  ***
+% *** with the testflow diagnostic prior to trusting their LaTeX platform ***
+% *** with production work. The IEEE's font choices and paper sizes can   ***
+% *** trigger bugs that do not appear when using other class files.       ***                          ***
+% The testflow support page is at:
+% http://www.michaelshell.org/tex/testflow/
 
-%%% PAGE DIMENSIONS
-\usepackage{geometry} % to change the page dimensions
-\geometry{a4paper} % or letterpaper (US) or a5paper or....
-% \geometry{margin=2in} % for example, change the margins to 2 inches all round
-% \geometry{landscape} % set up the page for landscape
-%   read geometry.pdf for detailed page layout information
 
-\usepackage{graphicx} % support the \includegraphics command and options
+
+\documentclass[10pt,conference]{IEEEtran}
+% Some Computer Society conferences also require the compsoc mode option,
+% but others use the standard conference format.
+%
+% If IEEEtran.cls has not been installed into the LaTeX system files,
+% manually specify the path to it like:
+% \documentclass[conference]{../sty/IEEEtran}
+
+
+
+
+
+% Some very useful LaTeX packages include:
+% (uncomment the ones you want to load)
+
+
+% *** MISC UTILITY PACKAGES ***
+%
+%\usepackage{ifpdf}
+% Heiko Oberdiek's ifpdf.sty is very useful if you need conditional
+% compilation based on whether the output is pdf or dvi.
+% usage:
+% \ifpdf
+%   % pdf code
+% \else
+%   % dvi code
+% \fi
+% The latest version of ifpdf.sty can be obtained from:
+% http://www.ctan.org/pkg/ifpdf
+% Also, note that IEEEtran.cls V1.7 and later provides a builtin
+% \ifCLASSINFOpdf conditional that works the same way.
+% When switching from latex to pdflatex and vice-versa, the compiler may
+% have to be run twice to clear warning/error messages.
+
+
+
+
+
+
+% *** CITATION PACKAGES ***
+%
+%\usepackage{cite}
+% cite.sty was written by Donald Arseneau
+% V1.6 and later of IEEEtran pre-defines the format of the cite.sty package
+% \cite{} output to follow that of the IEEE. Loading the cite package will
+% result in citation numbers being automatically sorted and properly
+% "compressed/ranged". e.g., [1], [9], [2], [7], [5], [6] without using
+% cite.sty will become [1], [2], [5]--[7], [9] using cite.sty. cite.sty's
+% \cite will automatically add leading space, if needed. Use cite.sty's
+% noadjust option (cite.sty V3.8 and later) if you want to turn this off
+% such as if a citation ever needs to be enclosed in parenthesis.
+% cite.sty is already installed on most LaTeX systems. Be sure and use
+% version 5.0 (2009-03-20) and later if using hyperref.sty.
+% The latest version can be obtained at:
+% http://www.ctan.org/pkg/cite
+% The documentation is contained in the cite.sty file itself.
+
+
+
+
+
+
+% *** GRAPHICS RELATED PACKAGES ***
+%
+\ifCLASSINFOpdf
+  % \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../pdf/}{../jpeg/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\else
+  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  % will default to the driver specified in the system graphics.cfg if no
+  % driver is specified.
+  % \usepackage[dvips]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../eps/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.eps}
+\fi
+% graphicx was written by David Carlisle and Sebastian Rahtz. It is
+% required if you want graphics, photos, etc. graphicx.sty is already
+% installed on most LaTeX systems. The latest version and documentation
+% can be obtained at: 
+% http://www.ctan.org/pkg/graphicx
+% Another good source of documentation is "Using Imported Graphics in
+% LaTeX2e" by Keith Reckdahl which can be found at:
+% http://www.ctan.org/pkg/epslatex
+%
+% latex, and pdflatex in dvi mode, support graphics in encapsulated
+% postscript (.eps) format. pdflatex in pdf mode supports graphics
+% in .pdf, .jpeg, .png and .mps (metapost) formats. Users should ensure
+% that all non-photo figures use a vector format (.eps, .pdf, .mps) and
+% not a bitmapped formats (.jpeg, .png). The IEEE frowns on bitmapped formats
+% which can result in "jaggedy"/blurry rendering of lines and letters as
+% well as large increases in file sizes.
+%
+% You can find documentation about the pdfTeX application at:
+% http://www.tug.org/applications/pdftex
+
+
+
+
+
+% *** MATH PACKAGES ***
+%
+%\usepackage{amsmath}
+% A popular package from the American Mathematical Society that provides
+% many useful and powerful commands for dealing with mathematics.
+%
+% Note that the amsmath package sets \interdisplaylinepenalty to 10000
+% thus preventing page breaks from occurring within multiline equations. Use:
+%\interdisplaylinepenalty=2500
+% after loading amsmath to restore such page breaks as IEEEtran.cls normally
+% does. amsmath.sty is already installed on most LaTeX systems. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/pkg/amsmath
+
+
+
+
+
+% *** SPECIALIZED LIST PACKAGES ***
+%
+%\usepackage{algorithmic}
+% algorithmic.sty was written by Peter Williams and Rogerio Brito.
+% This package provides an algorithmic environment fo describing algorithms.
+% You can use the algorithmic environment in-text or within a figure
+% environment to provide for a floating algorithm. Do NOT use the algorithm
+% floating environment provided by algorithm.sty (by the same authors) or
+% algorithm2e.sty (by Christophe Fiorio) as the IEEE does not use dedicated
+% algorithm float types and packages that provide these will not provide
+% correct IEEE style captions. The latest version and documentation of
+% algorithmic.sty can be obtained at:
+% http://www.ctan.org/pkg/algorithms
+% Also of interest may be the (relatively newer and more customizable)
+% algorithmicx.sty package by Szasz Janos:
+% http://www.ctan.org/pkg/algorithmicx
+
+
+
+
+% *** ALIGNMENT PACKAGES ***
+%
+%\usepackage{array}
+% Frank Mittelbach's and David Carlisle's array.sty patches and improves
+% the standard LaTeX2e array and tabular environments to provide better
+% appearance and additional user controls. As the default LaTeX2e table
+% generation code is lacking to the point of almost being broken with
+% respect to the quality of the end results, all users are strongly
+% advised to use an enhanced (at the very least that provided by array.sty)
+% set of table tools. array.sty is already installed on most systems. The
+% latest version and documentation can be obtained at:
+% http://www.ctan.org/pkg/array
+
+
+% IEEEtran contains the IEEEeqnarray family of commands that can be used to
+% generate multiline equations as well as matrices, tables, etc., of high
+% quality.
+
+
+
+
+% *** SUBFIGURE PACKAGES ***
+%\ifCLASSOPTIONcompsoc
+%  \usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+%\else
+%  \usepackage[caption=false,font=footnotesize]{subfig}
+%\fi
+% subfig.sty, written by Steven Douglas Cochran, is the modern replacement
+% for subfigure.sty, the latter of which is no longer maintained and is
+% incompatible with some LaTeX packages including fixltx2e. However,
+% subfig.sty requires and automatically loads Axel Sommerfeldt's caption.sty
+% which will override IEEEtran.cls' handling of captions and this will result
+% in non-IEEE style figure/table captions. To prevent this problem, be sure
+% and invoke subfig.sty's "caption=false" package option (available since
+% subfig.sty version 1.3, 2005/06/28) as this is will preserve IEEEtran.cls
+% handling of captions.
+% Note that the Computer Society format requires a larger sans serif font
+% than the serif footnote size font used in traditional IEEE formatting
+% and thus the need to invoke different subfig.sty package options depending
+% on whether compsoc mode has been enabled.
+%
+% The latest version and documentation of subfig.sty can be obtained at:
+% http://www.ctan.org/pkg/subfig
+
+
+
+
+% *** FLOAT PACKAGES ***
+%
+%\usepackage{fixltx2e}
+% fixltx2e, the successor to the earlier fix2col.sty, was written by
+% Frank Mittelbach and David Carlisle. This package corrects a few problems
+% in the LaTeX2e kernel, the most notable of which is that in current
+% LaTeX2e releases, the ordering of single and double column floats is not
+% guaranteed to be preserved. Thus, an unpatched LaTeX2e can allow a
+% single column figure to be placed prior to an earlier double column
+% figure.
+% Be aware that LaTeX2e kernels dated 2015 and later have fixltx2e.sty's
+% corrections already built into the system in which case a warning will
+% be issued if an attempt is made to load fixltx2e.sty as it is no longer
+% needed.
+% The latest version and documentation can be found at:
+% http://www.ctan.org/pkg/fixltx2e
+
+
+%\usepackage{stfloats}
+% stfloats.sty was written by Sigitas Tolusis. This package gives LaTeX2e
+% the ability to do double column floats at the bottom of the page as well
+% as the top. (e.g., "\begin{figure*}[!b]" is not normally possible in
+% LaTeX2e). It also provides a command:
+%\fnbelowfloat
+% to enable the placement of footnotes below bottom floats (the standard
+% LaTeX2e kernel puts them above bottom floats). This is an invasive package
+% which rewrites many portions of the LaTeX2e float routines. It may not work
+% with other packages that modify the LaTeX2e float routines. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/pkg/stfloats
+% Do not use the stfloats baselinefloat ability as the IEEE does not allow
+% \baselineskip to stretch. Authors submitting work to the IEEE should note
+% that the IEEE rarely uses double column equations and that authors should try
+% to avoid such use. Do not be tempted to use the cuted.sty or midfloat.sty
+% packages (also by Sigitas Tolusis) as the IEEE does not format its papers in
+% such ways.
+% Do not attempt to use stfloats with fixltx2e as they are incompatible.
+% Instead, use Morten Hogholm'a dblfloatfix which combines the features
+% of both fixltx2e and stfloats:
+%
+% \usepackage{dblfloatfix}
+% The latest version can be found at:
+% http://www.ctan.org/pkg/dblfloatfix
+
+
+
+
+% *** PDF, URL AND HYPERLINK PACKAGES ***
+%
+%\usepackage{url}
+% url.sty was written by Donald Arseneau. It provides better support for
+% handling and breaking URLs. url.sty is already installed on most LaTeX
+% systems. The latest version and documentation can be obtained at:
+% http://www.ctan.org/pkg/url
+% Basically, \url{my_url_here}.
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
 \usepackage{amsthm}
-
-% \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
-
-%%% PACKAGES
-\usepackage{booktabs} % for much better looking tables
-\usepackage{array} % for better arrays (eg matrices) in maths
-\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
-\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
-\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
-% These packages are all incorporated in the memoir class to one degree or another...
-
+\usepackage{bussproofs}
 \usepackage{minted}
 \usepackage{stmaryrd}
 
-%%% HEADERS & FOOTERS
-\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
-\pagestyle{fancy} % options: empty , plain , fancy
-\renewcommand{\headrulewidth}{0pt} % customise the layout...
-\lhead{}\chead{}\rhead{}
-\lfoot{}\cfoot{\thepage}\rfoot{}
+% *** Do not adjust lengths that control margins, column widths, etc. ***
+% *** Do not use packages that alter fonts (such as pslatex).         ***
+% There should be no need to do such things with IEEEtran.cls V1.6 and later.
+% (Unless specifically asked to do so by the journal or conference you plan
+% to submit to, of course. )
 
-%%% SECTION TITLE APPEARANCE
-\usepackage{sectsty}
-\allsectionsfont{\sffamily\mdseries\upshape} % (See the fntguide.pdf for font help)
-% (This matches ConTeXt defaults)
 
-\usepackage{bussproofs}
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
 
-%%% ToC (table of contents) APPEARANCE
-\usepackage[nottoc,notlof,notlot]{tocbibind} % Put the bibliography in the ToC
-\usepackage[titles,subfigure]{tocloft} % Alter the style of the Table of Contents
-\renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
-\renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
-
-%%\usepackage{natbib}
-
-%%% END Article customizations
-
-%%% The "real" document content comes below...
-
-\title{Automatically Lifting Software Analyses to Product Lines}
-\author{Ramy Shahin}
-%\date{} % Activate to display a given date or no date (if empty),
-         % otherwise the current date is printed 
 
 \begin{document}
+%
+% paper title
+% Titles are generally capitalized except for words such as a, an, and, as,
+% at, but, by, for, in, nor, of, on, or, the, to and up, which are usually
+% not capitalized unless they are the first or last word of the title.
+% Linebreaks \\ can be used within to get better formatting as desired.
+% Do not put math or special symbols in the title.
+\title{Automatically Lifting Functional Software Analyses to Product Lines}
+
+% author names and affiliations
+% use a multiple column layout for up to three different
+% affiliations
+\author{\IEEEauthorblockN{Ramy Shahin}
+\IEEEauthorblockA{Computer Science Department\\
+University of Toronto\\
+Email: ramy.shahin@mail.utoronto.ca}
+\and
+\IEEEauthorblockN{Marsha Chechik}
+\IEEEauthorblockA{Computer Science Department\\
+University of Toronto\\
+Email: chechik@cs.toronto.edu}}
+
+% conference papers do not typically use \thanks and this command
+% is locked out in conference mode. If really needed, such as for
+% the acknowledgment of grants, issue a \IEEEoverridecommandlockouts
+% after \documentclass
+
+% for over three affiliations, or if they all won't fit within the width
+% of the page, use this alternative format:
+% 
+%\author{\IEEEauthorblockN{Michael Shell\IEEEauthorrefmark{1},
+%Homer Simpson\IEEEauthorrefmark{2},
+%James Kirk\IEEEauthorrefmark{3}, 
+%Montgomery Scott\IEEEauthorrefmark{3} and
+%Eldon Tyrell\IEEEauthorrefmark{4}}
+%\IEEEauthorblockA{\IEEEauthorrefmark{1}School of Electrical and Computer Engineering\\
+%Georgia Institute of Technology,
+%Atlanta, Georgia 30332--0250\\ Email: see http://www.michaelshell.org/contact.html}
+%\IEEEauthorblockA{\IEEEauthorrefmark{2}Twentieth Century Fox, Springfield, USA\\
+%Email: homer@thesimpsons.com}
+%\IEEEauthorblockA{\IEEEauthorrefmark{3}Starfleet Academy, San Francisco, California 96678-2391\\
+%Telephone: (800) 555--1212, Fax: (888) 555--1212}
+%\IEEEauthorblockA{\IEEEauthorrefmark{4}Tyrell Inc., 123 Replicant Street, Los Angeles, California 90210--4321}}
+
+
+
+
+% use for special paper notices
+%\IEEEspecialpapernotice{(Invited Paper)}
+
+
+
+
+% make the title area
 \maketitle
+
+% As a general rule, do not put math, special symbols or citations
+% in the abstract
+\begin{abstract}
+TODO
+\end{abstract}
+
+% no keywords
+
+
+
+
+% For peer review papers, you can put extra information on the cover
+% page as needed:
+% \ifCLASSOPTIONpeerreview
+% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
+% \fi
+%
+% For peerreview papers, this IEEEtran command inserts a page break and
+% creates the second title. It will be ignored for other modes.
+\IEEEpeerreviewmaketitle
+
+
 
 \theoremstyle{definition}
 \newtheorem{exmp}{Example}[section]
@@ -78,7 +406,7 @@
 \newcommand{\term}[1]		{\mathrm{#1}}
 \newcommand{\var}[1]		{\mathrm{#1}}
 \newcommand{\type}[1]		{\mathrm{#1}}
-\newcommand{\kw}[1]	{\mathrm{#1}}
+\newcommand{\kw}[1]		{\mathrm{#1}}
 \newcommand{\ite}[3]		{\kw{if} \: #1 \: \kw{then} \: #2 \: \kw{else} \: #3}
 
 \section{Introduction}
@@ -89,12 +417,33 @@
 
 \section{Background}
 
-\subsection{Propositional Logic}
-TODO (syntax, semantics, sat and unsat)
+\subsection{Software Product Lines}
+
+Given a set of features $F$:
+\begin{itemize}
+	\item $P[F]$ is the set of propositional formulas over $F$
+	\item $sat:P[F] \to boolean$, \[ sat(p) = \begin{cases}
+			true\ \text{if p is propositionally satisfiable} \\
+			false\ \text{otherwise}
+		\end{cases} \]
+	\item $unsat:P[F] \to boolean$, \[ unsat(p) = \begin{cases}
+			true\ \text{if p is propositionally unsatisfiable} \\
+			false\ \text{otherwise}
+		\end{cases} \]
+
+\end{itemize}
+
+A product line $P$ it a tuple $<F,\Phi,D,\phi>$ where:
+\begin{itemize}
+	\item $F$ is a set of features
+	\item $\Phi \in P[F]$ (the feature model) is a propositional formula over $F$
+	\item $D$ (the domain model) is a set of domain elements
+	\item $\phi : D \to P[F]$ is a total function mapping each domain elements to a propositional formula over $F$, known as a Presence Condition(PC)
+\end{itemize}
 
 \subsection{Typed Lambda Calculus}
 
-We assume that analyses are written in a Typed Lambda Calculus (TLC) based language. This is a summary of the TLC syntax and semantics from\cite{Pierce2002}.
+This is a summary of the TLC syntax and semantics from\cite{Pierce2002}.
 
 \subsubsection{Syntax}
 
@@ -160,214 +509,211 @@ $\Gamma ::=$						&	\tab (contexts)		\\
 \BinaryInfC{$\Gamma \vdash \term{t_1} \: \term{t_2} : \type{T_2}$}
 \end{prooftree}
 
-\subsection{Software Product Lines}
+\subsection{Functional Software Analyses}
+We assume that a Software Analysis is a TLC program $G$ that analyzes a single instance of product line $L$. 
 
-These formal definitions are adapted from the ones in\cite{Salay2014}:
 
-A product line $P$ it a tuple $<F,\Phi,D,\phi>$ where:
+\section{Lifting Typed Lambda Calculus}
+
+The goal of this work is to automatically lift functional software analyses to work on product lines rather than individual product instances. Since we assume that functional analyses are written in TLC, then we just need to provide sound syntactic transformation rules that lift each of the TLC syntactic constructs. Those transformation rules can be applied to any software analysis written in TLC, resulting in an equivalent analysis that can be applied to a Software Product Line.
+
+In the following description of the transformation rules we use Haskell syntax. This way we can use several functional constructs (parametric types, lists, pairs) without loss of generality, as those constructs have standard definitions on top of TLC \cite{Pierce2002}.
+
+When lifting an analysis from products to product lines, we need to appropriately tag values with their corresponding presence conditions. We use the \emph{PresenceCondition} abstract data type for this purpose.
+
+\subsection{Lifting Types}
+Given a type \textbf{t}, we lift it into type \textbf{Var t} which is:
+
+\begin{minted}{haskell}
+type Var t = [(Maybe t, PresenceCondition)]
+\end{minted}
+
+where:
 \begin{itemize}
-	\item $F$ is a set of features
-	\item $\Phi$ (the feature model) is a propositional formula over $F$
-	\item $D$ (the domain model) is a set of domain elements
-	\item $\phi : D \to PC$ is a total function mapping domain elements to presence conditions %TODO
+\item \textbf{t} is a type parameter that can be instantiated with any type
+\item \textbf{Maybe t} is  an Option type. Elements of this type are either \textbf{Nothing}, or \textbf{Just x}, where \textbf{x} is of type \textbf{t}. We use an option type because a value does not necessarily have to exist in all products of the product line.
+\item \textbf{(Maybe t, PresenceCondition)} is a pair of a value of type \textbf{t} together with a \textbf{PresenceCondition}
+\item \textbf{[(Maybe t, PresenceCondition)]} is a list of such pairs
+\item \textbf{Var t $\equiv$ [(Maybe t, PresenceCondition)]} is a parametric data type, instantiated by passing the type argument \textbf{t} to the type constructor \textbf{Var}
 \end{itemize}
 
-%\subsubsection{Product Variability}
+A variable of type \textbf{t} in a product line might actually have different values in different products, hence the multiplicity of items in a list. The \textbf{PresenceCondition} tags are used to keep track of which values correspond to which products. For this to be semantically correct we need to make sure that the sets of products represented by those presence conditions do not overlap, otherwise we might end up with a product variable having different values at the same time. This \textbf{disjointness} requirement is formalized in the following invariant:
 
-%\subsubsection{Features}
+\newtheorem*{disjInv*}{Disjointness Invariant}
+\begin{disjInv*}
+Given a lifted value $v = [(v_0, pc_0), ... (v_n, pc_n)]$, $\forall i \neq j: {unsat (pc_i \wedge pc_j)}$
+\end{disjInv*}
 
-%\subsubsection{Presence Conditions}
-%Software Product Lines (SPLs) are built on top of both common and variable software artifacts. Common artifacts exist in all products of the product line, while variable artifacts exist only in a non-empty subset of valid products. That subset is defined using a \emph{Presence Condition}: a propositional formula over product line features.
+The invariant simply states that a lifted value can not have different values with presence condition that overlap. The \emph{unsat} function takes a proposition and returns true if and only if that proposition is unsatisfiable. The conjunction of two presence conditions is unsatisfiable if and only if they represent non-overlapping sets of products.
 
-%\subsubsection{Product Generation}
+This invariant is a precondition on inputs into the program being lifted, and in the following sections we will show how its validity is maintained by the lifting transformations.
 
-\subsection{Software Analyses}
-We assume that a Software Analysis is a TLC program $G$ that analyzes a single instance of the product line $P$. 
+Another invariant is that a \textbf{Var t} value covers the full product space:
 
+\newtheorem*{covInv*}{Full Coverage Invariant}
+\begin{covInv*}
+Given a lifted value $v = [(v_0, pc_0), ... (v_n, pc_n)]$, $\bigvee_{i} pc_i = \top $
+\end{covInv*}
 
-%\section{Lifting Typed Lambda Calculus}
+This invariant is not necessary for soundness, but it makes formal treatment of this framework more straightforward. It simply states that the presence conditions of a \textbf{Var t} value form a partition of the truth assignments over the feature set $F$.
 
-%By lifting Typed Lambda Calculus (TLC), we mean providing syntactic transformation rules that lift any program written in TLC by compositionally lifting TLC syntactic constructs. Those transformation rules can be applied to any software analysis written in TLC, resulting in an equivalent analysis that can be applied to a Software Product Line.
+\subsection{Lifting Values}
 
-%In the following description of the transformation rules we use Haskell syntax. This way we can use several functional constructs (parametric types, lists, pairs) without loss of generality, as the construction of those constructs on top of TLC is standard \cite{Pierce2002}.
+To lift a value of type \textbf{t}, all we need to is to provide a presence condition for it, and then encapsulate both into a value of type \textbf{Var t}. This is what the following \textbf{lift} operator does:
 
-%When lifting an analysis from products to product lines, we need to appropriately tag variable artifacts with their corresponding presence conditions. We use the \emph{PresenceCondition} abstract data type for this purpose.
+\begin{minted}{haskell}
+lift :: PresenceCondition -> t -> Var t
+lift pc x = [(Just x,pc), (Nothing, neg pc)]
+\end{minted}
 
-%\subsection{Lifting Types}
-%Given a type \textbf{t}, we lift it into type \textbf{Lifted t} which is:
+This operator can be applied to values of any type, including functions. The importance of lifting function values will be clear in the following subsection.
 
-%\begin{minted}{haskell}
-%type Lifted t = [(t, PresenceCondition)]
-%\end{minted}
+In many cases we need to provide the most general presence condition, which is \textbf{True} (the set of all products). For this we provide the following \textbf{liftT} operator:
 
-%where:
-%\begin{itemize}
-%\item \textbf{t} is a type parameter that can be instantiated with any type
-%\item \textbf{(t, PresenceCondition)} is a pair of a value of type \textbf{t} together with a \textbf{PresenceCondition}
-%\item \textbf{[(t, PresenceCondition)]} is a list of such pairs
-%\item \textbf{Lifted t $\equiv$ [(t, PresenceCondition)]} is a parametric data type, instantiated by passing the type argument \textbf{t} to the type constructor \textbf{Lifted}
-%\end{itemize}
+\begin{minted}{haskell}
+liftT :: t -> Var t
+liftT x = lift True x
+\end{minted}
 
-%A variable of type \textbf{t} in a product line might actually have different values in different products, hence the multiplicity of items in a list. The \textbf{PresenceCondition} tags are used to keep track of which values correspond to which products. For this to be semantically correct we need to make sure that the sets of products represented by those presence conditions do not overlap, otherwise we might end up with a product variable having different values at the same time. This \textbf{disjointness} requirement is formalized in the following invariant:
+Input values to analyses from product lines will typically be of lifted types. For example, an integer can have one value in a set of products, and a different value in another set. 
 
-%\newtheorem*{disjInv*}{Disjointness Invariant}
-%\begin{disjInv*}
-%Given a lifted value $v = [(v_0, pc_0), ... (v_n, pc_n)]$, $\forall i \neq j: {unsat (pc_i \wedge pc_j)}$
-%\end{disjInv*}
+\begin{exmp}[Lifted Values]
 
-%The invariant simply states that a lifted value can not have different values with presence condition that overlap. The \emph{unsat} function takes a proposition and returns true if and only if that proposition is unsatisfiable. The conjunction of two presence conditions is unsatisfiable if and only if they represent non-overlapping sets of products.
+Assuming we have two features A and B, variables x and y of type \textbf{Var Int} and variable z of type \textbf{Var String} can have the following values: \\
 
-%This invariant is a precondition on inputs into the program being lifted, and in the following sections we will show how its validity is maintained by the lifting transformations.
+x = [(Just 1,A),(Just (-2), $\neg A \wedge B$),(Just 3, $\neg A \wedge \neg B$)]
 
-%\subsection{Lifting Values}
+y = [(Just 5, $A \wedge \neg B$), (Just 4,B), (Just (-3), $\neg A \wedge \neg B$)]
 
-%To lift a value of type \textbf{t}, all we need to is to provide a presence condition for it, and then encapsulate both into a value of type \textbf{Lifted t}. This is what the following \textbf{lift} operator does:
+z = [(Just "hello", $\neg A \wedge B$),(Just "helloooo", A), (Nothing, $\neg A \wedge \neg B$] \\
 
-%\begin{minted}{haskell}
-%lift :: PresenceCondition -> t -> Lifted t
-%lift pc x = [(x, pc)]
-%\end{minted}
+\end{exmp}
 
-%This operator can be applied to values of any type, including functions. The importance of lifting function values will be clear in the following subsection.
+\subsection{Applying Lifted Functions}
 
-%In many cases we need to provide the most general presence condition, which is \textbf{True} (the set of all products). For this we provide the following \textbf{liftT} operator:
+Now that we have lifted values (both data and functions), we need to provide a way to apply lifted functions to lifted operands. This is how data propagates through a functional program. Starting with the simplest case, where we have a lifted unary function of type \textbf{Var (a $\to$ b)} and an argument of type \textbf{Var a} we need to provide a way to apply that function to its argument resulting in a \textbf{Var b} value.
 
-%\begin{minted}{haskell}
-%liftT :: t -> Lifted t
-%liftT x = lift True x
-%\end{minted}
+Recall that a lifted value of type \textbf{Var t} is just a collection of values of type \textbf{t}, each with a corresponding presence condition, and the whole lifted value has to satisfy the disjointness Invariant. So to apply a collection of functions to a collection of values, all we need to is to apply each of the functions to each of the values. Since the result has to be a lifted value, then we also need a presence condition for each of the computed values. This presence condition is simply the conjunction of the presence conditions of the function and the argument used to compute it. If the conjunction of the presence conditions is unsatisfiable (i.e. a contradiction), it means that the corresponding value does not belong to any product, so it can be safely filtered out. This is how the apply function looks in Haskell:
 
-%Input values to analyses from product lines will typically be of lifted types. For example, an integer can have one value in a set of products, and a different value in another set. 
+\begin{minted}{haskell}
+apply :: Var (a -> b) -> Var a -> Var b
+apply (Var fn) (Var x) =
+  Var [(case (fn', x') of
+    (Just fn'', Just x'') -> Just (fn'' x'')
+    (_,_) -> Nothing
+  , pc) 
+       | (fn', fnpc) <- fn,
+         (x', xpc) <- x,
+         let pc = conj[fnpc, xpc],
+         (sat pc)]
+\end{minted}
 
-%\begin{exmp}[Lifted Values]
+\begin{exmp}[Unary function application]
 
-%Assuming we have two features A and B, variables x and y of type \textbf{Lifted Int} and variable z of type \textbf{Lifted String} can have the following values: \\
+Assume that we need to be apply the absolute value function (\emph{abs}) to the lifted variable \emph{x} from the previous example. Since \emph{x} is lifted, we need a lifted version of \emph{abs}, which we can simply get by using the liftT function:
 
-%x = [(1,A),(-2, $\neg A \wedge B$),(3, $\neg A \wedge \neg B$)]
+\begin{minted}{haskell}
+liftedAbs = liftT abs
+\end{minted}
 
-%y = [(5, $A \wedge \neg B$), (4,B), (-3, $\neg A \wedge \neg B$)]
+Now we can apply \emph{liftedAbs} to \emph{x}:
 
-%z = [("hello", $\neg A \wedge B$),("helloooo", A)] \\
+\begin{minted}{haskell}
+abs_x = apply liftedAbs x
+\end{minted}
 
+The \emph{apply} function applies a lifted function to a lifted value (of matching type), resulting in a lifted value. In this example, the result \emph{abs\_x} will have the value: \\
 
-%Both x and y satisfy the disjointness invariant. It is worth mentioning that a lifted value does not have to be defined in each product in the product line. For example, z is not defined in the product identified by the presence condition $(\neg A \wedge \neg B)$.
+[(Just 1,A),(Just 2, $\neg A \wedge B$), (Just 3, $\neg A\wedge \neg B$)].
 
-%\end{exmp}
+\end{exmp}
 
-%\subsection{Applying Lifted Functions}
+\begin{exmp}[Binary function application]
 
-%Now that we have lifted values (both data and functions), we need to provide a way to apply lifted functions to lifted operands. This is how data propagates through a functional program. Starting with the simplest case, where we have a lifted unary function of type \textbf{Lifted (a $\to$ b)} and an argument of type \textbf{Lifted a} we need to provide a way to apply that function to its argument resulting in a \textbf{Lifted b} value.
+Now assume that we would like to add \emph{x} and \emph{y}. The first step is to get a lifted version of the (+) operator:
 
-%Recall that a lifted value of type \textbf{Lifted t} is just a collection of values of type \textbf{t}, each with a corresponding presence condition, and the whole lifted value has to satisfy the disjointness Invariant. So to apply a collection of functions to a collection of values, all we need to is to apply each of the functions to each of the values. Since the result has to be a lifted value, then we also need a presence condition for each of the computed values. This presence condition is simply the conjunction of the presence conditions of the function and the argument used to compute it. If the conjunction of the presence conditions is unsatisfiable (i.e. a contradiction), it means that the corresponding value does not belong to any product, so it can be safely filtered out. This is how the apply function looks in Haskell:
+\begin{minted}{haskell}
+plus = (+)
+liftedPlus = liftT plus
+\end{minted}
 
+The function \emph{apply} takes a function and a single argument, so how do we extend it beyond unary functions?
 
-%\begin{exmp}[Unary function application]
+Actually this is no different from functions in TLC, where all functions are unary, and functions of higher arities are just Curried higher-order functions \cite{Pierce2002}. If we pass \emph{liftedPlus} and \emph{x} to apply, it will apply the binary lifted operator \emph{liftedPlus} to a single lifted argument \emph{x}:
 
-%Assume that we need to be apply the absolute value function (\emph{abs}) to the lifted variable \emph{x} from the previous example. Since \emph{x} is lifted, we need a lifted version of \emph{abs}, which we can simply get by using the liftT function:
+\begin{minted}{haskell}
+intermediateVal = apply liftedPlus x
+\end{minted}
 
-%\begin{minted}{haskell}
-%liftedAbs = liftT abs
-%\end{minted}
+But since multi-parameter functions are actually Curried unary functions, \emph{intermediateVal} is a lifted unary function [(Just (plus 1), A),(Just (plus -2), $\neg A \wedge B$),(Just (plus 3), $\neg A \wedge \neg B$)].
 
-%Now we can apply \emph{liftedAbs} to \emph{x}:
+Now we just need to apply \emph{intermediateVal}, which is actually a lifted unary function, to \emph{y}:
 
-%\begin{minted}{haskell}
-%abs_x = apply liftedAbs x
-%\end{minted}
+\begin{minted}{haskell}
+finalVal = apply intermediateVal y
+\end{minted}
 
-%The \emph{apply} function applies a lifted function to a lifted value (of matching type), resulting in a lifted value. In this example, the result \emph{abs\_x} will have the value: \\
+The result in \emph{finalVal} is: \\
 
-%[(1,A),(2, $\neg A \wedge B$), (3, $\neg A\wedge \neg B$)].
+[(Just 6, $A \wedge \neg B$), (Just 5, $A \wedge B$), (Just 2, $\neg A \wedge B$), (Just 0, $\neg A \wedge \neg B$)] \\
 
-%\end{exmp}
+Recall that apply generates the cross product of its arguments (each of them a list of values labeled with presence conditions), and excludes the pairs where the conjunction of presence conditions is not satisfiable. This is why finalVal has only four possible values, although the cross product initially had 9.
 
-%\begin{exmp}[Binary function application]
+As a shortcut, we can define a binary version of \emph{apply} (let us call it \emph{apply2}) that implements this pattern of partial function application and Currying:
 
-%Now assume that we would like to add \emph{x} and \emph{y}. The first step is to get a lifted version of the (+) operator:
+\begin{minted}{haskell}
+apply2 :: Var (a -> b -> c) -> 
+	  Var a -> Var b -> Var c
+apply2 fn a b = apply (apply fn a) b
+\end{minted}
 
-%\begin{minted}{haskell}
-%plus = (+)
-%liftedPlus = liftT plus
-%\end{minted}
+Versions of \emph{apply} for functions of other aritiies  can be defined similarly:
 
-%The function \emph{apply} takes a function and a single argument, so how do we extend it beyond unary functions?
+\begin{minted}{haskell}
+apply3 :: Var (a -> b -> c -> d) -> 
+          Var a -> Var b -> Var c -> Var d
+apply3 fn a b c = apply (apply2 fn a b) c
+...
+\end{minted}
 
-%Actually this is no different from functions in TLC, where all functions are unary, and functions of higher arities are just Curried higher-order functions \cite{Pierce2002}. If we pass \emph{liftedPlus} and \emph{x} to apply, it will apply the binary lifted operator \emph{liftedPlus} to a single lifted argument \emph{x}:
+\end{exmp}
 
-%\begin{minted}{haskell}
-%intermediateVal = apply liftedPlus x
-%\end{minted}
+\begin{exmp}[Conditional Expression]
 
-%But since multi-parameter functions are actually Curried unary functions, \emph{intermediateVal} is a lifted unary function [((plus 1), A),((plus -2), $\neg A \wedge B$),((plus 3), $\neg A \wedge \neg B$)].
+An \emph{if-then-else} expression is just syntactic sugar for a ternary polymorphic function, taking a boolean argument and two arguments of type \emph{t} and returning one of them depending on what the first argument evaluates to. We can easily de-sugar \emph{if-then-else} expressions into the following \emph{cond} function:
 
-%Now we just need to apply \emph{intermediateVal}, which is actually a lifted unary function, to \emph{y}:
+\begin{minted}{haskell}
+cond :: Bool -> t -> t -> t
+cond p a b = if p then a else b
+\end{minted}
 
-%\begin{minted}{haskell}
-%finalVal = apply intermediateVal y
-%\end{minted}
+Now lifting a conditional expression is no different from lifting any other function:
 
-%The result in \emph{finalVal} is: \\
+\begin{minted}{haskell}
+condLifted = apply3 (liftT cond)
+\end{minted}
 
-%[(6, $A \wedge \neg B$), (5, $A \wedge B$), (2, $\neg A \wedge B$), (0, $\neg A \wedge \neg B$)] \\
+So for example the expression
 
-%Remember that apply generates the cross product of its arguments (each of them a list of values labeled with presence conditions), and excludes the pairs where the conjunction of presence conditions is not satisfiable. This is why finalVal has only four possible values, although the cross product initially had 9.
+\begin{minted}{haskell}
+if (x == y) then (x + y) else (x - y)
+\end{minted}
 
-%As a shortcut, we can define a binary version of \emph{apply} (let us call it \emph{apply2}) that implements this pattern of partial function application and Currying:
+Is lifted into:
 
-%\begin{minted}{haskell}
-%apply2 :: Lifted (a -> b -> c) -> Lifted a -> Lifted b -> Lifted c
-%apply2 fn a b = apply (apply fn a) b
-%\end{minted}
+\begin{minted}{haskell}
+liftedEq    a b = apply2 (liftT (==)) a b
+liftedPlus  a b = apply2 (liftT (+))  a b
+liftedMinus a b = apply2 (liftT (-))  a b
 
-%Versions of \emph{apply} for functions of other aritiies  can be defined similarly:
+condLifted (liftedEq x y) 
+           (liftedPlus x y) 
+           (liftedMinus x y)
+\end{minted}
 
-%\begin{minted}{haskell}
-%apply3 :: Lifted (a -> b -> c -> d) -> Lifted a -> Lifted b -> Lifted c -> Lifted d
-%apply3 fn a b c = apply (apply2 fn a b) c
+Please note that Haskell's lazy evaluation makes the de-sugared \emph{cond} function semantically equivalent to a conditional expression because only one of the \emph{then} and \emph{else} expressions is evaluated after the boolean condition is evaluated based on its truth value. However, a language with strict evaluation semantics would evaluate both the \emph{then} and \emph{else} expressions before they are passed to \emph{cond}. This is still fine if both expressions are pure (with no side-effects). However, if any of the expression has side effects, the equivalence between \emph{cond} and the typical conditional expression is broken.
 
-%apply4 :: Lifted (a -> b -> c -> d -> e) -> 
-%			Lifted a -> Lifted b -> Lifted c -> Lifted d -> Lifted e
-%apply4 fn a b c d = apply (apply3 fn a b c) d
-
-%...
-%\end{minted}
-
-%\end{exmp}
-
-%\begin{exmp}[Conditional Expression]
-
-%An \emph{if-then-else} expression is just syntactic sugar for a ternary polymorphic function, taking a boolean argument and two arguments of type \emph{t} and returning one of them depending on what the first argument evaluates to. We can easily de-sugar \emph{if-then-else} expressions into the following \emph{cond} function:
-
-%\begin{minted}{haskell}
-%cond :: Bool -> t -> t -> t
-%cond p a b = if p then a else b
-%\end{minted}
-
-%Now lifting a conditional expression is no different from lifting any other function:
-
-%\begin{minted}{haskell}
-%condLifted = apply3 (liftT cond)
-%\end{minted}
-
-%So for example the expression
-
-%\begin{minted}{haskell}
-%if (x == y) then (x + y) else (x - y)
-%\end{minted}
-
-%Is lifted into:
-
-%\begin{minted}{haskell}
-%liftedEq    a b = apply2 (liftT (==)) a b
-%liftedPlus  a b = apply2 (liftT (+))  a b
-%liftedMinus a b = apply2 (liftT (-))  a b
-
-%condLifted (liftedEq x y) (liftedPlus x y) (liftedMinus x y)
-%\end{minted}
-
-%Please not that Haskell's lazy evaluation makes the de-sugared \emph{cond} function semantically equivalent to a conditional expression because only one of the \emph{then} and \emph{else} expressions is evaluated after the boolean condition is evaluated based on its truth value. However, a language with strict evaluation semantics would evaluate both the \emph{then} and \emph{else} expressions before they are passed to \emph{cond}. This is still fine if both expressions are pure (with no side-effects). However, if any of the expression has side effects, the equivalence between \emph{cond} and the typical conditional expression is broken.
-
-%\end{exmp}
+\end{exmp}
 
 %\subsubsection{Lifting Composite Types}
 
@@ -375,43 +721,43 @@ We assume that a Software Analysis is a TLC program $G$ that analyzes a single i
 
 %\subsection{Lifting Parametric Types}
 
-\section{Formal Definitions and Theorems}
+%\section{Formal Definitions and Theorems}
 
-\subsection{Definitions}
-\subsubsection{Product Line Values}
-Given a type $t \in T$,  a value $\var{v}$ of type $\type{t}$, and the presence condition of $\var{v}$ is $\var{pc}$, then the pair $(\var{v}, \term{pc})$ is of the polymorphic type $\type{SPLVal} \: \type{t}$.
+%\subsection{Definitions}
+%\subsubsection{Product Line Values}
+%Given a type $t \in T$,  a value $\var{v}$ of type $\type{t}$, and the presence condition of $\var{v}$ is $\var{pc}$, then the pair $(\var{v}, \term{pc})$ is of the polymorphic type $\type{SPLVal} \: \type{t}$.
 
-\begin{prooftree}
-\AxiomC{$\type{t} \in T$}
-\AxiomC{$\var{v}:\type{t}$}
-\AxiomC{$\phi (\var{v}) = \term{pc}$}
-\RightLabel{(T-SPLVal)}
-\TrinaryInfC{$(\var{v}, \term{pc}) : \type{(SPLVal \: \type{t})}$}	
-\end{prooftree}
+%\begin{prooftree}
+%\AxiomC{$\type{t} \in T$}
+%\AxiomC{$\var{v}:\type{t}$}
+%\AxiomC{$\phi (\var{v}) = \term{pc}$}
+%\RightLabel{(T-SPLVal)}
+%\TrinaryInfC{$(\var{v}, \term{pc}) : \type{(SPLVal \: \type{t})}$}	
+%\end{prooftree}
 
-\begin{minted}{haskell}
-type SPLVal t = (t, PresenceCondition)
-\end{minted}
+%\begin{minted}{haskell}
+%type SPLVal t = (t, PresenceCondition)
+%\end{minted}
 
-\subsubsection{Product Line Variables}
+%\subsubsection{Product Line Variables}
 
-Given a type $t \in T$, the set $\{(x_1, pc_1),...,(x_n, pc_n)\}$ is of type $(\type{SPLVar} \: \type{t})$, where:
-\begin{itemize}
-\item $\forall i, (x_i, pc_i) : (\type{SPLVal} \: \type{t})$ (Correctness)
-\item $\forall (i \neq j), {unsat(\var{pc}_i \wedge \var{pc}_j)}$ (Disjointness)
-\end{itemize}
+%Given a type $t \in T$, the set $\{(x_1, pc_1),...,(x_n, pc_n)\}$ is of type $(\type{SPLVar} \: \type{t})$, where:
+%\begin{itemize}
+%\item $\forall i, (x_i, pc_i) : (\type{SPLVal} \: \type{t})$ (Correctness)
+%\item $\forall (i \neq j), {unsat(\var{pc}_i \wedge \var{pc}_j)}$ (Disjointness)
+%\end{itemize}
 
-\begin{prooftree}
-\AxiomC{$\type{t} \in T$}
-\AxiomC{$(\var{x_1}, \var{pc_1}), ... , (\var{x_n}, \var{pc_n}) : (\type{SPLVal} \: \type{t})$}
-\AxiomC{$\forall (i \neq j), {unsat(\var{pc}_i \wedge \var{pc}_j)}$}
-\RightLabel{(T-SPLVar)}
-\TrinaryInfC{$\{(x_1, pc_1),...,(x_n, pc_n)\} : (\type{SPLVar} \: \type{t})$}	
-\end{prooftree}
+%\begin{prooftree}
+%\AxiomC{$\type{t} \in T$}
+%\AxiomC{$(\var{x_1}, \var{pc_1}), ... , (\var{x_n}, \var{pc_n}) : (\type{SPLVal} \: \type{t})$}
+%\AxiomC{$\forall (i \neq j), {unsat(\var{pc}_i \wedge \var{pc}_j)}$}
+%\RightLabel{(T-SPLVar)}
+%\TrinaryInfC{$\{(x_1, pc_1),...,(x_n, pc_n)\} : (\type{SPLVar} \: \type{t})$}	
+%\end{prooftree}
 
-\begin{minted}{haskell}
-type SPLVar t = [SPLVal t]
-\end{minted}
+%\begin{minted}{haskell}
+%type SPLVar t = [SPLVal t]
+%\end{minted}
 
 %\newtheorem*{prodValid*}{Product Validity}
 %\begin{prodValid*}
@@ -428,55 +774,55 @@ type SPLVar t = [SPLVal t]
 %Given an SPLVar $v = [(v_0, pc_0), ... (v_n, pc_n)]$, $\forall i \neq j: {unsat (pc_i \wedge pc_j)}$
 %\end{disjInv*}
 
-\subsubsection{Function Definition}
-Given a function $\var{f} : \type{a_1} \to ... \to \type{a_n} \to \type{b}$ where $\exists i, \type{a_i} \in T$, \\
-we define $\var{f'} : \type{SPLVar} \: (\type{a_1} \to ... \to \type{a_n} \to \type{b})$, where $\var{f'} = \{(\var{f}, True)\}$
+%\subsubsection{Function Definition}
+%Given a function $\var{f} : \type{a_1} \to ... \to \type{a_n} \to \type{b}$ where $\exists i, \type{a_i} \in T$, \\
+%we define $\var{f'} : \type{SPLVar} \: (\type{a_1} \to ... \to \type{a_n} \to \type{b})$, where $\var{f'} = \{(\var{f}, True)\}$
 
-\begin{prooftree}
-\AxiomC{$\var{f} : \type{a_1} \to ... \to \type{a_n} \to \type{b}$}
-\AxiomC{$\exists i, \type{a_i} \in T$}
-\RightLabel{(T-SPLVar-f)}
-\BinaryInfC{$\var{f'} : \type{SPLVar} \: (\type{a_1} \to ... \to \type{a_n} \to \type{b}) = \{(\var{f}, True)\}$}	
-\end{prooftree}
+%\begin{prooftree}
+%\AxiomC{$\var{f} : \type{a_1} \to ... \to \type{a_n} \to \type{b}$}
+%\AxiomC{$\exists i, \type{a_i} \in T$}
+%\RightLabel{(T-SPLVar-f)}
+%\BinaryInfC{$\var{f'} : \type{SPLVar} \: (\type{a_1} \to ... \to \type{a_n} \to \type{b}) = \{(\var{f}, True)\}$}	
+%\end{prooftree}
 
-\begin{minted}{haskell}
-f' :: SPLVar (a -> b)
-f' = [(f, True)]
-\end{minted}
+%\begin{minted}{haskell}
+%f' :: SPLVar (a -> b)
+%f' = [(f, True)]
+%\end{minted}
 
 %Here the newly defined SPL function variable $f'$ is a singleton wrapper of the original function $f$, and making it applicable to all products. The SPLVar $f'$ obviously satisfies the disjointness condition, and because it is a fresh variable that does not exist in $G$ the correctness condition does not apply to it.
 
-\subsubsection{Function Application}
+%\subsubsection{Function Application}
 
-Given a function $\var{f'} : \type{SPLVar} \: (\type{a} \to \type{b})$ 
-and a variable $\var{x} : (\type{SPLVar} \: \type{a})$, 
-the result of applying $\var{f'}$ to $\var{x}$ is the set 
-$\{(\var{f''}(\var{x'}), \var{fpc} \wedge \var{xpc}) \: | \: (\var{f''}, \var{fpc}) \in \var{f'}, (\var{x'}, \var{xpc}) \in x, sat(\var{fpc} \wedge \var{xpc})\}$
+%Given a function $\var{f'} : \type{SPLVar} \: (\type{a} \to \type{b})$ 
+%and a variable $\var{x} : (\type{SPLVar} \: \type{a})$, 
+%the result of applying $\var{f'}$ to $\var{x}$ is the set 
+%$\{(\var{f''}(\var{x'}), \var{fpc} \wedge \var{xpc}) \: | \: (\var{f''}, \var{fpc}) \in \var{f'}, (\var{x'}, \var{xpc}) \in x, sat(\var{fpc} \wedge \var{xpc})\}$
 
-\begin{prooftree}
-\AxiomC{$\var{f'} : \type{SPLVar} \: (\type{a} \to \type{b})$}
-\AxiomC{$\var{x} : (\type{SPLVar} \: \type{a})$}
-\RightLabel{(E-SPL-apply)}
-\BinaryInfC{$(\var{apply} \: \var{f'} \: \var{x}) = \{(\var{f''}(\var{x'}), \var{fpc} \wedge \var{xpc}) \: | \: (\var{f''}, \var{fpc}) \in \var{f'}, (\var{x'}, \var{xpc}) \in x, sat(\var{fpc} \wedge \var{xpc})\}$}	
-\end{prooftree}
+%\begin{prooftree}
+%\AxiomC{$\var{f'} : \type{SPLVar} \: (\type{a} \to \type{b})$}
+%\AxiomC{$\var{x} : (\type{SPLVar} \: \type{a})$}
+%\RightLabel{(E-SPL-apply)}
+%\BinaryInfC{$(\var{apply} \: \var{f'} \: \var{x}) = \{(\var{f''}(\var{x'}), \var{fpc} \wedge \var{xpc}) \: | \: (\var{f''}, \var{fpc}) \in \var{f'}, (\var{x'}, \var{xpc}) \in x, sat(\var{fpc} \wedge \var{xpc})\}$}	
+%\end{prooftree}
 
-\begin{minted}{haskell}
-apply :: SPLVar (a -> b) -> SPLVar a -> SPLVar b
-apply fn x = [(fnVal xVal, conj [fnPC,xPC]) 
-              | (fnVal,fnPC) <- fn, (xVal,xPC) <- x, sat(conj[fnPC,aPC])] 
-\end{minted}
+%\begin{minted}{haskell}
+%apply :: SPLVar (a -> b) -> SPLVar a -> SPLVar b
+%apply fn x = [(fnVal xVal, conj [fnPC,xPC]) 
+%              | (fnVal,fnPC) <- fn, (xVal,xPC) <- x, sat(conj[fnPC,aPC])] 
+%\end{minted}
 
 %Here we are using Haskell's list comprehension syntax to build the (SPLVar b) result of applying a lifted function to a single argument of type (SPLVar a). The function \textbf{conj} takes a list of presence conditions and returns their conjunction, and the function \textbf{sat} takes a presence condition (a symbolic proposition in general) and returns true if its argument is satisfiable, otherwise it returns false.
 
-As in almost all functional programming languages, Currying is the standard mechanism to extend application of single-argument functions to multi-argument functions. We provide versions of apply for different arities:
+%As in almost all functional programming languages, Currying is the standard mechanism to extend application of single-argument functions to multi-argument functions. We provide versions of apply for different arities:
 
-\begin{minted}{haskell}
-apply2 :: SPLVar (a -> b -> c) -> SPLVar a -> SPLVar b -> SPLVar c
-apply2 fn a = apply (apply fn a)
+%\begin{minted}{haskell}
+%apply2 :: SPLVar (a -> b -> c) -> SPLVar a -> SPLVar b -> SPLVar c
+%apply2 fn a = apply (apply fn a)
 
-apply3 :: SPLVar (a -> b -> c -> d) -> SPLVar a -> SPLVari b -> SPLVar c -> SPLVar d
-apply3 fn a b = apply (apply2 fn a b)
-\end{minted}
+%apply3 :: SPLVar (a -> b -> c -> d) -> SPLVar a -> SPLVari b -> SPLVar c -> SPLVar d
+%apply3 fn a b = apply (apply2 fn a b)
+%\end{minted}
 
 \subsection{Theorems}
 
@@ -533,20 +879,159 @@ Given v' = (apply f' x'), we need to prove that $(y, pc) \in v' \Leftrightarrow 
 
 \end{proof}
 
-\section{Examples and Evaluation}
+\section{Evaluation}
 
 \subsection{LTS Reachability with Witness}
 
-\subsection{TODO: Some other analysis}
+%\subsection{TODO: Some other analysis}
 
-\section{Discussion}
-\subsection{Deep vs Shallow Lifting}
+%\section{Discussion}
+%\subsection{Deep vs Shallow Lifting}
 
 \section{Related Work}
+TODO
+
+% An example of a floating figure using the graphicx package.
+% Note that \label must occur AFTER (or within) \caption.
+% For figures, \caption should occur after the \includegraphics.
+% Note that IEEEtran v1.7 and later has special internal code that
+% is designed to preserve the operation of \label within \caption
+% even when the captionsoff option is in effect. However, because
+% of issues like this, it may be the safest practice to put all your
+% \label just after \caption rather than within \caption{}.
+%
+% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class
+% option should be used if it is desired that the figures are to be
+% displayed while in draft mode.
+%
+%\begin{figure}[!t]
+%\centering
+%\includegraphics[width=2.5in]{myfigure}
+% where an .eps filename suffix will be assumed under latex, 
+% and a .pdf suffix will be assumed for pdflatex; or what has been declared
+% via \DeclareGraphicsExtensions.
+%\caption{Simulation results for the network.}
+%\label{fig_sim}
+%\end{figure}
+
+% Note that the IEEE typically puts floats only at the top, even when this
+% results in a large percentage of a column being occupied by floats.
+
+
+% An example of a double column floating figure using two subfigures.
+% (The subfig.sty package must be loaded for this to work.)
+% The subfigure \label commands are set within each subfloat command,
+% and the \label for the overall figure must come after \caption.
+% \hfil is used as a separator to get equal spacing.
+% Watch out that the combined width of all the subfigures on a 
+% line do not exceed the text width or a line break will occur.
+%
+%\begin{figure*}[!t]
+%\centering
+%\subfloat[Case I]{\includegraphics[width=2.5in]{box}%
+%\label{fig_first_case}}
+%\hfil
+%\subfloat[Case II]{\includegraphics[width=2.5in]{box}%
+%\label{fig_second_case}}
+%\caption{Simulation results for the network.}
+%\label{fig_sim}
+%\end{figure*}
+%
+% Note that often IEEE papers with subfigures do not employ subfigure
+% captions (using the optional argument to \subfloat[]), but instead will
+% reference/describe all of them (a), (b), etc., within the main caption.
+% Be aware that for subfig.sty to generate the (a), (b), etc., subfigure
+% labels, the optional argument to \subfloat must be present. If a
+% subcaption is not desired, just leave its contents blank,
+% e.g., \subfloat[].
+
+
+% An example of a floating table. Note that, for IEEE style tables, the
+% \caption command should come BEFORE the table and, given that table
+% captions serve much like titles, are usually capitalized except for words
+% such as a, an, and, as, at, but, by, for, in, nor, of, on, or, the, to
+% and up, which are usually not capitalized unless they are the first or
+% last word of the caption. Table text will default to \footnotesize as
+% the IEEE normally uses this smaller font for tables.
+% The \label must come after \caption as always.
+%
+%\begin{table}[!t]
+%% increase table row spacing, adjust to taste
+%\renewcommand{\arraystretch}{1.3}
+% if using array.sty, it might be a good idea to tweak the value of
+% \extrarowheight as needed to properly center the text within the cells
+%\caption{An Example of a Table}
+%\label{table_example}
+%\centering
+%% Some packages, such as MDW tools, offer better commands for making tables
+%% than the plain LaTeX2e tabular which is used here.
+%\begin{tabular}{|c||c|}
+%\hline
+%One & Two\\
+%\hline
+%Three & Four\\
+%\hline
+%\end{tabular}
+%\end{table}
+
+
+% Note that the IEEE does not put floats in the very first column
+% - or typically anywhere on the first page for that matter. Also,
+% in-text middle ("here") positioning is typically not used, but it
+% is allowed and encouraged for Computer Society conferences (but
+% not Computer Society journals). Most IEEE journals/conferences use
+% top floats exclusively. 
+% Note that, LaTeX2e, unlike IEEE journals/conferences, places
+% footnotes above bottom floats. This can be corrected via the
+% \fnbelowfloat command of the stfloats package.
+
+
+
 
 \section{Conclusion}
+TODO
+
+
+
+
+% conference papers do not normally have an appendix
+
+
+% use section* for acknowledgment
+%\section*{Acknowledgment}
+
+
+
+
+% trigger a \newpage just before the given reference
+% number - used to balance the columns on the last page
+% adjust value as needed - may need to be readjusted if
+% the document is modified later
+%\IEEEtriggeratref{8}
+% The "triggered" command can be changed if desired:
+%\IEEEtriggercmd{\enlargethispage{-5in}}
+
+% references section
+
+% can use a bibliography generated by BibTeX as a .bbl file
+% BibTeX documentation can be easily obtained at:
+% http://mirror.ctan.org/biblio/bibtex/contrib/doc/
+% The IEEEtran BibTeX style support page is at:
+% http://www.michaelshell.org/tex/ieeetran/bibtex/
+%\bibliographystyle{IEEEtran}
+% argument is your BibTeX string definitions and bibliography database(s)
+%\bibliography{IEEEabrv,../bib/paper}
+%
+% <OR> manually copy in the resultant .bbl file
+% set second argument of \begin to the number of references
+% (used to reserve space for the reference number labels box)
 
 \bibliography{paper} 
 \bibliographystyle{ieeetr}
 
+
+
+
+% that's all folks
 \end{document}
+
