@@ -1,23 +1,28 @@
 \documentclass[12pt]{article}
 \begin{document}
 \section{Evaluation}
-\subsection{Benchmarks}
-\subsubsection{Parsing C Code}
 
+\subsection{Evaluation Metrics}
+\subsubsection{Correctness}
+Correctness validation would involve enumerating outputs for all products and comparing them with the product-by-product output. Practically we can only do this for relatively small case studies with a few features. Simple FTS examples might be enough.
+
+The rest of the paper should provide correctness proofs, so the proofs together with small validation examples should adequately cover correctness. 
+
+\subsubsection{Performance}
+With respect to number of features and number of valid products.
+
+We should demonstrate black-box, white-box and gray-box lifting performance.
+
+Performance is evaluated for the baseline (black-box shallow lifting) and any optimizations that might be implemented. Possible optimizations might include:
 \begin{itemize}
-	\item Case studies from SPLVerifier (contributed to SVComp)
-	\begin{itemize}
-		\item email client
-		\item elevator
-		\item minepump
-	\end{itemize}
-	
-	\item \emph{Stretch goal:} x86 Linux kernel files (about 7600 files) used in the evaluation of Typechef and SuperC
+	\item Using the feature model to eliminate infeasible feature combinations early on (more computational load for the SAT solver though)
+	\item Using Binary Decision Diagrams (BDDs) instead of SAT solvers
+	\item Deep-lifting of the List data structure for space optimization and data redundancy elimination
+	\item Deep-lifting of other data structures
+	\item Deep-lifting of algorithms (as needed, based on profiling results)
 \end{itemize}
 
-\subsubsection{C Code Typechecking}
-On the same case studies used in C code parsing.
-We need a C type checker written in a functional language though to lift.
+\subsection{Benchmarks}
 
 \subsubsection{Simple LTS Algorithms}
 \begin{itemize}
@@ -25,22 +30,27 @@ We need a C type checker written in a functional language though to lift.
 	\item State reachability with witness
 \end{itemize}
 
-\subsubsection{Model Transformations (graph rules)}
-ICSE'14 paper
-
-\subsection{Evaluation Metrics}
-\subsubsection{Correctness}
-Especially for the parsing case study, we can compare against Typechef and SuperC.
-
-\subsubsection{Performance}
-With respect to number of features and number of valid products.
-
-Performance is evaluated for the baseline (black-box shallow lifting) and any optimizations that might be implemented. Possible optimizations include:
+\subsubsection{Parsing C Code}
 \begin{itemize}
-	\item Using Binary Decision Diagrams (BDDs) instead of SAT solvers
-	\item Deep-lifting of the List data structure for space optimization and data redundancy elimination
-	\item Deep-lifting of other data structures
-	\item Depp-lifting of algorithms (as needed, based on profiling results) 
+	\item GNU CoreUtils
+%	\item Case studies from SPLVerifier (contributed to SVComp)
+%	\begin{itemize}
+%		\item email client
+%		\item elevator
+%		\item minepump
+%	\end{itemize}
+	
+%	\item \emph{Stretch goal:} x86 Linux kernel files (about 7600 files) used in the evaluation of Typechef and SuperC
 \end{itemize}
+
+\subsubsection{C Code Analyses}
+On the same case studies used in C code parsing.
+\begin{itemize}
+	\item Typechecking: We need a C type checker written in a functional language though to lift.
+	\item A simple workflow of LLVM analyses (gray-box)
+\end{itemize}
+
+%\subsubsection{Model Transformations (graph rules)}
+%ICSE'14 paper
 
 \end{document}

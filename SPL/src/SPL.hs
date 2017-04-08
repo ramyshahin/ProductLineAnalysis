@@ -218,17 +218,17 @@ foldr' f' e' xs' =
 -}
 
 -- Lifted List (VList)
-type VList a = Var [a]
+--type VList a = Var [a]
 
-vnull :: VList a -> Var Bool
-vnull = liftV null
+--vnull :: VList a -> Var Bool
+--vnull = liftV null
 
-vhead = liftV head
+--vhead = liftV head
 
-vtail = liftV tail
+--vtail = liftV tail
 
-mkVList :: (Show t) => [Var t] -> Var [t]
-mkVList = foldr (|:|) e
+--mkVList :: (Show t) => [Var t] -> Var [t]
+--mkVList = foldr (|:|) e
 
 --mkVarList' :: (Show t) => Var [t] -> Var [t]
 --mkVarList' = foldr' (pure (:)) e
