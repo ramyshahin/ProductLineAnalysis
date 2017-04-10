@@ -4,8 +4,8 @@ import SPL
 
 type VList a = Var [a]
 
-ve :: Var [a]
-ve = mkVarT []
+vNil :: Var [a]
+vNil = mkVarT []
 
-vcons :: Var a -> Var [a] -> Var [a]
-vcons = liftV2 (:)
+vCons :: Var a -> Var [a] -> Var [a]
+vCons = liftV2 (:)

@@ -17,8 +17,30 @@ type VList a = Var (VList' a)
 vNil = mkVarT VNil'
 
 vCons :: Var a -> VList a -> VList a 
-vCons x xs = (liftV2 VCons') x (mkVarT xs)
+vCons x@(Var x') xs = 
+  Var ([(Just (VCons' x'' (subst xs xpc)), xpc) | (Just x'',xpc) <- x'] ++ 
+       nothingEls)
+  where nothingPC = undefinedAt x
+        nothingXs = subst xs nothingPC
+        nothingEls= case nothingXs of
+                          Var xs' -> (map (\(x,pc) -> (x,conj[pc, nothingPC])) xs') 
 
+head' :: VList' a -> a 
+head' xs = case xs of
+              VCons' x xs'' -> x 
+              _ -> error ""
+
+vHead :: VList a -> Var a 
+vHead = liftV head'
+
+tail' :: VList' a -> VList a
+tail' xs = case xs of
+            VNil' -> error ""
+            VCons' x xs -> xs
+
+vTail :: VList a -> VList a
+vTail (Var xs) =
+  Var 
 -- test
 u :: Universe
 u = mkUniverse ["P", "Q", "R", "S"]

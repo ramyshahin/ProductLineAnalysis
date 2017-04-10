@@ -78,9 +78,23 @@ valIndex (Var v) x =
                             _        -> False) 
                         v
 
-subst :: Show t => Var t -> PresenceCondition -> Var t
+subst :: Var t -> PresenceCondition -> Var t
 subst (Var v) pc =
     Var (filter (\(_,pc') -> sat (conj [pc,pc'])) v)
+
+definedAt :: Var t -> PresenceCondition
+definedAt (Var xs) = disj(pcs)
+    where   pcs     = map snd pairs
+            pairs   = filter (\(x,pc) -> case x of
+                                            Just _  ->  True
+                                            Nothing ->  False) xs
+
+undefinedAt :: Var t -> PresenceCondition
+undefinedAt (Var xs) = disj(pcs)
+    where   pcs     = map snd pairs
+            pairs   = filter (\(x,pc) -> case x of 
+                                            Just _  ->  False
+                                            Nothing ->  True) xs
 
 restrict :: PresenceCondition -> Var t -> Var t
 restrict pc (Var v) =
