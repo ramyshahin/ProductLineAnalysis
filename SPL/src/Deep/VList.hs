@@ -9,7 +9,7 @@ data List a =
 
 data VList' a =
     VNil'
-  | VCons' a (VList a)
+  | VCons' (Var a) (VList a)
   deriving Show
   
 type VList a = Var (VList' a)
@@ -17,21 +17,18 @@ type VList a = Var (VList' a)
 vNil = mkVarT VNil'
 
 vCons :: Var a -> VList a -> VList a 
-vCons x@(Var x') xs = 
-  Var ([(Just (VCons' x'' (subst xs xpc)), xpc) | (Just x'',xpc) <- x'] ++ 
-       nothingEls)
-  where nothingPC = undefinedAt x
-        nothingXs = subst xs nothingPC
-        nothingEls= case nothingXs of
-                          Var xs' -> (map (\(x,pc) -> (x,conj[pc, nothingPC])) xs') 
+vCons x@(Var x') xs@(Var xs') = union def undef 
+  where xdef = defSubst x
+        def = Var [(Just (VCons' hd (Var[p])), (definedAt hd)) | p@(xs'',xspc) <- xs', let hd = (restrict xspc xdef)]
+        undef = restrict (undefinedAt x) xs
 
-head' :: VList' a -> a 
+head' :: VList' a -> Var a 
 head' xs = case xs of
               VCons' x xs'' -> x 
               _ -> error ""
 
 vHead :: VList a -> Var a 
-vHead = liftV head'
+vHead xs = union2 $ (liftV head') xs
 
 tail' :: VList' a -> VList a
 tail' xs = case xs of
@@ -39,8 +36,8 @@ tail' xs = case xs of
             VCons' x xs -> xs
 
 vTail :: VList a -> VList a
-vTail (Var xs) =
-  Var 
+vTail xs = union2 $ (liftV tail') xs
+
 -- test
 u :: Universe
 u = mkUniverse ["P", "Q", "R", "S"]
@@ -68,3 +65,9 @@ y = mkVars [(-11, _p)]
 
 z :: Var Int
 z = mkVars [(6, p)]
+
+l0 = vNil
+l1 = vCons w l0
+l2 = vCons x l1
+l3 = vCons y l2
+l4 = vCons z l3

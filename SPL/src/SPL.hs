@@ -56,8 +56,9 @@ mkVarT v = Var [(Just v,T)]
 mkVars :: [(t,PresenceCondition)] -> Var t
 mkVars vs = let nothingPC = (neg . disj) (map snd vs) 
                 vs'       = map (\(v,pc) -> (Just v, pc)) vs
-            in  Var ((Nothing, nothingPC) : vs')
-
+            in  if (sat nothingPC)
+                then Var ((Nothing, nothingPC) : vs')
+                else Var vs'
 
 --mkVars vs = Var (map (\(v,pc) -> (Just v, pc)) vs)
 
@@ -98,11 +99,23 @@ undefinedAt (Var xs) = disj(pcs)
 
 restrict :: PresenceCondition -> Var t -> Var t
 restrict pc (Var v) =
-    Var $ map (\(x,pc') -> (x, conj[pc',pc])) v
+    Var $ filter (\(x,pc') -> sat pc') (map (\(x,pc') -> (x, conj[pc',pc])) v)
 
+defSubst :: Var t -> Var t 
+defSubst (Var v) = Var (filter (\(x,_) -> case x of
+                                            Just _  -> True
+                                            _       -> False) v)
+                                    
 union :: Var t -> Var t -> Var t
 union (Var a) (Var b) =
     Var (a ++ b)
+
+unions :: [Var t] -> Var t 
+unions xs = Var (foldr (++) [] (map (\(Var v) -> v) xs))
+
+union2 :: Var (Var t) -> Var t 
+union2 xs = unions (map (\(Just x,pc) -> (restrict pc x)) xs')
+    where (Var xs') = (defSubst xs)
 
 pairs :: [t] -> [(t,t)]
 pairs [] = []
