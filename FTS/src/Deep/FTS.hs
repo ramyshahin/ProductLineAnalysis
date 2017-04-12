@@ -5,7 +5,7 @@
 -------------------------------------------------------------------------------
 module Deep.FTS where
 import SPL
-import Data.List
+import Shallow.VList
 
 type State' = String
 type State = Var State'

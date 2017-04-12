@@ -17,30 +17,30 @@ mkVarStates begin end =
     if begin > end then e else (mkVarT s) |:| mkVarStates (begin + 1) end
     where s = "s" ++ (show begin)
 
-type State' = Var State
-type Guard' = Var Guard
-type Action' = Var Action
+type VState = Var State
+type VGuard = Var Guard
+type VAction = Var Action
 
 mkAction = liftV2 Action
 
-type Transition' = Var Transition
+type VTransition = Var Transition
 
 mkTransition = liftV3 Transition
-source' = liftV source
-target' = liftV target
-act' = liftV act
+vsource = liftV source
+vtarget = liftV target
+vact = liftV act
 
-type LTS' = Var LTS
+type VLTS = Var LTS
 
 mkLTS = liftV4 LTS
 
-neighbors' :: Var [Transition] -> State' -> Var [State]
+vneighbors :: Var [Transition] -> VState -> Var [State]
 
-neighbors' = liftV2 neighbors
+vneighbors = liftV2 neighbors
 
-isReachable' = liftV2 isReachable
+visReachable = liftV2 isReachable
 
-witnessPath' = liftV2 witnessPath
+vwitnessPath = liftV2 witnessPath
 
-dfs' = liftV4 dfs
+vdfs = liftV4 dfs
 

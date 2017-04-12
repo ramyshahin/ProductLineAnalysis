@@ -4,6 +4,7 @@
 module VendingMachine where
 
 import Deep.FTS
+import Deep.VList
 import Prop
 import SPL
 --import Test.HUnit (Test(..), assertEqual, runTestTT)
@@ -68,8 +69,8 @@ t19 =  mkTransition (states'!!13) (states'!!12)  (mkVarT [skipRingTone]) (neg ri
 t20 =  mkTransition (states'!!13) (states'!!12)  (mkVarT [ringTone_]) ringTone
 t21 =  mkTransition (states'!!12) (states'!!0)  (mkVarT [cupTaken]) T
 
-transitions = mkVList []--t1]--, t2]--, t3, t4, t5, t6, t7, t8, t9, t10,
-               --t11, t12, t13, t14, t15, t16, t17, t18, t19, t20,
-               --t21]
+transitions = mkVList [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10,
+               t11, t12, t13, t14, t15, t16, t17, t18, t19, t20,
+               t21]
             
 vendingMachine = mkFTS states (mkVarT actions) transitions (mkVList [states'!!0]) T
