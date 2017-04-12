@@ -5,36 +5,37 @@
 -------------------------------------------------------------------------------
 module Deep.FTS where
 import SPL
-import Shallow.VList
+import Deep.VList
+import LTS(Action)
 
 type State' = String
-type State = Var State'
+type VState = Var State'
 
-type Guard = String
+--type Guard = String
 
-mkStates :: Int -> Int -> [State]
+mkStates :: Int -> Int -> [VState]
 mkStates begin end =
     if begin > end then [] else s : mkStates (begin + 1) end
     where s = mkVarT ("s" ++ (show begin))
 
-data Action = Action {
-    action :: String,
-    guards :: [Guard]
-    } deriving (Eq, Show)
+--data VAction = VAction {
+--    action :: String,
+--    guards :: [Guard]
+--    } deriving (Eq, Show)
 
 -- abstract Transition type
 data Transition' = Transition' {
-    source' :: State',
-    target' :: State',
-    act'    :: [Action]
+    source :: VState,
+    target :: VState,
+    act    :: VList Action
     } deriving (Show)
-type Transition = Var Transition'
+type VTransition = Var Transition'
 
-mkTransition :: State -> State -> VList Action -> PresenceCondition -> Transition
-mkTransition source target act pc = restrict pc $ (liftV3 Transition') source target act 
-source = liftV source'
-target = liftV target'
-act    = liftV act'
+--mkTransition :: State -> State -> VList Action -> PresenceCondition -> Transition
+--mkTransition source target act pc = restrict pc $ (liftV3 Transition') source target act 
+--source = liftV source'
+--target = liftV target'
+--act    = liftV act'
 
 -- abstract abstract proposition type
 --type AP = Int
@@ -47,10 +48,10 @@ act    = liftV act'
 --      TODO: AP is a set of atomic propositions
 --      TODO: L is a a labeling function, mapping states to sets of propositions (AP)
 data FTS' = FTS' {
-    getStates       :: [State'],
-    getActions      :: [Action],
-    getTransitions  :: [Transition'],
-    getInitStates   :: [State'] 
+    getStates       :: VList State',
+    getActions      :: VList Action,
+    getTransitions  :: VList Transition',
+    getInitStates   :: VList State' 
     -- TODO: [AP] 
     -- TODO: (Table [AP])
     } deriving (Show)
@@ -63,7 +64,7 @@ mkFTS states actions transitions initStates pc = restrict pc $ (liftV4 FTS') sta
 -- LTS Algorithms
 -------------------------------------------------------------------------------
 
-neighbors :: VList Transition' -> State -> VList State'
+neighbors :: VList Transition' -> VState -> VList State'
 neighbors ts' s = 
     cond'   (vnull ts') 
             e

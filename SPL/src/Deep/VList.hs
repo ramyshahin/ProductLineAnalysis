@@ -22,6 +22,9 @@ vCons x@(Var x') xs@(Var xs') = union def undef
         def = Var [(Just (VCons' hd (Var[p])), (definedAt hd)) | p@(xs'',xspc) <- xs', let hd = (restrict xspc xdef)]
         undef = restrict (undefinedAt x) xs
 
+mkVList :: [Var a] -> VList a
+mkVList xs = foldr vCons vNil xs
+
 head' :: VList' a -> Var a 
 head' xs = case xs of
               VCons' x xs'' -> x 
