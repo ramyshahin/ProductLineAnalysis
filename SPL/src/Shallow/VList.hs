@@ -23,3 +23,6 @@ vtail = liftV tail
 
 vnull :: VList a -> Var Bool
 vnull = liftV null
+
+vmap :: Var (a -> b) -> VList a -> VList b
+vmap = liftV2 map

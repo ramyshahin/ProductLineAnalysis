@@ -28,19 +28,26 @@ _q = neg q
 
 pcsAll = [T, F, p, q, _p, _q, pq, p_q, _pq, _p_q]
 
-count = 100
+count = 1000000
 
-shallowBench xs pcs = 
-    let pairs = zip xs pcs
-        vs = map (\(x,pc) -> mkVar x pc) pairs
-    in  S.mkVList vs
+shallowBench pairs = 
+    let vs = map (\(x,pc) -> mkVar x pc) pairs
+        xs = S.mkVList vs
+    in  S.vmap (mkVarT (* 2)) xs
+
+deepBench pairs = 
+    let vs = map (\(x,pc) -> mkVar x pc) pairs
+        xs = D.mkVList vs
+    in  D.vmap (mkVarT (* 2)) xs
 
 main :: IO ()
---main = defaultMain [bench "len0" $ nf len0 [0..1000000] ]
 main = do
     xs <- replicateM count (randomIO :: IO Int) 
     let pcCount = length pcsAll
-    --pcs <- replicateM count (pcs !! (randomRIO (0, pcCount-1))) 
     pcs <- replicateM count (runRVar (choice pcsAll) DevRandom)
-    defaultMain [bench "shallow" $ whnf (shallowBench xs) pcs]
+    let pairs = zip xs pcs
+    defaultMain [
+        bench "deep" $ whnf deepBench pairs,
+        bench "shallow" $ whnf shallowBench pairs
+        ]
 
