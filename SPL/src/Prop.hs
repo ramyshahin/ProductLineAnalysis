@@ -177,3 +177,9 @@ sat p = (checkSAT p) == Sat
 
 unsat :: Prop -> Bool
 unsat p = (checkSAT p) == Unsat
+
+tautology :: Prop -> Bool
+tautology p = unsat (neg p)
+
+implies :: Prop -> Prop -> Bool
+implies x y = tautology (impl x y)

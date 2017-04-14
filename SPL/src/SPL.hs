@@ -15,10 +15,8 @@ module SPL where
 import Prop
 import Control.Applicative
 import Control.Monad
---import Control.Monad.Trans(liftIO)
 import Data.List 
 import Data.Maybe
---import Debug.Trace
 import Control.Exception
 import Control.Parallel.Strategies
 
@@ -40,6 +38,33 @@ type Val a = (Maybe a, PresenceCondition)
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
 data Var t = Var [(Val t)]
+
+exists :: Eq t => Val t -> Var t -> Bool
+exists (x, xpc) (Var ys) =
+    or [(x == y) && (implies xpc ypc) | (y,ypc) <- ys]
+
+instance Show a => Show (Var a) where
+    show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "\n}" 
+
+-- a < b means that a is a subset of b in terms of products
+instance Eq a => Ord (Var a) where
+    (<) x y = (case x of
+                Var x' -> and [exists x'' y | x'' <- x']) &&
+              (case y of
+                Var y' -> or [not (exists y'' x) | y'' <- y'])
+    (<=) x y = (x < y) || (x == y)
+
+instance Eq a => Eq (Var a) where
+    (==) x y = (x < y) && (y < x)
+    (/=) x y = not (x == y)
+
+instance Functor Var where
+    fmap :: (a -> b) -> Var a -> Var b
+    fmap f = apply (mkVarT f)
+
+instance Applicative Var where
+    pure  = mkVarT
+    (<*>) = apply
 
 --type family Var t where
 --    Var ((t :: * -> * -> * -> *) (s1 :: *) (s2 :: *) (s3 :: *))      = Var' (t (Var' s1) (Var' s2) (Var' s3))
@@ -135,17 +160,6 @@ apply (Var fn) (Var x) =
                     (x', xpc) <- x,
                     let pc = conj[fnpc, xpc],
                     (sat pc)] --`using` parList rpar)
-
-instance Show a => Show (Var a) where
-    show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "}" 
-
-instance Functor Var where
-    fmap :: (a -> b) -> Var a -> Var b
-    fmap f = apply (mkVarT f)
-
-instance Applicative Var where
-    pure  = mkVarT
-    (<*>) = apply
 
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a

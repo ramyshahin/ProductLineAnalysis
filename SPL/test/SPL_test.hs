@@ -1,7 +1,10 @@
 -- SPL unit tests
+{-# LANGUAGE TemplateHaskell #-}
+
+--import Test.QuickCheck
+--import Test.QuickCheck.All
 import SPL
 import Prop
---import Test.HUnit
 import Control.Applicative
 
 u :: Universe
@@ -24,17 +27,31 @@ w = mkVars [(12, pq), (2, p_q), (3, _p_q)]
 
 x :: Var Int
 x = mkVars [(7, pq), (-3, p_q), (-8, _pq), (0, _p_q)]
+x0 = mkVars [(-8, _pq), (0, _p_q), (-3, p_q), (7, pq)]
 
 y :: Var Int
 y = mkVars [(-11, _p)]
+y0 = mkVars [(-11, _pq)]
 
 z :: Var Int
 z = mkVars [(6, p)]
+
+-- exists
+prop_exists1 = exists (Just 2, p_q) w 
+prop_exists2 = exists (Just (-11), _pq) y
+prop_exists3 = not (exists (Just 4,p_q) w)
+prop_exists4 = not (exists (Just (-8), q) x)
+
+-- ORD
+prop_lt1 = y0 < y
+prop_lt2 = not (y < y0)
+prop_lt3 = not (x < x0)
 
 abs' = pure abs
 
 xAbs = abs' <*> x
 yAbs = abs' <*> y
+
 
 --(|+|) = liftV2 (+)
 
@@ -52,14 +69,6 @@ one = (mkVarT 1)
 safeDiv' :: Var Int -> Var Int -> Var Int
 safeDiv' a b = cond' (b |==| zero) zero (div' a b)
 
-a :: Var Int
-a = mkVarT 0
-
-l :: Var [Int]
-l = mkVarT []
-
-xs = mkVarList [w,x,y,z]
-xs' = mkVarList' (mkVarT [w, x, y, z])
-
-length' :: Var [a] -> Var Int
-length' = liftV length
+--return []
+--runTests = $verboseQuickCheckAll
+--main = do runTests
