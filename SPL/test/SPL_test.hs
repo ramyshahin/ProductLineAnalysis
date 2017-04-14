@@ -1,8 +1,8 @@
 -- SPL unit tests
 {-# LANGUAGE TemplateHaskell #-}
 
---import Test.QuickCheck
---import Test.QuickCheck.All
+import Test.QuickCheck
+import Test.QuickCheck.All
 import SPL
 import Prop
 import Control.Applicative
@@ -42,10 +42,19 @@ prop_exists2 = exists (Just (-11), _pq) y
 prop_exists3 = not (exists (Just 4,p_q) w)
 prop_exists4 = not (exists (Just (-8), q) x)
 
--- ORD
+-- Ord
 prop_lt1 = y0 < y
 prop_lt2 = not (y < y0)
 prop_lt3 = not (x < x0)
+
+prop_lte1 = y0 <= y
+prop_lte2 = y0 <= y0
+prop_lte3 = not (y <= y0)
+
+-- Eq
+prop_eq1 = x0 == x
+prop_eq2 = x /= y
+prop_eq3 = y0 /= y
 
 abs' = pure abs
 
@@ -69,6 +78,6 @@ one = (mkVarT 1)
 safeDiv' :: Var Int -> Var Int -> Var Int
 safeDiv' a b = cond' (b |==| zero) zero (div' a b)
 
---return []
---runTests = $verboseQuickCheckAll
---main = do runTests
+return []
+runTests = $quickCheckAll
+main = do runTests

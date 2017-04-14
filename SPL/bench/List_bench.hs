@@ -1,8 +1,5 @@
 import Criterion.Main
 import System.Random
-import Data.Random
-import Data.Random.Source.DevRandom
-import Data.Random.Extras
 import Control.Monad(replicateM)
 
 import SPL
@@ -28,7 +25,7 @@ _q = neg q
 
 pcsAll = [T, F, p, q, _p, _q, pq, p_q, _pq, _p_q]
 
-count = 1000000
+count = 1000
 
 shallowBench pairs = 
     let vs = map (\(x,pc) -> mkVar x pc) pairs
@@ -44,7 +41,10 @@ main :: IO ()
 main = do
     xs <- replicateM count (randomIO :: IO Int) 
     let pcCount = length pcsAll
-    pcs <- replicateM count (runRVar (choice pcsAll) DevRandom)
+    let randPC = do 
+            index <- randomRIO (0, pcCount-1)
+            return (pcsAll !! index)
+    pcs <- replicateM count randPC
     let pairs = zip xs pcs
     defaultMain [
         bench "deep" $ whnf deepBench pairs,

@@ -31,7 +31,7 @@ benchmark spl-bench
   type:                exitcode-stdio-1.0
   hs-source-dirs:      bench
   main-is:             List_bench.hs
-  build-depends:       base, criterion, random, random-fu, random-source, random-extras, SPL
+  build-depends:       base, criterion, random, random-source, SPL
 
 source-repository head
   type:     git

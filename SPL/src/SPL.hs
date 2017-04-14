@@ -24,6 +24,7 @@ type FeatureSet         = Universe
 type PresenceCondition  = Prop
 
 type Val a = (Maybe a, PresenceCondition)
+type Val' a = (a, PresenceCondition)
 
 --instance Eq SPLOption a where
 --    (==) a b = (getValue a == getValue b) && sat(getPresenceCondition a && getPresenceCondition b)
@@ -37,25 +38,40 @@ type Val a = (Maybe a, PresenceCondition)
 -- to the same set of products). This does not affect correctness, but severely
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
-data Var t = Var [(Val t)]
+newtype Var t = Var [(Val t)]
+newtype Var' t = Var' [Val' t]
+
+defSubst :: Var t -> Var t 
+defSubst (Var v) = 
+    let xs =  (filter (\(x,_) -> case x of
+                                    Just _  -> True
+                                    _       -> False) v)
+    in Var xs
+
+var2var' v =
+    let (Var vdef) = defSubst v
+        v' = map (\(Just x, pc) -> (x,pc)) vdef
+    in  Var' v'
 
 exists :: Eq t => Val t -> Var t -> Bool
 exists (x, xpc) (Var ys) =
     or [(x == y) && (implies xpc ypc) | (y,ypc) <- ys]
+
+isSubsetOf :: Eq t => Var t -> Var t -> Bool
+isSubsetOf x' y' =
+    let (Var x) = defSubst x'
+    in and (map (`exists` y') x)
 
 instance Show a => Show (Var a) where
     show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "\n}" 
 
 -- a < b means that a is a subset of b in terms of products
 instance Eq a => Ord (Var a) where
-    (<) x y = (case x of
-                Var x' -> and [exists x'' y | x'' <- x']) &&
-              (case y of
-                Var y' -> or [not (exists y'' x) | y'' <- y'])
+    (<) x' y' = (isSubsetOf x' y') && not (isSubsetOf y' x')
     (<=) x y = (x < y) || (x == y)
 
 instance Eq a => Eq (Var a) where
-    (==) x y = (x < y) && (y < x)
+    (==) x y = (isSubsetOf x y) && (isSubsetOf y x)
     (/=) x y = not (x == y)
 
 instance Functor Var where
@@ -125,11 +141,6 @@ undefinedAt (Var xs) = disj(pcs)
 restrict :: PresenceCondition -> Var t -> Var t
 restrict pc (Var v) =
     Var $ filter (\(x,pc') -> sat pc') (map (\(x,pc') -> (x, conj[pc',pc])) v)
-
-defSubst :: Var t -> Var t 
-defSubst (Var v) = Var (filter (\(x,_) -> case x of
-                                            Just _  -> True
-                                            _       -> False) v)
                                     
 union :: Var t -> Var t -> Var t
 union (Var a) (Var b) =
