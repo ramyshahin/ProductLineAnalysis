@@ -29,13 +29,13 @@ count = 1000
 
 shallowBench pairs = 
     let vs = map (\(x,pc) -> mkVar x pc) pairs
-        xs = S.mkVList vs
-    in  S.vmap (mkVarT (* 2)) xs
+    in  S.mkVList vs
+    --in  S.vmap (mkVarT (* 2)) xs
 
 deepBench pairs = 
     let vs = map (\(x,pc) -> mkVar x pc) pairs
-        xs = D.mkVList vs
-    in  D.vmap (mkVarT (* 2)) xs
+    in  D.mkVList vs
+    --in  D.vmap (mkVarT (* 2)) xs
 
 main :: IO ()
 main = do

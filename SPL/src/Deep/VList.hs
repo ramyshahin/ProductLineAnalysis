@@ -30,16 +30,16 @@ head' xs = case xs of
               VCons' x xs'' -> x 
               _ -> error ""
 
-vHead :: VList a -> Var a 
-vHead xs = union2 $ (liftV head') xs
+vhead :: VList a -> Var a 
+vhead xs = union2 $ (liftV head') xs
 
 tail' :: VList' a -> VList a
 tail' xs = case xs of
             VNil' -> error ""
             VCons' x xs -> xs
 
-vTail :: VList a -> VList a
-vTail xs = union2 $ (liftV tail') xs
+vtail :: VList a -> VList a
+vtail xs = union2 $ (liftV tail') xs
 
 map' :: (a -> b) -> VList' a -> VList' b
 map' f xs = case xs of
