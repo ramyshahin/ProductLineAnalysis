@@ -67,11 +67,16 @@ dl1 = D.mkVList [w, x, y, z]
 dl2 = D.mkVList [z, y, x, w]
 
 -- vhead
-prop_vhead0 = (S.vhead) sl1 == w
+prop_vhead0 = (S.vhead) sl1 == mkVars [(12,pq), (2,p_q), (3,_p_q), (-8, _pq)]
 prop_vhead1 = (S.vhead) sl1 == (D.vhead) dl1
 prop_vhead2 = (S.vhead) sl2 == (D.vhead) dl2
 prop_vhead3 = (S.vhead) sl2 == mkVars [(6,p), (-11, _p)]
 
+-- vlength
+prop_vlength0 = S.vlength sl1 == mkVars[(3,p), (3,_p_q), (2,_pq)]
+prop_vlength1 = S.vlength sl1 == D.vlength dl1
+prop_vlength2 = S.vlength sl2 == S.vlength sl1
+prop_vlength3 = S.vlength sl2 == D.vlength dl2
 
 abs' = pure abs
 

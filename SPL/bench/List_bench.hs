@@ -25,17 +25,17 @@ _q = neg q
 
 pcsAll = [T, F, p, q, _p, _q, pq, p_q, _pq, _p_q]
 
-count = 1000
+count = 50
 
 shallowBench pairs = 
     let vs = map (\(x,pc) -> mkVar x pc) pairs
-    in  S.mkVList vs
-    --in  S.vmap (mkVarT (* 2)) xs
+        xs = S.mkVList vs
+    in  S.vmap (mkVarT (* 2)) xs
 
 deepBench pairs = 
     let vs = map (\(x,pc) -> mkVar x pc) pairs
-    in  D.mkVList vs
-    --in  D.vmap (mkVarT (* 2)) xs
+        xs = D.mkVList vs
+    in  D.vmap (mkVarT (* 2)) xs
 
 main :: IO ()
 main = do
@@ -46,8 +46,9 @@ main = do
             return (pcsAll !! index)
     pcs <- replicateM count randPC
     let pairs = zip xs pcs
+    --putStrLn $ show (shallowBench pairs)
+    --putStrLn $ show (deepBench pairs)
     defaultMain [
-        bench "deep" $ whnf deepBench pairs,
-        bench "shallow" $ whnf shallowBench pairs
+        --bench "shallow" $ whnf shallowBench pairs,
+        bench "deep" $ whnf deepBench pairs
         ]
-

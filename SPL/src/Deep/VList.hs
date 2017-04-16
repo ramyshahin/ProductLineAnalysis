@@ -41,6 +41,12 @@ tail' xs = case xs of
 vtail :: VList a -> VList a
 vtail xs = union2 $ (liftV tail') xs
 
+length' :: VList' t -> Var Int
+length' VNil' = mkVarT 0
+length' (VCons' x xs) = (mkVar 1 (definedAt x)) |+| (vlength xs)
+
+vlength xs = union2 $ (liftV length') xs
+
 map' :: (a -> b) -> VList' a -> VList' b
 map' f xs = case xs of
               VNil' -> VNil'

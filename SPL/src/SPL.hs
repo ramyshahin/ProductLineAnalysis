@@ -54,9 +54,10 @@ var2var' v =
     in  Var' v'
 
 exists :: Eq t => Val t -> Var t -> Bool
-exists (x, xpc) (Var ys) =
+exists (x, xpc) ys' =
     or [(x == y) && (implies xpc ypc) | (y,ypc) <- ys]
-
+    where (Var ys) = compact ys'
+    
 isSubsetOf :: Eq t => Var t -> Var t -> Bool
 isSubsetOf x' y' =
     let (Var x) = defSubst x'
