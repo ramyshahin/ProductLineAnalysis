@@ -57,7 +57,7 @@ exists :: Eq t => Val t -> Var t -> Bool
 exists (x, xpc) ys' =
     or [(x == y) && (implies xpc ypc) | (y,ypc) <- ys]
     where (Var ys) = compact ys'
-    
+
 isSubsetOf :: Eq t => Var t -> Var t -> Bool
 isSubsetOf x' y' =
     let (Var x) = defSubst x'
@@ -162,17 +162,15 @@ inv :: Show t => Var t -> Bool
 inv (Var v) = {-trace ("inv: " ++ (show (Var v))) $-} 
     all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
 
-apply :: Var (a -> b) -> Var a -> Var b
-apply (Var fn) (Var x) =
-    Var [(case (fn', x') of
-        (Just fn'', Just x'') -> Just (fn'' x'')
-        (_,_) -> Nothing
-        , pc) 
-                  | (fn', fnpc) <- fn,
-                    (x', xpc) <- x,
-                    let pc = conj[fnpc, xpc],
-                    (sat pc)] --`using` parList rpar)
+apply_ :: Val (a -> b) -> Var a -> Var b
+apply_ (Just fn, fnpc) (Var x) = localCtxt fnpc $
+    (mkVars [(fn x', pc) | (Just x',xpc) <- x, sat(xpc), let pc = conj[fnpc,xpc]])
 
+apply :: Var (a -> b) -> Var a -> Var b
+apply fn' x' = unions [apply_ f x | f <- fn] 
+    where   Var fn = defSubst fn'
+            x  = defSubst x'
+            
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b

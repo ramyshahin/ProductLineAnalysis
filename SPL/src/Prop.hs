@@ -1,12 +1,14 @@
 -- Propositional Logic and SAT solving
 -- Ramy Shahin
 -- Jan 3rd 2017
+{-# LANGUAGE BangPatterns #-}
 module Prop where
 
 import Z3.Monad
 import Data.Vector as V(Vector, (!), fromList, empty, length, snoc, findIndex)
 import Data.List
 import System.IO.Unsafe
+import Control.Monad.IO.Class
 
 type Universe = Vector String
 
@@ -163,14 +165,13 @@ mkZ3Formula atoms p =
                         p2' <- mkZ3Formula atoms p2
                         mkIff p1' p2'
 
-mkZ3Script :: Universe -> Prop -> Z3 Result
+mkZ3Script :: Universe -> Prop -> Z3 ()
 mkZ3Script u p = do
     atoms <- mapM mkFreshBoolVar u
     assert =<< (mkZ3Formula atoms p)
-    check
     
 checkSAT :: Prop -> Result
-checkSAT p = unsafePerformIO (evalZ3 (mkZ3Script (getUniverse p) p))
+checkSAT p = unsafePerformIO (evalZ3 ((mkZ3Script (getUniverse p) p) >> check))
 
 sat :: Prop -> Bool
 sat p = (checkSAT p) == Sat
@@ -183,3 +184,17 @@ tautology p = unsat (neg p)
 
 implies :: Prop -> Prop -> Bool
 implies x y = tautology (impl x y)
+
+-- Context indices are dummy, used here just to make sure 
+-- the functions are actually called rather than lazily skipped
+localCtxt_ :: Prop -> a -> Z3 a
+localCtxt_ p x =
+    do 
+        (mkZ3Script (getUniverse p) p)
+        push
+        let !r = x
+        pop 1
+        return r
+
+localCtxt :: Prop -> a -> a
+localCtxt p x = unsafePerformIO $ evalZ3 (localCtxt_ p x)
