@@ -6,15 +6,16 @@
 module Shallow.FTS where
 import LTS
 import Data.List
+import Shallow.VList
 --import Data.Tree
 import Control.Applicative
 import SPL
 import Debug.Trace
 import Control.Exception
 
-mkVarStates :: Int -> Int -> Var [State]
+mkVarStates :: Int -> Int -> VList State
 mkVarStates begin end =
-    if begin > end then e else (mkVarT s) |:| mkVarStates (begin + 1) end
+    if begin > end then vNil else vCons (mkVarT s) (mkVarStates (begin + 1) end)
     where s = "s" ++ (show begin)
 
 type VState = Var State

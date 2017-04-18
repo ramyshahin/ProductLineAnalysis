@@ -33,6 +33,7 @@ benchmark spl-bench
   hs-source-dirs:      bench
   main-is:             List_bench.hs
   build-depends:       base, criterion, random, random-source, SPL
+  ghc-options:         -O2
 
 source-repository head
   type:     git

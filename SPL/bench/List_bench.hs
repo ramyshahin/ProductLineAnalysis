@@ -7,8 +7,14 @@ import Prop
 import Deep.VList as D
 import Shallow.VList as S
 
+featCount = 2
+
+genFeats :: [Int] -> [String]
+genFeats [] = []
+genFeats (i:is) = ("f" ++ (show i)) : genFeats is
+
 u :: Universe
-u = mkUniverse ["P", "Q", "R", "S"]
+u = mkUniverse $ genFeats [1..featCount]
 
 p, q, r, s :: Prop
 p = Atom u 0
@@ -25,30 +31,45 @@ _q = neg q
 
 pcsAll = [T, F, p, q, _p, _q, pq, p_q, _pq, _p_q]
 
-count = 50
+rndTerm :: IO Prop
+rndTerm = do
+    r <- (randomIO :: IO Int)
+    let atm = Atom u (mod r featCount)
+    s <- (randomIO :: IO Int)
+    return (if ((mod s 2) == 0) then (neg atm) else atm)
+    
+rndPC :: IO Prop
+rndPC = do
+    c <- (randomIO :: IO Int)
+    terms <- replicateM (mod c featCount) rndTerm
+    return (conj terms)
+
+count = 8
 
 shallowBench pairs = 
     let vs = map (\(x,pc) -> mkVar x pc) pairs
         xs = S.mkVList vs
-    in  S.vmap (mkVarT (* 2)) xs
+    in  S.vmap (mkVarT (+ 1)) xs
 
 deepBench pairs = 
     let vs = map (\(x,pc) -> mkVar x pc) pairs
         xs = D.mkVList vs
-    in  D.vmap (mkVarT (* 2)) xs
+    in  D.vmap (mkVarT (+ 1)) xs
 
 main :: IO ()
 main = do
-    xs <- replicateM count (randomIO :: IO Int) 
+    xs_ <- replicateM count (randomIO :: IO Int) 
+    let xs = map (\x -> mod x 100) xs_
     let pcCount = length pcsAll
-    let randPC = do 
-            index <- randomRIO (0, pcCount-1)
-            return (pcsAll !! index)
-    pcs <- replicateM count randPC
+    pcs <- replicateM count rndPC
     let pairs = zip xs pcs
-    --putStrLn $ show (shallowBench pairs)
-    --putStrLn $ show (deepBench pairs)
+    putStrLn $ show xs
+    putStrLn $ show pcs
+    putStrLn $ show (shallowBench pairs)
+    putStrLn $ show (deepBench pairs)
+    {-
     defaultMain [
-        --bench "shallow" $ whnf shallowBench pairs,
+        --bench "shallow" $ whnf shallowBench pairs --,
         bench "deep" $ whnf deepBench pairs
         ]
+-}
