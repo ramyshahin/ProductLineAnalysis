@@ -18,8 +18,7 @@ vNil = mkVarT VNil'
 
 vCons :: Var a -> VList a -> VList a 
 vCons x@(Var x') xs@(Var xs') = union def undef 
-  where xdef = defSubst x
-        def = Var [(Just (VCons' hd (Var[p])), (definedAt hd)) | p@(xs'',xspc) <- xs', let hd = (restrict xspc xdef)]
+  where def = Var [(VCons' hd (Var[p]), (definedAt hd)) | p@(xs'',xspc) <- xs', let hd = (restrict xspc x)]
         undef = restrict (undefinedAt x) xs
 
 mkVList :: [Var a] -> VList a

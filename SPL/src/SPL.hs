@@ -23,8 +23,8 @@ import Control.Parallel.Strategies
 type FeatureSet         = Universe
 type PresenceCondition  = Prop
 
-type Val a = (Maybe a, PresenceCondition)
-type Val' a = (a, PresenceCondition)
+--type Val a = (Maybe a, PresenceCondition)
+type Val a = (a, PresenceCondition)
 
 --instance Eq SPLOption a where
 --    (==) a b = (getValue a == getValue b) && sat(getPresenceCondition a && getPresenceCondition b)
@@ -39,8 +39,9 @@ type Val' a = (a, PresenceCondition)
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
 newtype Var t = Var [(Val t)]
-newtype Var' t = Var' [Val' t]
+--newtype Var' t = Var' [Val' t]
 
+{-
 defSubst :: Var t -> Var t 
 defSubst (Var v) = 
     let xs =  (filter (\(x,_) -> case x of
@@ -52,6 +53,7 @@ var2var' v =
     let (Var vdef) = defSubst v
         v' = map (\(Just x, pc) -> (x,pc)) vdef
     in  Var' v'
+-}
 
 exists :: Eq t => Val t -> Var t -> Bool
 exists (x, xpc) ys' =
@@ -59,9 +61,7 @@ exists (x, xpc) ys' =
     where (Var ys) = compact ys'
 
 isSubsetOf :: Eq t => Var t -> Var t -> Bool
-isSubsetOf x' y' =
-    let (Var x) = defSubst x'
-    in and (map (`exists` y') x)
+isSubsetOf (Var x) y' = and (map (`exists` y') x)
 
 instance Show a => Show (Var a) where
     show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "\n}" 
@@ -90,17 +90,13 @@ instance Applicative Var where
 --    Var (t :: *)                      = Var' t
 
 mkVar :: t -> PresenceCondition -> Var t
-mkVar v pc = Var [(Just v,pc), (Nothing, neg pc)]
+mkVar v pc = Var [(v,pc)]
 
 mkVarT :: t -> Var t
-mkVarT v = Var [(Just v,T)]
+mkVarT v = mkVar v T
 
 mkVars :: [(t,PresenceCondition)] -> Var t
-mkVars vs = let nothingPC = (neg . disj) (map snd vs) 
-                vs'       = map (\(v,pc) -> (Just v, pc)) vs
-            in  if (sat nothingPC)
-                then Var ((Nothing, nothingPC) : vs')
-                else Var vs'
+mkVars vs = Var vs
 
 --mkVars vs = Var (map (\(v,pc) -> (Just v, pc)) vs)
 
@@ -116,10 +112,7 @@ compact (Var v) =
 
 valIndex :: Eq t => Var t -> t -> [Val t]
 valIndex (Var v) x =
-    filter (\(x',pc') -> case x' of 
-                            Just x'' -> x'' == x
-                            _        -> False) 
-                        v
+    filter (\(x',pc') -> x' == x) v
 
 subst :: Var t -> PresenceCondition -> Var t
 subst (Var v) pc =
@@ -127,17 +120,10 @@ subst (Var v) pc =
 
 definedAt :: Var t -> PresenceCondition
 definedAt (Var xs) = disj(pcs)
-    where   pcs     = map snd pairs
-            pairs   = filter (\(x,pc) -> case x of
-                                            Just _  ->  True
-                                            Nothing ->  False) xs
+    where   pcs     = map snd xs
 
 undefinedAt :: Var t -> PresenceCondition
-undefinedAt (Var xs) = disj(pcs)
-    where   pcs     = map snd pairs
-            pairs   = filter (\(x,pc) -> case x of 
-                                            Just _  ->  False
-                                            Nothing ->  True) xs
+undefinedAt = neg . definedAt
 
 restrict :: PresenceCondition -> Var t -> Var t
 restrict pc (Var v) =
@@ -151,8 +137,7 @@ unions :: [Var t] -> Var t
 unions xs = Var (foldr (++) [] (map (\(Var v) -> v) xs))
 
 union2 :: Var (Var t) -> Var t 
-union2 xs = unions (map (\(Just x,pc) -> (restrict pc x)) xs')
-    where (Var xs') = (defSubst xs)
+union2 (Var xs') = unions (map (\(x,pc) -> (restrict pc x)) xs')
 
 pairs :: [t] -> [(t,t)]
 pairs [] = []
@@ -163,14 +148,12 @@ inv (Var v) = {-trace ("inv: " ++ (show (Var v))) $-}
     all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
 
 apply_ :: Val (a -> b) -> Var a -> Var b
-apply_ (Just fn, fnpc) (Var x) = localCtxt fnpc $
-    (mkVars [(fn x', pc) | (Just x',xpc) <- x, sat(xpc), let pc = conj[fnpc,xpc]])
+apply_ (fn, fnpc) (Var x) = --localCtxt fnpc $
+    (mkVars [(fn x', pc) | (x',xpc) <- x, let pc = conj[fnpc,xpc], sat(pc)])
 
 apply :: Var (a -> b) -> Var a -> Var b
-apply fn' x' = unions [apply_ f x | f <- fn] 
-    where   Var fn = defSubst fn'
-            x  = defSubst x'
-            
+apply (Var fn) x = unions [apply_ f x | f <- fn] 
+
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
@@ -179,9 +162,8 @@ cond' :: Show a => Var Bool -> Var a -> Var a -> Var a
 --cond' = liftV3 cond
 cond' !(Var c) x y = agg
     where parts = map (\c' -> case c' of
-                                (Just True, pc) -> restrict pc x
-                                (Just False, pc) -> restrict pc y 
-                                (_, pc)          -> Var [(Nothing, pc)]) c
+                                (True, pc) -> restrict pc x
+                                (False, pc) -> restrict pc y) c
           agg = foldr SPL.union (Var []) parts
          
 -- lifting higher-order functions
@@ -233,7 +215,7 @@ cliftV5 f a b c d e = compact $! (liftV5 f) a b c d e
 data List' t =
     Empty'
   | Cons' t (Var' (List' t))
--}
+
 e :: Var [a]
 e = mkVarT []
 
@@ -250,7 +232,7 @@ e = mkVarT []
                                     , pc)
                 ) ts
     in Var res
-
+-}
 --(|:|) = liftV2 (:)
 
 {-

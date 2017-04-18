@@ -9,7 +9,7 @@ vNil = mkVarT []
 
 vCons :: Var a -> Var [a] -> Var [a]
 vCons x xs = union defs undefs
-    where   defs = defSubst $ (liftV2 (:)) x xs
+    where   defs = (liftV2 (:)) x xs
             undefs = restrict (undefinedAt x) xs
 
 mkVList :: [Var a] -> VList a

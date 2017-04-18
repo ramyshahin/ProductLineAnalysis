@@ -39,10 +39,10 @@ z :: Var Int
 z = mkVars [(6, p)]
 
 -- exists
-prop_exists1 = exists (Just 2, p_q) w 
-prop_exists2 = exists (Just (-11), _pq) y
-prop_exists3 = not (exists (Just 4,p_q) w)
-prop_exists4 = not (exists (Just (-8), q) x)
+prop_exists1 = exists (2, p_q) w 
+prop_exists2 = exists ((-11), _pq) y
+prop_exists3 = not (exists (4,p_q) w)
+prop_exists4 = not (exists ((-8), q) x)
 
 -- Ord
 prop_lt1 = y0 < y
