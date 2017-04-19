@@ -19,6 +19,14 @@ import Data.List
 import Data.Maybe
 import Control.Exception
 import Control.Parallel.Strategies
+import System.Mem.StableName
+import System.IO.Unsafe
+
+(===) :: a -> a -> Bool
+x === y = unsafePerformIO $ do 
+    nx <- makeStableName $! x 
+    ny <- makeStableName $! y 
+    return (nx == ny)
 
 type FeatureSet         = Universe
 type PresenceCondition  = Prop
@@ -103,9 +111,9 @@ mkVars vs = Var vs
 -- compaction seems to be turning some lazy expressions into strict,
 -- resulting in condiitional expression bugs
 
-compact :: (Eq t) => Var t -> Var t
+compact :: Var t -> Var t
 compact (Var v) = 
-    let gs = groupBy (\(v1, _) (v2, _) -> (v1 == v2)) v
+    let gs = groupBy (\(v1, _) (v2, _) -> (v1 === v2)) v
     in  Var (map (\g -> let (vs, pcs) = unzip g
                         in  (head vs, disj pcs)) 
             gs)
@@ -152,7 +160,7 @@ apply_ (fn, fnpc) (Var x) = --localCtxt fnpc $
     (mkVars [(fn x', pc) | (x',xpc) <- x, let pc = conj[fnpc,xpc], sat(pc)])
 
 apply :: Var (a -> b) -> Var a -> Var b
-apply (Var fn) x = unions [apply_ f x | f <- fn] 
+apply (Var fn) x = compact $ unions [apply_ f x | f <- fn] 
 
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a
@@ -160,7 +168,7 @@ cond p a b = if p then a else b
 
 cond' :: Show a => Var Bool -> Var a -> Var a -> Var a
 --cond' = liftV3 cond
-cond' !(Var c) x y = agg
+cond' !(Var c) x y = compact agg
     where parts = map (\c' -> case c' of
                                 (True, pc) -> restrict pc x
                                 (False, pc) -> restrict pc y) c
@@ -193,13 +201,6 @@ liftV4 = liftA4
 
 liftV5 :: (a -> b -> c -> d -> e -> f) -> Var a -> Var b -> Var c -> Var d -> Var e -> Var f
 liftV5 = liftA5
-
-cliftV  f a         = compact $! (liftV  f) a
-cliftV2 f a b       = compact $! (liftV2 f) a b
-cliftV3 f a b c     = compact $! (liftV3 f) a b c
-cliftV4 f a b c d   = compact $! (liftV4 f) a b c d
-cliftV5 f a b c d e = compact $! (liftV5 f) a b c d e
-
 
 --data VarOption a =
     

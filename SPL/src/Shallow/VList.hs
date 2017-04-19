@@ -8,7 +8,7 @@ vNil :: Var [a]
 vNil = mkVarT []
 
 vCons :: Var a -> Var [a] -> Var [a]
-vCons x xs = union defs undefs
+vCons x xs = compact $ union defs undefs
     where   defs = (liftV2 (:)) x xs
             undefs = restrict (undefinedAt x) xs
 

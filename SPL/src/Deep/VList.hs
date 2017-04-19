@@ -7,7 +7,7 @@ type VList a = Var [Var a]
 
 vCons :: Var a -> VList a -> VList a 
 vCons x@(Var x') xs@(Var xs') = union def undef 
-  where def = Var [(r : xs'', (definedAt r)) | (xs'', xspc) <- xs', let r@(Var r') = restrict xspc x, not (null r')]
+  where def = Var [(r : xs'', xspc) | (xs'', xspc) <- xs', let r@(Var r') = restrict xspc x, not (null r')]
         undef = restrict (undefinedAt x) xs
 
 vNil = mkVarT []
