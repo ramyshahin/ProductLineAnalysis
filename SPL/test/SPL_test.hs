@@ -13,3 +13,8 @@ main = do
     print $ l1 == l2
     print $ l1 `isSubsetOf` l2
     print $ l2 `isSubsetOf` l1
+    print $ prop_vlength0
+    print $ prop_vlength1
+    print $ divResult
+
+

@@ -28,6 +28,9 @@ x === y = unsafePerformIO $ do
     ny <- makeStableName $! y 
     return (nx == ny)
 
+(====) :: Eq a => a -> a -> Bool
+(====) x y = x === y || x == y
+
 type FeatureSet         = Universe
 type PresenceCondition  = Prop
 
@@ -47,26 +50,11 @@ type Val a = (a, PresenceCondition)
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
 newtype Var t = Var [(Val t)]
---newtype Var' t = Var' [Val' t]
-
-{-
-defSubst :: Var t -> Var t 
-defSubst (Var v) = 
-    let xs =  (filter (\(x,_) -> case x of
-                                    Just _  -> True
-                                    _       -> False) v)
-    in Var xs
-
-var2var' v =
-    let (Var vdef) = defSubst v
-        v' = map (\(Just x, pc) -> (x,pc)) vdef
-    in  Var' v'
--}
 
 exists :: Eq t => Val t -> Var t -> Bool
 exists (x, xpc) ys' =
     or [(x == y) && (implies xpc ypc) | (y,ypc) <- ys]
-    where (Var ys) = compact ys'
+    where (Var ys) = compactEq ys'
 
 isSubsetOf :: Eq t => Var t -> Var t -> Bool
 isSubsetOf (Var x) y' = and (map (`exists` y') x)
@@ -106,30 +94,33 @@ mkVarT v = mkVar v T
 mkVars :: [(t,PresenceCondition)] -> Var t
 mkVars vs = Var vs
 
-findVal :: t -> [Val t] -> [Val t]
-findVal v [] = []
-findVal v ((x,pc):xs) = if (v === x) then (x,pc) : rest else rest
-    where rest = findVal v xs
+findVal :: t -> [Val t] -> (t -> t -> Bool) -> [Val t]
+findVal _ [] _ = []
+findVal v ((x,pc):xs) cmp = if (cmp v x) then (x,pc) : rest else rest
+    where rest = findVal v xs cmp
 
-phelem :: t -> [t] -> Bool
-phelem v xs = any (\x -> v === x) xs
+phelem :: t -> [t] -> (t -> t -> Bool) -> Bool
+phelem v xs cmp = any (\x -> cmp v x) xs
 
-groupVals_ :: [Val t] -> [t] -> [Val t]
-groupVals_ [] ds = []
-groupVals_ ((x,xpc):xs) ds = 
-    if x `phelem` ds then rest else 
-        let ms = findVal x xs
+groupVals_ :: [Val t] -> [t] -> (t -> t -> Bool) -> [Val t]
+groupVals_ [] _ _ = []
+groupVals_ ((x,xpc):xs) ds cmp = 
+    if phelem x ds cmp then rest else 
+        let ms = findVal x xs cmp
             pc = disj(xpc:(snd . unzip) ms)
         in  (x,pc) : rest
-    where rest = groupVals_ xs (x:ds)
+    where rest = groupVals_ xs (x:ds) cmp
 
-groupVals :: [Val t] -> [Val t]
-groupVals xs = groupVals_ xs []
+groupVals :: [Val t] -> (t -> t -> Bool) -> [Val t]
+groupVals xs cmp = groupVals_ xs [] cmp
 
 -- compaction seems to be turning some lazy expressions into strict,
 -- resulting in condiitional expression bugs
 compact :: Var t -> Var t
-compact (Var v) = Var (groupVals v)
+compact (Var v) = Var (groupVals v (===))
+
+compactEq :: Eq t => Var t -> Var t
+compactEq (Var v) = Var (groupVals v (====))
 
 valIndex :: Eq t => Var t -> t -> [Val t]
 valIndex (Var v) x =
@@ -170,10 +161,11 @@ inv (Var v) = {-trace ("inv: " ++ (show (Var v))) $-}
 
 apply_ :: Val (a -> b) -> Var a -> Var b
 apply_ (fn, fnpc) (Var x) = --localCtxt fnpc $
-    (mkVars [(fn x', pc) | (x',xpc) <- x, let pc = conj[fnpc,xpc], sat(pc)])
+    mkVars [(fn x', pc) | (x',xpc) <- x, let pc = conj[fnpc,xpc], sat(pc)]
 
 apply :: Var (a -> b) -> Var a -> Var b
-apply (Var fn) x = compact $ unions [apply_ f x | f <- fn] 
+apply (Var fn) x = --compact $
+     unions [apply_ f x | f <- fn] 
 
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a

@@ -94,18 +94,25 @@ prop_vhead1 = (S.vhead) sl2 == mkVars [(6,p), (-11, _p)]
 prop_vlength0 = S.vlength sl1 == mkVars[(3,neg _pq), (2,_pq)]
 prop_vlength1 = S.vlength sl2 == S.vlength sl1
 
+-- unary function: abs
 abs' = pure abs
 
 xAbs = abs' <*> x
 yAbs = abs' <*> y
 
+prop_xabs = xAbs == mkVars [(7, pq), (3, p_q), (8, _pq), (0, _p_q)]
+prop_yabs = yAbs == mkVars [(11, _p)]
 
---(|+|) = liftV2 (+)
-
+-- binary function (|+|)
 x_plus_y0 = apply (apply (pure (+)) x) y
 x_plus_y1 = (pure (+)) <*> x <*> y
 x_plus_y2 = x |+| y
 
+prop_plus0 = x_plus_y0 == mkVars [(-19,_pq), (-11,_p_q)]
+prop_plus1 = x_plus_y0 == x_plus_y1
+prop_plus2 = x_plus_y0 == x_plus_y2
+
+-- safe division and lifted conditionals
 safeDiv :: Int -> Int -> Int
 safeDiv a b = if b == 0 then 0 else (div a b)
 div' = liftV2 div
@@ -115,6 +122,9 @@ one = (mkVarT 1)
  
 safeDiv' :: Var Int -> Var Int -> Var Int
 safeDiv' a b = cond' (b |==| zero) zero (div' a b)
+divResult = safeDiv' w x
+
+prop_safeDiv = divResult == mkVars [(1,pq), (-1, p_q), (0,_p_q)]
 
 return []
 runSPLTests = $quickCheckAll
