@@ -23,7 +23,7 @@ import System.Mem.StableName
 import System.IO.Unsafe
 
 (===) :: a -> a -> Bool
-x === y = unsafePerformIO $ do 
+(!x) === (!y) = unsafePerformIO $ do 
     nx <- makeStableName $! x 
     ny <- makeStableName $! y 
     return (nx == ny)
@@ -60,7 +60,9 @@ isSubsetOf :: Eq t => Var t -> Var t -> Bool
 isSubsetOf (Var x) y' = and (map (`exists` y') x)
 
 instance Show a => Show (Var a) where
-    show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "}" 
+    show v' = 
+        let (Var v) = compact v' 
+        in "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "}" 
 
 -- a < b means that a is a subset of b in terms of products
 instance Eq a => Ord (Var a) where
@@ -160,8 +162,9 @@ inv (Var v) = {-trace ("inv: " ++ (show (Var v))) $-}
     all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
 
 apply_ :: Val (a -> b) -> Var a -> Var b
-apply_ (fn, fnpc) (Var x) = --localCtxt fnpc $
-    mkVars [(fn x', pc) | (x',xpc) <- x, let pc = conj[fnpc,xpc], sat(pc)]
+apply_ (fn, fnpc) x'  = --localCtxt fnpc $
+    let (Var x) = compact x'
+    in mkVars [(fn x', pc) | (x',xpc) <- x, let pc = conj[fnpc,xpc], sat(pc)]
 
 apply :: Var (a -> b) -> Var a -> Var b
 apply (Var fn) x = --compact $
