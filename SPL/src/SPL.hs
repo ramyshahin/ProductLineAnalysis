@@ -72,7 +72,7 @@ isSubsetOf :: Eq t => Var t -> Var t -> Bool
 isSubsetOf (Var x) y' = and (map (`exists` y') x)
 
 instance Show a => Show (Var a) where
-    show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "\n}" 
+    show (Var v) = "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "}" 
 
 -- a < b means that a is a subset of b in terms of products
 instance Eq a => Ord (Var a) where
@@ -106,17 +106,30 @@ mkVarT v = mkVar v T
 mkVars :: [(t,PresenceCondition)] -> Var t
 mkVars vs = Var vs
 
---mkVars vs = Var (map (\(v,pc) -> (Just v, pc)) vs)
+findVal :: t -> [Val t] -> [Val t]
+findVal v [] = []
+findVal v ((x,pc):xs) = if (v === x) then (x,pc) : rest else rest
+    where rest = findVal v xs
+
+phelem :: t -> [t] -> Bool
+phelem v xs = any (\x -> v === x) xs
+
+groupVals_ :: [Val t] -> [t] -> [Val t]
+groupVals_ [] ds = []
+groupVals_ ((x,xpc):xs) ds = 
+    if x `phelem` ds then rest else 
+        let ms = findVal x xs
+            pc = disj(xpc:(snd . unzip) ms)
+        in  (x,pc) : rest
+    where rest = groupVals_ xs (x:ds)
+
+groupVals :: [Val t] -> [Val t]
+groupVals xs = groupVals_ xs []
 
 -- compaction seems to be turning some lazy expressions into strict,
 -- resulting in condiitional expression bugs
-
 compact :: Var t -> Var t
-compact (Var v) = 
-    let gs = groupBy (\(v1, _) (v2, _) -> (v1 === v2)) v
-    in  Var (map (\g -> let (vs, pcs) = unzip g
-                        in  (head vs, disj pcs)) 
-            gs)
+compact (Var v) = Var (groupVals v)
 
 valIndex :: Eq t => Var t -> t -> [Val t]
 valIndex (Var v) x =
@@ -211,58 +224,3 @@ liftV5 = liftA5
 (|+|) :: Num a => Var a -> Var a -> Var a
 (|+|) = liftV2 (+)
 
-{-
--- List lifting
-data List' t =
-    Empty'
-  | Cons' t (Var' (List' t))
-
-e :: Var [a]
-e = mkVarT []
-
-(|:|) :: Var a -> Var [a] -> Var [a]
-(|:|) (Var v) (Var vs) = 
-    let ts = [(v', vs', c) |    (v', vpc) <- v, 
-                                (vs', vspc) <- vs, 
-                                let c = conj[vpc, vspc], 
-                                sat c]
-        res = map (\(v', vs', pc) -> (case (v', vs') of
-                                        (Just v'', Just vs'') -> Just (v'' : vs'')
-                                        (Nothing, Just vs'')  -> Just vs''
-                                        (_, _)                -> Nothing
-                                    , pc)
-                ) ts
-    in Var res
--}
---(|:|) = liftV2 (:)
-
-{-
-foldr_ :: (a -> b -> b) -> b -> [a] -> b
-foldr_ f e xs =
-    if (null xs)
-    then e
-    else f (head xs) (foldr_ f e (tail xs))
-
-foldr' :: (Show a, Show b) => Var (a -> b -> b) -> Var b -> Var [a] -> Var b
---foldr' = liftV3 foldr
-foldr' f' e' xs' =
-    cond'   (null' xs')
-            e'
-            (f' <*> (head' xs') <*> (foldr' f' e' (tail' xs')))
--}
-
--- Lifted List (VList)
---type VList a = Var [a]
-
---vnull :: VList a -> Var Bool
---vnull = liftV null
-
---vhead = liftV head
-
---vtail = liftV tail
-
---mkVList :: (Show t) => [Var t] -> Var [t]
---mkVList = foldr (|:|) e
-
---mkVarList' :: (Show t) => Var [t] -> Var [t]
---mkVarList' = foldr' (pure (:)) e

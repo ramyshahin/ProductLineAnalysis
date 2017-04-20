@@ -1,7 +1,7 @@
 -- SPL quickcheck properties
 {-# LANGUAGE TemplateHaskell #-}
 module SPL_prop where
-import Test.QuickCheck
+
 import Test.QuickCheck.All
 import SPL
 import Prop
@@ -23,6 +23,11 @@ p_q = conj[p, neg q]
 _pq = conj[neg p, q]
 _p_q = conj[neg p, neg q]
 _p = neg p
+_q = neg q 
+
+v1, v2 :: Var Int
+v1 = mkVars [(1,pq), (2,p_q), (1, _pq), (2, _p_q)]
+v2 = mkVars [(1,q), (2, _q)]
 
 w :: Var Int
 w = mkVars [(12, pq), (2, p_q), (3, _p_q)]
@@ -37,6 +42,21 @@ y0 = mkVars [(-11, _pq)]
 
 z :: Var Int
 z = mkVars [(6, p)]
+
+xs = [1..5]
+
+-- ===
+prop_phys_eq1 = 1 === 1
+prop_phys_eq2 = not (1 === 2)
+prop_phys_eq3 = y === y
+prop_phys_eq4 = not (y === z)
+prop_phys_eq5 = (head xs === head xs)
+prop_phys_eq6 = (tail xs === tail xs)
+
+-- compact
+prop_compact1 = (compact x == x)
+prop_compact2 = (compact z == z)
+prop_compact3 = (compact v1 == v2)
 
 -- exists
 prop_exists1 = exists (2, p_q) w 
@@ -68,15 +88,11 @@ dl2 = D.mkVList [z, y, x, w]
 
 -- vhead
 prop_vhead0 = (S.vhead) sl1 == mkVars [(12,pq), (2,p_q), (3,_p_q), (-8, _pq)]
-prop_vhead1 = (S.vhead) sl1 == (D.vhead) dl1
-prop_vhead2 = (S.vhead) sl2 == (D.vhead) dl2
-prop_vhead3 = (S.vhead) sl2 == mkVars [(6,p), (-11, _p)]
+prop_vhead1 = (S.vhead) sl2 == mkVars [(6,p), (-11, _p)]
 
 -- vlength
-prop_vlength0 = S.vlength sl1 == mkVars[(3,p), (3,_p_q), (2,_pq)]
-prop_vlength1 = S.vlength sl1 == D.vlength dl1
-prop_vlength2 = S.vlength sl2 == S.vlength sl1
-prop_vlength3 = S.vlength sl2 == D.vlength dl2
+prop_vlength0 = S.vlength sl1 == mkVars[(3,neg _pq), (2,_pq)]
+prop_vlength1 = S.vlength sl2 == S.vlength sl1
 
 abs' = pure abs
 
