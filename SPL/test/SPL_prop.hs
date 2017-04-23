@@ -2,21 +2,19 @@
 {-# LANGUAGE TemplateHaskell #-}
 module SPL_prop where
 
-import Test.QuickCheck.All
+--import Test.QuickCheck.All
 import SPL
 import Prop
 import Shallow.VList as S
 import Deep.VList as D
 import Control.Applicative
 
-u :: Universe
-u = mkUniverse ["P", "Q", "R", "S"]
-
 p, q, r, s :: Prop
-p = Atom u 0
-q = Atom u 1
-r = Atom u 2
-s = Atom u 3
+[p, q, r, s] = mkUniverse ["P", "Q", "R", "S"]
+--p = lookup u 0
+--q = lookup u 1
+--r = lookup u 2
+--s = lookup u 3
 
 pq = conj[p,q]
 p_q = conj[p, neg q]
@@ -126,5 +124,5 @@ divResult = safeDiv' w x
 
 prop_safeDiv = divResult == mkVars [(1,pq), (-1, p_q), (0,_p_q)]
 
-return []
-runSPLTests = $quickCheckAll
+--return []
+--runSPLTests = $quickCheckAll

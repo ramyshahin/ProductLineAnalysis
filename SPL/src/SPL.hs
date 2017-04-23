@@ -31,7 +31,7 @@ import System.IO.Unsafe
 (====) :: Eq a => a -> a -> Bool
 (====) x y = x === y || x == y
 
-type FeatureSet         = Universe
+--type FeatureSet         = Universe
 type PresenceCondition  = Prop
 
 --type Val a = (Maybe a, PresenceCondition)
@@ -91,7 +91,7 @@ mkVar :: t -> PresenceCondition -> Var t
 mkVar v pc = Var [(v,pc)]
 
 mkVarT :: t -> Var t
-mkVarT v = mkVar v T
+mkVarT v = mkVar v tt
 
 mkVars :: [(t,PresenceCondition)] -> Var t
 mkVars vs = Var vs
