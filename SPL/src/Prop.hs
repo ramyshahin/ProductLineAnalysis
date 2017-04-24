@@ -6,10 +6,10 @@
 
 module Prop where
 
-import Z3.Base
-import Z3.Monad(Z3, assert, evalZ3, evalZ3With, check, local)
+--import Z3.Base
+import Z3.Monad --(Z3, assert, evalZ3, evalZ3With, check, local)
 import Z3.Opts
-import Data.Vector as V(Vector, (!), fromList, empty, length, snoc, findIndex)
+--import Data.Vector as V(Vector, (!), fromList, empty, length, snoc, findIndex)
 import Data.List
 import System.IO.Unsafe
 import Control.Monad.IO.Class
@@ -27,11 +27,11 @@ satCache = (unsafePerformIO H.new)
 
 --varASTs :: Universe
 --varASTs = (unsafePerformIO H.new)
-conf :: Config
-conf = unsafePerformIO mkConfig
+--conf :: Config
+--conf = unsafePerformIO mkConfig
     
-cntxt :: Context
-cntxt = unsafePerformIO $ mkContext conf
+-- :: Context
+-- = unsafePerformIO $ mkContext conf
     
 mkUniverse :: [String] -> [Prop]
 mkUniverse as = 
@@ -96,16 +96,16 @@ simplify p =
         _ -> p
 -}
 
-data Prop = P AST String
+data Prop = P (Z3 AST) String
 
 instance Hashable Prop where
     hashWithSalt x (P _ s) = hashWithSalt x s 
 
 instance Eq Prop where
-    (P a1 _) == (P a2 _) = a1 == a2
+    (P _ a1) == (P _ a2) = a1 == a2
 
 instance Ord Prop where
-    (P a1 _) < (P a2 _) = a1 < a2
+    (P _ a1) < (P _ a2) = a1 < a2
     p1 <= p2 = p1 < p2 || p1 == p2
 
 instance Show Prop where
@@ -131,31 +131,46 @@ mkZ3Formula p =
                         mkIff p1' p2'
 -}
 
-mkProp :: IO AST -> String -> Prop
-mkProp a s = unsafePerformIO $ do
-    a' <- a
-    return (P a' s)
+mkProp :: Z3 AST -> String -> Prop
+mkProp a s = P a s
 
-tt = mkProp (mkTrue cntxt) "True"         
-ff = mkProp (mkFalse cntxt) "False"
+tt = mkProp mkTrue "True"         
+ff = mkProp mkFalse "False"
 
-atom s = mkProp (mkFreshBoolVar cntxt s) s
+atom s = mkProp (mkFreshBoolVar s) s
 
-neg (P a s) = mkProp (mkNot cntxt a) ("Not(" ++ s ++ ")")
+neg (P a s) = mkProp (mkNot =<< a) ("Not(" ++ s ++ ")")
 
-conj ps = 
-    let sorted_ps = sort ps
-        str = "And" ++ show sorted_ps
-        ps' = map (\(P x _) -> x) sorted_ps
-    in  mkProp (mkAnd cntxt ps') str
+conj ps'' = 
+    if null ps then
+        tt
+    else if (length ps) == 1 then
+        head ps
+    else if any (ff ==) ps then
+        ff
+    else  mkProp (mkAnd =<< ps') str
+    where   ps = filter (tt /=) ps''
+            sorted_ps = ps --sort ps
+            str = "And" ++ show sorted_ps
+            ps' = mapM (\(P x _) -> x) sorted_ps
 
-disj ps = 
-    let sorted_ps = sort ps
-        str = "Or" ++ show sorted_ps
-        ps' = map (\(P x _) -> x) sorted_ps
-    in  mkProp (mkOr cntxt ps') str
+disj ps'' = 
+    if null ps then
+        ff
+    else if (length ps) == 1 then
+        head ps
+    else if any (tt ==) ps then
+        tt
+    else  mkProp (mkOr =<< ps') str
+    where   ps = filter (ff /=) ps''
+            sorted_ps = sort ps
+            str = "Or" ++ show sorted_ps
+            ps' = mapM (\(P x _) -> x) sorted_ps
 
-impl (P p sp) (P q sq) = mkProp (mkImplies cntxt p q) (sp ++ " => " ++ sq)
+impl (P p sp) (P q sq) = mkProp (do
+    p' <- p
+    q' <- q
+    mkImplies p' q') (sp ++ " => " ++ sq)
     
 --iff p q = simplify(Iff' p q)
 
@@ -239,17 +254,16 @@ getUniverse p =
         Iff'  p1 p2 -> maxUniverse (getUniverse p1) (getUniverse p2)
 -}
 
-mkZ3Script :: AST -> Z3 ()
+mkZ3Script :: Z3 AST -> Z3 ()
 mkZ3Script a = do
-    assert a
+    assert =<< a
 
 checkSAT :: Prop -> Result
 checkSAT p@(P a _) = unsafePerformIO $ do
-    r <- H.lookup satCache p
-    res <- case r of
-                Just r' -> return r'
-                Nothing -> do {s <- evalZ3With Nothing stdOpts (((mkZ3Script a) >> check)); H.insert satCache p s; return s}
-    return res
+    r <- return Nothing --H.lookup satCache p
+    case r of
+        Just r' -> return r'
+        Nothing -> do {s <- evalZ3 {-With Nothing stdOpts-} (((mkZ3Script a) >> check)); H.insert satCache p s; return s}
 
 sat :: Prop -> Bool
 sat p = (checkSAT p) == Sat
