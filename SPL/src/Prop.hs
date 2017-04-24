@@ -6,10 +6,7 @@
 
 module Prop where
 
---import Z3.Base
-import Z3.Monad --(Z3, assert, evalZ3, evalZ3With, check, local)
-import Z3.Opts
---import Data.Vector as V(Vector, (!), fromList, empty, length, snoc, findIndex)
+import Z3.Base
 import Data.List
 import System.IO.Unsafe
 import Control.Monad.IO.Class
@@ -20,83 +17,23 @@ import Generics.Deriving
 
 type SATCache = BasicHashTable Prop Result
 
---type Universe = (BasicHashTable Int Prop)
-
 satCache :: SATCache 
 satCache = (unsafePerformIO H.new)
 
---varASTs :: Universe
---varASTs = (unsafePerformIO H.new)
---conf :: Config
---conf = unsafePerformIO mkConfig
+conf :: Config
+conf = unsafePerformIO mkConfig
     
--- :: Context
--- = unsafePerformIO $ mkContext conf
+ctxt :: Context
+ctxt = unsafePerformIO $ mkContext conf
     
+solver :: Solver
+solver = unsafePerformIO $ mkSimpleSolver ctxt
+
 mkUniverse :: [String] -> [Prop]
 mkUniverse as = 
     map atom as
 
-    --let _ = unsafePerformIO $ mapM (\i -> H.insert varASTs i (Atom (xs ! i))) [0..(V.length xs)-1] 
-    --return ()
-{-
-queryOrUpdate :: Universe -> String -> (Universe, Int)
-queryOrUpdate u@(Universe as ht) q =
-    let i = V.findIndex (== q) as
-    in  case i of
-            Nothing -> (Universe (V.snoc as q) ht, V.length as)
-            Just i' -> (u, i')
-  -}
-
-{-
-data Prop =
-    T
-  | F
-  | Atom  AST
-  | Not'  Prop
-  | Conj' [Prop]
-  | Disj' [Prop]
-  | Impl' Prop Prop
-  | Iff'  Prop Prop
-  deriving (Eq, Generic)
-
-instance Hashable Prop
-
-
-hasConflict :: [Prop] -> Bool
---hasConflict ps = any (\(Not' p) -> (any (\p' -> p == p')) ps) ps
-hasConflict _ = False
-
-simplify :: Prop -> Prop
-simplify p =
-    case p of
-        Not' p' -> 
-            case p' of
-                T -> F
-                F -> T
-                Not' p'' -> p'' 
-                _ -> Not' p'
-        Conj' ps -> let ps'' = filter (\p -> p /= T) ps
-                        ps'  = nub $ foldr (++) [] (map (\p -> case p of
-                                                                  Conj' ps' -> ps'
-                                                                  _ -> [p]) ps'')
-                    in case ps' of
-                        [] -> T
-                        [p] -> p
-                        ps -> if (any (== F) ps') || (hasConflict ps) then F else Conj' ps'
-
-        Disj' ps -> let ps'' = filter (\p -> p /= F) ps
-                        ps'  = nub $ foldr (++) [] (map (\p -> case p of
-                                                                  Disj' ps' -> ps'
-                                                                  _ -> [p]) ps'')
-                    in case ps' of
-                        [] -> F
-                        [p] -> p
-                        _ -> if ((any (== T) ps') || (hasConflict ps)) then T else Disj' ps'
-        _ -> p
--}
-
-data Prop = P (Z3 AST) String
+data Prop = P AST String
 
 instance Hashable Prop where
     hashWithSalt x (P _ s) = hashWithSalt x s 
@@ -111,35 +48,15 @@ instance Ord Prop where
 instance Show Prop where
     show (P _ s) = s 
 
-{-
-mkZ3Formula :: Prop -> Z3 AST
-mkZ3Formula p =
-    case p of
-        T           -> mkTrue
-        F           -> mkFalse
-        Atom i      -> return (getVar i)
-        Not' p'      -> mkNot =<< (mkZ3Formula p')
-        Conj' ps     -> mkAnd =<< (mapM mkZ3Formula ps)
-        Disj' ps     -> mkOr  =<< (mapM mkZ3Formula ps)
-        Impl' p1 p2  -> do
-                        p1' <- mkZ3Formula p1
-                        p2' <- mkZ3Formula p2
-                        mkImplies p1' p2'
-        Iff' p1 p2   -> do
-                        p1' <- mkZ3Formula p1
-                        p2' <- mkZ3Formula p2
-                        mkIff p1' p2'
--}
-
-mkProp :: Z3 AST -> String -> Prop
+mkProp :: AST -> String -> Prop
 mkProp a s = P a s
 
-tt = mkProp mkTrue "True"         
-ff = mkProp mkFalse "False"
+tt = mkProp (unsafePerformIO (mkTrue ctxt)) "True"         
+ff = mkProp (unsafePerformIO (mkFalse ctxt)) "False"
 
-atom s = mkProp (mkFreshBoolVar s) s
+atom s = mkProp (unsafePerformIO (mkFreshBoolVar ctxt s)) s
 
-neg (P a s) = mkProp (mkNot =<< a) ("Not(" ++ s ++ ")")
+neg (P a s) = mkProp (unsafePerformIO (mkNot ctxt a)) ("Not(" ++ s ++ ")")
 
 conj ps'' = 
     if null ps then
@@ -148,11 +65,11 @@ conj ps'' =
         head ps
     else if any (ff ==) ps then
         ff
-    else  mkProp (mkAnd =<< ps') str
+    else  mkProp (unsafePerformIO (mkAnd ctxt ps')) str
     where   ps = filter (tt /=) ps''
             sorted_ps = ps --sort ps
             str = "And" ++ show sorted_ps
-            ps' = mapM (\(P x _) -> x) sorted_ps
+            ps' = map (\(P x _) -> x) sorted_ps
 
 disj ps'' = 
     if null ps then
@@ -161,109 +78,31 @@ disj ps'' =
         head ps
     else if any (tt ==) ps then
         tt
-    else  mkProp (mkOr =<< ps') str
+    else  mkProp (unsafePerformIO (mkOr ctxt ps')) str
     where   ps = filter (ff /=) ps''
             sorted_ps = sort ps
             str = "Or" ++ show sorted_ps
-            ps' = mapM (\(P x _) -> x) sorted_ps
+            ps' = map (\(P x _) -> x) sorted_ps
 
-impl (P p sp) (P q sq) = mkProp (do
-    p' <- p
-    q' <- q
-    mkImplies p' q') (sp ++ " => " ++ sq)
+impl (P p sp) (P q sq) = mkProp (
+    unsafePerformIO (mkImplies ctxt p q)) (sp ++ " => " ++ sq)
     
---iff p q = simplify(Iff' p q)
 
-{-
-showPropList :: [Prop] -> String
-showPropList ps = 
-    case ps of
-        []  -> ""
-        [p] -> (show p) 
-        p1 : p2 : ps' -> (show p1) ++ ", " ++ showPropList (p2 : ps')
-
-getVar :: Int -> Prop
-getVar i = 
-    let (Just s) = unsafePerformIO $ H.lookup varASTs i
-    in  s
-
-instance Show Prop where
-    show prop = 
-        case prop of
-            T            -> "True"
-            F            -> "False"
-            Atom i       -> show $ getVar i
-            Not' p       -> "Not(" ++ show p ++ ")"
-            Conj' ps     -> "And(" ++ showPropList ps ++ ")"
-            Disj' ps     -> "Or("  ++ showPropList ps ++ ")"
-            Impl' p1 p2  -> "(" ++ show p1 ++ " => " ++ show p2 ++ ")"
-            Iff'  p1 p2  -> "(" ++ show p1 ++ " <=> " ++ show p2 ++ ")"
-
-instance Ord Prop where
-    compare T p = case p of
-                    T -> EQ
-                    _ -> LT
-    compare F p = case p of
-                    T -> GT
-                    F -> EQ
-                    _ -> LT
-    compare (Atom i) p = case p of
-                            T -> GT
-                            F -> GT
-                            (Atom j) -> compare i j
-                            _ -> LT
-    compare (Not' p1) p = case p of
-                            T -> GT
-                            F -> GT
-                            (Atom _) -> GT
-                            (Not' p2) -> compare p1 p2
-                            _ -> LT
-    compare (Conj' a) p = case p of
-                            T -> GT
-                            F -> GT
-                            (Atom _) -> GT
-                            (Not' _) -> GT
-                            (Conj' b) -> compare a b
-                            _ -> LT
-    compare (Disj' a) p = case p of
-                            T -> GT
-                            F -> GT
-                            (Atom _) -> GT
-                            (Not' _) -> GT
-                            (Conj' _) -> GT
-                            (Disj' b) -> compare a b
--}
-{-
-maxUniverse :: Universe -> Universe -> Universe
-maxUniverse u1@(Universe as1 _) u2@(Universe as2 _) =
-    let l1 = V.length as1
-        l2 = V.length as2
-    in
-        if (l1 >= l2) then u1 else u2
-
-getUniverse :: Prop -> Universe
-getUniverse p = 
-    case p of
-        T -> emptyUniverse
-        F -> emptyUniverse
-        Atom u i -> u
-        Not' p' -> getUniverse p'
-        Conj' ps -> foldr (maxUniverse . getUniverse) emptyUniverse ps
-        Disj' ps -> foldr (maxUniverse . getUniverse) emptyUniverse ps
-        Impl' p1 p2 -> maxUniverse (getUniverse p1) (getUniverse p2)
-        Iff'  p1 p2 -> maxUniverse (getUniverse p1) (getUniverse p2)
--}
-
-mkZ3Script :: Z3 AST -> Z3 ()
-mkZ3Script a = do
-    assert =<< a
+mkZ3Script :: AST ->IO ()
+mkZ3Script a = solverAssertCnstr ctxt solver a
 
 checkSAT :: Prop -> Result
 checkSAT p@(P a _) = unsafePerformIO $ do
     r <- return Nothing --H.lookup satCache p
     case r of
         Just r' -> return r'
-        Nothing -> do {s <- evalZ3 {-With Nothing stdOpts-} (((mkZ3Script a) >> check)); H.insert satCache p s; return s}
+        Nothing -> do 
+            solverPush ctxt solver
+            solverAssertCnstr ctxt solver a
+            s <- solverCheck ctxt solver
+            solverPop ctxt solver 1
+            H.insert satCache p s 
+            return s
 
 sat :: Prop -> Bool
 sat p = (checkSAT p) == Sat
@@ -277,18 +116,3 @@ tautology p = unsat (neg p)
 implies :: Prop -> Prop -> Bool
 implies x y = tautology (impl x y)
 
--- Context indices are dummy, used here just to make sure 
--- the functions are actually called rather than lazily skipped
-{-
-localCtxt_ :: Prop -> a -> Z3 a
-localCtxt_ p x =
-    do 
-        (mkZ3Script (getUniverse p) p)
-        push
-        let !r = x
-        pop 1
-        return r
-
-localCtxt :: Prop -> a -> a
-localCtxt p x = unsafePerformIO $ evalZ3 (localCtxt_ p x)
--}

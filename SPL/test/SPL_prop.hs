@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module SPL_prop where
 
---import Test.QuickCheck.All
+import Test.QuickCheck.All
 import SPL
 import Prop
 import Shallow.VList as S
@@ -51,16 +51,16 @@ prop_phys_eq4 = not (y === z)
 prop_phys_eq5 = (head xs === head xs)
 prop_phys_eq6 = (tail xs === tail xs)
 
--- compact
-prop_compact1 = (compact x == x)
-prop_compact2 = (compact z == z)
-prop_compact3 = (compact v1 == v2)
-
 -- exists
 prop_exists1 = exists (2, p_q) w 
 prop_exists2 = exists ((-11), _pq) y
 prop_exists3 = not (exists (4,p_q) w)
 prop_exists4 = not (exists ((-8), q) x)
+
+-- compact
+prop_compact1 = (compact x == x)
+prop_compact2 = (compact z == z)
+prop_compact3 = (compact v1 == v2)
 
 -- Ord
 prop_lt1 = y0 < y
@@ -124,5 +124,5 @@ divResult = safeDiv' w x
 
 prop_safeDiv = divResult == mkVars [(1,pq), (-1, p_q), (0,_p_q)]
 
---return []
---runSPLTests = $quickCheckAll
+return []
+runSPLTests = $quickCheckAll
