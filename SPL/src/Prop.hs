@@ -66,8 +66,8 @@ conj ps'' =
     else if any (ff ==) ps then
         ff
     else  mkProp (unsafePerformIO (mkAnd ctxt ps')) str
-    where   ps = filter (tt /=) ps''
-            sorted_ps = ps --sort ps
+    where   ps = filter (tt /=) (nub ps'')
+            sorted_ps = sort ps
             str = "And" ++ show sorted_ps
             ps' = map (\(P x _) -> x) sorted_ps
 
@@ -79,13 +79,17 @@ disj ps'' =
     else if any (tt ==) ps then
         tt
     else  mkProp (unsafePerformIO (mkOr ctxt ps')) str
-    where   ps = filter (ff /=) ps''
+    where   ps = filter (ff /=) (nub ps'')
             sorted_ps = sort ps
             str = "Or" ++ show sorted_ps
             ps' = map (\(P x _) -> x) sorted_ps
 
-impl (P p sp) (P q sq) = mkProp (
-    unsafePerformIO (mkImplies ctxt p q)) (sp ++ " => " ++ sq)
+impl p'@(P p sp) q'@(P q sq) = 
+    if p' == ff then tt
+    else if p' == tt then q'
+    else if q' == tt then tt
+    else mkProp (
+        unsafePerformIO (mkImplies ctxt p q)) (sp ++ " => " ++ sq)
     
 
 mkZ3Script :: AST ->IO ()
@@ -93,7 +97,7 @@ mkZ3Script a = solverAssertCnstr ctxt solver a
 
 checkSAT :: Prop -> Result
 checkSAT p@(P a _) = unsafePerformIO $ do
-    r <- return Nothing --H.lookup satCache p
+    r <- H.lookup satCache p
     case r of
         Just r' -> return r'
         Nothing -> do 

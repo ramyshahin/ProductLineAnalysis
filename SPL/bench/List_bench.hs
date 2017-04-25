@@ -7,20 +7,20 @@ import Prop
 import Deep.VList as D
 import Shallow.VList as S
 
-featCount = 2
-count = 5
+featCount = 4
+count = 1000
 
 genFeats :: [Int] -> [String]
 genFeats [] = []
 genFeats (i:is) = ("f" ++ (show i)) : genFeats is
 
-u :: Universe
+u :: [Prop]
 u = mkUniverse $ genFeats [1..featCount]
 
 rndTerm :: IO Prop
 rndTerm = do
     r <- (randomIO :: IO Int)
-    let atm = Atom u (mod r featCount)
+    let atm = u !! (mod r featCount)
     s <- (randomIO :: IO Int)
     return (if ((mod s 2) == 0) then (neg atm) else atm)
     
@@ -30,15 +30,11 @@ rndPC = do
     terms <- replicateM (mod c featCount) rndTerm
     return (conj terms)
 
-shallowBench pairs = 
-    let vs = map (\(x,pc) -> mkVar x pc) pairs
+shallowBench n pairs' = 
+    let pairs = take n pairs'
+        vs = map (\(x,pc) -> mkVar x pc) pairs
         xs = S.mkVList vs
     in  S.vmap (mkVarT (+ 1)) xs
-
-deepBench pairs = 
-    let vs = map (\(x,pc) -> mkVar x pc) pairs
-        xs = D.mkVList vs
-    in  D.vmap (mkVarT (+ 1)) xs
 
 main :: IO ()
 main = do
@@ -46,6 +42,7 @@ main = do
     let xs = map (\x -> mod x 100) xs_
     pcs <- replicateM count rndPC
     let pairs = zip xs pcs
+    {-
     putStrLn $ show xs
     putStrLn $ show pcs
     let res = shallowBench pairs
@@ -60,8 +57,8 @@ main = do
     putStrLn $ show t
 
     --putStrLn $ show (deepBench pairs)
-    {-
+-}
+
     defaultMain [
-        --bench "shallow" $ whnf shallowBench pairs --,
-        bench "deep" $ whnf deepBench pairs
-        ]-}
+        bench (show n) $ whnf (shallowBench n) pairs | n <- [500]
+        ]

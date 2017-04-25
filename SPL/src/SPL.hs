@@ -164,7 +164,7 @@ inv (Var v) = {-trace ("inv: " ++ (show (Var v))) $-}
 apply_ :: Val (a -> b) -> Var a -> Var b
 apply_ (fn, fnpc) x'  = --localCtxt fnpc $
     let (Var x) = compact x'
-    in mkVars [(fn x', pc) | (x',xpc) <- x, let pc = conj[fnpc,xpc], sat(pc)]
+    in mkVars [(fn x'', pc) | (x'',xpc) <- x, let pc = conj[fnpc,xpc], sat(pc)]
 
 apply :: Var (a -> b) -> Var a -> Var b
 apply (Var fn) x = --compact $
