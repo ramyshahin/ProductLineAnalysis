@@ -7,7 +7,6 @@ module Shallow.FTS where
 import LTS
 import Data.List
 import Shallow.VList
---import Data.Tree
 import Control.Applicative
 import SPL
 import Debug.Trace
@@ -22,18 +21,18 @@ type VState = Var State
 type VGuard = Var Guard
 type VAction = Var Action
 
-mkAction = liftV2 Action
+mkVAction s gs = (liftV2 Action) (mkVarT s) (mkVarT gs)
 
 type VTransition = Var Transition
 
-mkTransition = liftV3 Transition
+mkTransition src tgt actions pc = restrict pc ((liftV3 Transition) src tgt actions)
 vsource = liftV source
 vtarget = liftV target
 vact = liftV act
 
-type VLTS = Var LTS
+type FTS = Var LTS
 
-mkLTS = liftV4 LTS
+mkFTS = liftV4 LTS
 
 vneighbors :: Var [Transition] -> VState -> Var [State]
 

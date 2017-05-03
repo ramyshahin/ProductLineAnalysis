@@ -29,3 +29,6 @@ vmap = liftV2 map
 
 vlength :: VList a -> Var Int
 vlength = liftV length
+
+(|!!|) :: VList a -> Int -> Var a
+(|!!|) vs i = (liftV2 (!!)) vs (mkVarT i)

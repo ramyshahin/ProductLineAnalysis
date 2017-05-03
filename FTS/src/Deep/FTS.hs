@@ -5,7 +5,7 @@
 -------------------------------------------------------------------------------
 module Deep.FTS where
 import SPL
-import Deep.VList
+import Shallow.VList
 import LTS(Action)
 
 type State' = String

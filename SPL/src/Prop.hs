@@ -17,8 +17,10 @@ import Generics.Deriving
 
 type SATCache = BasicHashTable Prop Result
 
+cacheSize = 1000
+
 satCache :: SATCache 
-satCache = (unsafePerformIO H.new)
+satCache = unsafePerformIO $ H.newSized cacheSize
 
 conf :: Config
 conf = unsafePerformIO mkConfig
