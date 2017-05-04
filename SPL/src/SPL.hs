@@ -128,6 +128,10 @@ valIndex :: Eq t => Var t -> t -> [Val t]
 valIndex (Var v) x =
     filter (\(x',pc') -> x' == x) v
 
+index :: Var t -> PresenceCondition -> [t]
+index (Var v) pc = fst $ unzip v' 
+    where   v' = filter (\(x',pc') -> sat (conj[pc,pc'])) v
+
 subst :: Var t -> PresenceCondition -> Var t
 subst (Var v) pc =
     Var (filter (\(_,pc') -> sat (conj [pc,pc'])) v)
