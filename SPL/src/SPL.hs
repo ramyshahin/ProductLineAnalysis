@@ -132,6 +132,18 @@ index :: Var t -> PresenceCondition -> [t]
 index (Var v) pc = fst $ unzip v' 
     where   v' = filter (\(x',pc') -> sat (conj[pc,pc'])) v
 
+getAllConfigs :: [Prop] -> [Prop]
+getAllConfigs [] = []
+getAllConfigs (f:[]) = [f, (neg f)]
+getAllConfigs (f:fs) = fPos ++ fNeg 
+    where   rest = getAllConfigs fs
+            fPos = map (\r -> conj[f,r]) rest
+            fNeg = map (\r -> conj[(neg f), r]) rest
+
+getValidConfigs :: [Prop] -> PresenceCondition -> [Prop]
+getValidConfigs univ featModel = filter (\c -> sat (conj[c,featModel])) cs 
+    where cs = getAllConfigs univ
+
 subst :: Var t -> PresenceCondition -> Var t
 subst (Var v) pc =
     Var (filter (\(_,pc') -> sat (conj [pc,pc'])) v)

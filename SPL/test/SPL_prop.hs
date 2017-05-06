@@ -10,7 +10,7 @@ import Deep.VList as D
 import Control.Applicative
 
 p, q, r, s :: Prop
-[p, q, r, s] = mkUniverse ["P", "Q", "R", "S"]
+univ@[p, q, r, s] = mkUniverse ["P", "Q", "R", "S"]
 --p = lookup u 0
 --q = lookup u 1
 --r = lookup u 2
@@ -61,6 +61,18 @@ prop_exists4 = not (exists ((-8), q) x)
 prop_compact1 = (compact x == x)
 prop_compact2 = (compact z == z)
 prop_compact3 = (compact v1 == v2)
+
+-- index
+prop_index1 = index x p == [7,-3]
+prop_index2 = index x pq == [7]
+prop_index3 = index z _p == []
+
+-- getAllConfigs
+prop_getAllConfigs1 = length (getAllConfigs univ) == 16
+
+-- getValidConfigs
+prop_getValidConfigs1 = length (getValidConfigs univ p) == 8
+prop_getValidConfigs2 = length (getValidConfigs univ pq) == 4
 
 -- Ord
 prop_lt1 = y0 < y
