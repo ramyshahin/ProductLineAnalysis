@@ -12,7 +12,8 @@
 
 module SPL where
 
-import Prop
+import PropBDD
+--import Prop
 import Control.Applicative
 import Control.Monad
 import Data.List 
