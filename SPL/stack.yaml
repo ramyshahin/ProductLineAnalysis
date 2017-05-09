@@ -4,5 +4,5 @@ packages:
 - '.'
 extra-deps:
 - z3-4.1.0
-- hBDD-0.0.3
+- cudd-0.1.0.4
 resolver: lts-8.0
