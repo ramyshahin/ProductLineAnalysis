@@ -4,7 +4,7 @@
 -- Feb. 19th 2017
 module VCPP where
 import SPL
-import Prop
+import PropBDD
 import Data.Stack
 import Data.String.Utils(strip, splitWs, replace)
 
@@ -16,10 +16,10 @@ envToProp :: Stack Prop -> Prop
 envToProp env =
     let p = stackPop env
     in  case p of
-            Nothing -> T 
+            Nothing -> tt 
             Just (env', t) -> conj[t, envToProp env'] -- TODO: make this tail-recursive
  
-emptyLine = mkVar "" T
+emptyLine = mkVar "" tt
 
 -- spliceLines
 --    remove all "\\\n" sequences

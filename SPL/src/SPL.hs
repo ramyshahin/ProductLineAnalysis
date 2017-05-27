@@ -227,8 +227,10 @@ liftV4 = liftA4
 liftV5 :: (a -> b -> c -> d -> e -> f) -> Var a -> Var b -> Var c -> Var d -> Var e -> Var f
 liftV5 = liftA5
 
---data VarOption a =
-    
+-- list cons
+(|:|) :: Var a -> Var [a] -> Var [a]
+(|:|) = liftV2 (:)
+
 -- Bool operation lifting
 (|==|) :: (Eq a) => Var a -> Var a -> Var Bool
 (|==|) = liftV2 (==)

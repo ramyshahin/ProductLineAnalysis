@@ -5,7 +5,7 @@
 module Lexer where
 }
 
-%wrapper "basic"
+%wrapper "posn"
 
 $digit = 0-9
 $alpha = [a-zA-Z_]
@@ -116,4 +116,8 @@ data Token =
     ID String   |
     SYM Char
     deriving (Eq, Show)
+
+--main = do
+--    s <- getContents
+--    alexScanTokens s
 }
