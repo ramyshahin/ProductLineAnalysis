@@ -1,7 +1,0 @@
-#define X /\
-* comment */ main
-
-#define Y _\
-_LINE__
-
-X = print Y -- should print 7

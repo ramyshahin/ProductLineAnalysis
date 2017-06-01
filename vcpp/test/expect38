@@ -1,8 +1,0 @@
-#line 1 "mauke"
-
-
-
-
-
-
-main = print 7 -- should print 7

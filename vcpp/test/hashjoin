@@ -1,5 +1,0 @@
-#define FOO 1
-#define BAR FOO##FOO
-#define FOOFOO 2
-
-BAR
