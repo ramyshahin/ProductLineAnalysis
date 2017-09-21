@@ -22,6 +22,6 @@
 
 .DS*
 
-*.bib
+*.bbl
 *.blg
 
