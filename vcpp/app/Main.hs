@@ -12,6 +12,4 @@ main = do
     args <- getArgs
     file <- readFile (args!!0)
     Var v <- vcpp file
-    mapM_ (\(x,pc) -> case x of
-                        Just x' -> putStrLn ("#" ++ (show pc) ++ "#\n" ++ x' ++ "#---#")
-                        Nothing -> putStrLn ((show pc) ++ ": Nothing\n#---#")) v
+    mapM_ (\(x,pc) -> putStrLn ("#" ++ (show pc) ++ "#\n" ++ x ++ "#---#")) v

@@ -13,8 +13,8 @@ Library
     Build-Depends: base>3&&<6, Stack, MissingH, SPL, parsec, array
     Exposed-Modules:
         VCPP
-    Other-Modules: Lexer
-    build-tools: alex
+    --Other-Modules: Lexer
+    --build-tools: alex
 
 Executable vcpp
     hs-source-dirs: app

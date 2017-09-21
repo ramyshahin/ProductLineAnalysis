@@ -44,8 +44,7 @@ lineByLine (x:xs) e@(CPPEnv feats env) =
             return ((mkVars [(x,envProp), ("", neg envProp)]) |:| rest)
         -- #ifdef
         else if token0 == "#ifdef"
-        then let (feats', i) = queryOrUpdate feats token1
-                 p = Atom feats' i
+        then let (feats', p) = queryOrUpdate feats token1
                  env' = stackPush env p 
              in  do
                  rest <- lineByLine xs (CPPEnv feats' env')
