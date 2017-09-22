@@ -7,6 +7,8 @@
 \usepackage{amssymb}
 \usepackage{epstopdf}
 \usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 
 \title{Safety Cases for Software Product Lines}
@@ -115,18 +117,142 @@ For example, a product where we have the MultiObject and AccessControl features 
 
 \subsection{SPL Engineering Approaches}
 
+SPLs are composed of features, and those features can be represented in various ways:
+
 \subsubsection{Generative}
 
-%In Generative Product Lines, each feature is designed and implemented separately, and then given a product configuration, a product is automatically generated out of the separate feature artifacts. Examples of Generative Product Line approaches include Feature-Oriented Programming and Aspect-Oriented Programming.
-%
+In Generative Product Lines, each feature is designed and implemented separately, and then given a product configuration, a product is automatically generated out of the separate feature artifacts. Examples of Generative Product Line approaches include Feature-Oriented Programming \cite{Prehofer1997} and Aspect-Oriented Programming \cite{Kiczales1997}.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.75\textwidth]{FeatureOriented}
+  \caption{Feature-Oriented implementation of the object store Product Line}
+  \label{fig:FeatureOriented}
+\end{figure}
+
+Figure \ref{fig:FeatureOriented} shows a possible Feature-Oriented implementation of our object store Product Line. \emph{SingleStore} and \emph{MultiStore} are two separate implementations of a their corresponding features, and \emph{AccessControl} is implemented as a cross-cutting feature that refines any of the 2 \emph{Store} implementations. 
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.75\textwidth]{FeatureOrientedGenerated}
+  \caption{The product generated out of the \emph{MultiStore} and \emph{AccessControl} features}
+  \label{fig:FeatureOrientedGenerated}
+\end{figure}
+
+A product can then be generated out of the individual features given a valid Presence Condition. For example, if we are to generate a product with the \emph{MultiStore} and \emph{AccessControl} features, the generator would automatically generate the code in figure \ref{fig:FeatureOrientedGenerated}.
+
 \subsubsection{Annotative}
-%
-%In Annotative Product Lines, a single set of artifacts is maintained, and feature expressions (presence conditions) are used to annotate different syntactic constructs belonging to different families of products. The most commonly used Annotative technique is C Pre-Processor (CPP) macro annotations surrounding fragments of source code.
-%
+
+Generative approaches are only supported by a limited set of programming languages and tools. In mainstream languages, Annotative approaches are typically used, mainly because they don't depend on syntactic support for features, or compiler/runtime support for feature composition.
+
+In Annotative Product Lines, a single set of artifacts is maintained, and feature expressions (Presence Conditions) are used to annotate different syntactic constructs belonging to different families of products. The most commonly used Annotative technique is C Pre-Processor (CPP) macro annotations surrounding fragments of source code.
+
+If we are to rewrite our object store Product Line using CPP macros, it would look like listing 
+ref{lst:Annotative}. A single feature (e.g. \emph{ACCESS\_CONTROL} is now scattered across the code base, and in some cases replicated (e.g. lines 13-15 and 24-26).
+  
+\lstset{
+	basicstyle=\ttfamily,
+     keywordstyle=\color{blue}\ttfamily,
+     stringstyle=\color{red}\ttfamily,
+     commentstyle=\color{green}\ttfamily,
+     morecomment=[l][\color{magenta}]{\#},
+	numbers=left, 
+	tabsize=2,
+	captionpos=b, 
+	frame=shadowbox
+}
+
+\begin{lstlisting}[language=Java, caption=Annotative example, label={lst:Annotative}]
+class Store {
+	#if defined (ACCESS_CONTROL)
+	private boolean sealed = false;
+	#endif
+
+	#if defined (SINGLE_STORE)
+	private Object value;
+	Object read() {
+		#if defined (ACCESS_CONTROL)
+ 		if (!sealed) {
+		#endif
+			return value;
+		#if defined (ACCESS_CONTROL)
+		} else { throw new RuntimeException("Access denied!"); }
+		#endif 
+	}
+	#elif defined (MULTI_STORE)
+	private LinkedList values = new LinkedList();
+	Object read() { 
+		#if defined (ACCESS_CONTROL)
+ 		if (!sealed) {
+		#endif
+			return values.getFirst(); 
+		#if defined (ACCESS_CONTROL)
+		} else { throw new RuntimeException("Access denied!"); }
+		#endif
+	}
+	Object readAll() { return values.toArray(); }
+	#endif
+	
+	void set(Object nvalue) {
+		#if defined (ACCESS_CONTROL)
+ 		if (!sealed) {
+		#endif
+			#if defined (SINGLE_STORE)
+			value = nvalue;
+			#elif defined (MULTI_STORE)
+			values.addFirst(nvalue);
+			#endif
+		#if defined (ACCESS_CONTROL)
+		} else { throw new RuntimeException("Access denied!"); }
+		#endif
+	}
+}
+\end{lstlisting}
+
 \subsubsection{Delta-Oriented}
-%
-%In Delta-Oriented Product Lines, a base product is fully defined, and variants are defined in terms of their differences with respect to the base product. 
-%
+
+In Delta-Oriented \cite{Schaefer} Product Lines, a base product (referred to as the Core Module) is fully defined, and variants (deltas) are defined in terms of their differences with respect to the base product. 
+
+Listing \ref{lst:Annotative} shows a Delta-Oriented implementation of our object store Product Line. The base product here is a simple single-object store. On top of that, delta for a multi-object store and an access controlled store are defined as deltas. 
+ 
+\begin{lstlisting}[caption=Annotative example, label={lst:Annotative}]
+core SingleStore {
+	class Store {
+		private Object value;
+		Object read() { return value; }
+		void set(Object nvalue) { value = nvalue; }
+	} 
+}
+
+delta DMultiStore when MultiStore {
+	modifies class Store {
+		remove Object value;
+		add private LinkedList values = new LinkedList();
+
+		remove read();
+		add Object read() { return values.getFirst(); }
+
+		add Object[] readAll() { return values.toArray(); }
+
+		remove void set(Object);
+		add void set(Object nvalue) { values.addFirst(nvalue); }
+	}
+}
+
+delta DAccessControl when AccessControl {
+	modifies class Store {
+		add private boolean sealed = false;
+
+		remove read();
+		add Object read() {
+			if (!sealed) {
+				return Store.read();
+			} else { throw new RuntimeException("Access denied!"); }
+		}
+	}
+}
+\end{lstlisting}
+
 \section{Safety Cases}
 
 \subsection{Goal Structuring Notation (GSN)}
