@@ -1,0 +1,51 @@
+\documentclass{article}
+
+%% macros
+% reference macros
+\newcommand{\Classen}{\cite{Classen:2010:MCL:1806799.1806850}}
+\begin{document}
+
+\title{A Taxonomy of Software Product Line Analyses}
+\maketitle
+
+\abstract
+TODO
+
+\section{Introduction}
+TODO
+
+\section{Motivation}
+
+\subsection{Compositionaility}
+
+Compositionaility is a property of product-level analyses. An analysis is compositional if it is applied to a component of a system rather than the system as a whole. The granularity of that component varies from one analysis to another. In many programming languages, type checkers work at the level of a compilation unit or a module. Intra-procedural analyses on the other hand work at the level of a single procedure. Non-compositional analyses on the other hand include monolithic model checkers that build a state machine of the whole model with no decomposition into smaller units.
+
+\subsection{Modularity}
+
+In the context of this paper modularity is an attribute of Product Line analyses. By modular, we mean that the Product Line analysis uses the corresponding product-level analysis as a sub-module. This can be done in one of two ways:
+
+A product-level analysis can be used as a black box. In such cases the Product Line analysis calls into the product level analysis and aggregates the results for the whole Product Line.
+
+A product-level analysis can be used as a white box. Some automatic technique is used to lift the implementation of the product-level analysis into a Produt Line analysis. Since this process is automated, we still consider this approach modular.
+
+Non-modular Product Line analyses on the other hand are written from scratch independently of the corresponding product level analysis.
+
+\section{Taxonomy}
+
+\subsection{Compositional and Modular}
+
+\subsection{Compositional and Non-Modular}
+
+\subsection{Non-Compositional and Modular}
+
+\subsection{Non-Compositional and Non-Modular}
+
+\section{Discussion}
+TODO
+
+\section{Conclusion}
+TODO
+
+\bibliographystyle{ieeetr}
+\bibliography{taxonomy} 
+\end{document}
