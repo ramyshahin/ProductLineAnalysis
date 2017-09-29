@@ -1,0 +1,24 @@
+OASISFormat:  0.4
+OCamlVersion: >= 4.02.3
+Name:         SPL
+Version:      0.1
+Maintainers:  Ramy Shahin
+Homepage:     https://github.com/ramyshahin/ProductLineAnalysis
+Synopsis:     Software Product Line (SPL) Analysis Framework
+Authors:      r.shahin@computer.org
+License:      BSD-3-clause
+Plugins:      META (0.4), DevFiles (0.4)
+AlphaFeatures: 
+
+Description: Software Product Line (SPL) Analysis Framework
+
+# Another comment, this builds a library called pg
+Library SPL
+   Path:            src
+   BuildTools:      ocamlbuild
+   # oasis will figure out the dependencies, 
+   # Just list the modules you want public, 
+   # Note that there's no .ml, just give the name
+   Modules:         SPL
+   CompiledObject:  byte
+
