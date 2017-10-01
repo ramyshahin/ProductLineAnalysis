@@ -19,6 +19,7 @@ Library SPL
    # oasis will figure out the dependencies, 
    # Just list the modules you want public, 
    # Note that there's no .ml, just give the name
-   Modules:         SPL
+   Modules:         SPL, Prop
+   BuildDepends:    core, mlbdd, threads
    CompiledObject:  byte
 
