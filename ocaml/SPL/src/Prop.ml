@@ -4,6 +4,9 @@ let mgr = MLBDD.init ~cache:100 ()
 
 type presenceCondition = MLBDD.t
 
+let compare (a:presenceCondition) (b:presenceCondition) : int = if MLBDD.equal a b then 0 else -1
+let equal (a:presenceCondition) (b:presenceCondition) : bool = MLBDD.equal a b
+
 let tt = dtrue mgr
 let ff = dfalse mgr
 

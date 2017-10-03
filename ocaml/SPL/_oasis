@@ -7,15 +7,13 @@ Homepage:     https://github.com/ramyshahin/ProductLineAnalysis
 Synopsis:     Software Product Line (SPL) Analysis Framework
 Authors:      r.shahin@computer.org
 License:      BSD-3-clause
-Plugins:      META (0.4), DevFiles (0.4)
-AlphaFeatures: 
+BuildTools:   ocamlbuild
 
 Description: Software Product Line (SPL) Analysis Framework
 
 # Another comment, this builds a library called pg
-Library SPL
+Library "SPL"
    Path:            src
-   BuildTools:      ocamlbuild
    # oasis will figure out the dependencies, 
    # Just list the modules you want public, 
    # Note that there's no .ml, just give the name
@@ -23,3 +21,15 @@ Library SPL
    BuildDepends:    core, mlbdd, threads
    CompiledObject:  byte
 
+Executable "test_SPL"
+  Path:             test
+  MainIs:           test_SPL.ml
+  Build$:           flag(tests)
+  CompiledObject:   best
+  Install:          false
+  BuildDepends:     SPL, oUnit
+
+Test "SPL"
+  Run$:             flag(tests)
+  Command:          $test_SPL
+  WorkingDirectory: test
