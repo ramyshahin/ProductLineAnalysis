@@ -47,19 +47,33 @@ The following are beyond the scope of this document:
 \item Covering any hazard analysis techniques
 \end{itemize}
 
-%\subsection{Running Example}
-%
-%Throughout this document we use a Fuel Level Display Product Line (FLDPL) example from \cite{Gallucci_2013}. This is a simply product line safety case that extends a single product ISO26262 safety case \cite{Dardar_2014}. The diagrams in this document also come from \cite{Gallucci_2013} unless otherwise specified.
-%
-%\section{Existing Techniques}
-%
-\section{Software Product Lines (SPLs)}
+\section{Running Example}
 
-\subsection{Basic Concepts}
+Throughout this document we use a Fuel Level Display Product Line (FLDPL) example from \cite{Gallucci_2013}. This is a simply product line safety case that extends a single product ISO26262 safety case \cite{Dardar_2014}. The diagrams in this document also come from \cite{Gallucci_2013} unless otherwise specified.
+
+The Fuel Level Display (FLD) system is an automotive component implementing two functionalities:
+
+\begin{enumerate}
+\item Displaying the fuel level of a fuel tank on the driver's dashboard
+\item Triggering a warning when the fuel level goes below a certain threshold (optional feature)
+\end{enumerate}
+
+The Fuel Level Display Product Line (FLDPL) captures four variants of FLDs based on the vehicle type and fuel type:
+
+\begin{enumerate}
+\item Truck with liquid fuel
+\item Bus with liquid fuel
+\item Truck with gas
+\item Bus with gas
+\end{enumerate}
+
+section{Software Product Lines (SPLs)}
 
 Variability is commonplace in software systems. Managing variability across different software artifacts, and throughout the Software Development Life Cycle (SDLC) is always a challenge though. Software Product Line Engineering draws an analogy to industrial product lines, where different variants of a product are manufactured using a common set of parts and machinery. The goal of SPLs is to maximize reuse across different variants of a software product, while at the same time simplifying the extensibility and maintainability of the product line.
 
 We start with some basic definitions, together with some simple examples illustrating them. The definitions and the object store example presented here are adapted from those in \cite{Thum}.
+
+\subsection{Software Product Line}
 
 \begin{description}
 
@@ -68,7 +82,9 @@ A Software Product Line (SPL) is a set of similar software products built from a
 
 \end{description}
 
-For example, let us consider a product line of simple object stores. An object store can support the storage of a single object or multiple objects. Orthogonally, the store can provide some access control mechanism allowing only certain users to store objects. Store capacity (SingleObject vs MultiObject) and access control are just examples of possible variability points in an SPL.
+For our running example, we have four variants of Fuel Level Display systems. In addition, each of those variants can come with or without the warning feature. This family of product variants has a lot in common, so it is more cost effective to build them as an SPL instead of building each product in isolation.
+
+\subsection{Features}
 
 \begin{description}
 
@@ -77,9 +93,22 @@ A feature is an externally visible property, aspect or quality of a software sys
 
 \end{description}
 
-In our object store SPL, SingleObject, MultiObject and access control are the 3 features within this product line.
+At a high level, our FLDPL has two features: fuel level display and low fuel level warning.
 
-An individual product can be generated from an SPL by selecting a set of features for that product. Not all product combinations are valid though. For example, it does not make sense for an object store to be SingleObject and MultiObject at the same time. Those two features are supposed to be mutually exclusive in our product line. This kind of constraints are captured by a \emph{Feature Model}:
+Orthogonally, variation with respect to vehicle types and fuel types are also considered feature variants. 
+
+So this is the FLDPL list of features:
+
+\begin{enumerate}
+\item FuelLevel
+\item FuelWarning (not present in trucks with gas)
+\item Truck
+\item Bus
+\item LiquidFuel
+\item Gas
+\end{enumerate}
+
+\subsection{Feature Model}
 
 \begin{description}
 
@@ -88,9 +117,11 @@ An individual product can be generated from an SPL by selecting a set of feature
 
 \end{description}
 
-For example, a boolean formula expressing our mutual exclusion condition for SingleObject and MultiObject stores, together with an optional AccessControl feature, would be:
+For example, a boolean formula expressing the mutual exclusion condition for the Truck and Bus features:
 
-$(SingleObject \vee MultiObject) \wedge (\neg SingleObject \vee \neg MultiObject) $
+$(Truck \vee Bus) \wedge (\neg Truck \vee \neg Bus) $
+
+\subsection{Feature Diagram}
 
 \begin{description}
 
@@ -108,19 +139,23 @@ a hierarchical graphical representation of a Feature Model, where each non-root 
 
 For example, figure \ref{fig:FeatureDiagram} shows a feature diagram for our SPL.
 
+\subsection{Presence Condition}
+
 \begin{description}
 
 \item[Presence Condition]
 A Presence Condition (PC) is a boolean formula over the set of features that does not conflict with the Feature Model.
 \end{description}
 
-For example, a product where we have the MultiObject and AccessControl features can be represented by the following PC: $ MultiObject \wedge AccessControl $
+For example, an FLD product for buses, with liquid fuel, with fuel level display and low fuel warning can be represented by the following PC: 
 
-\subsection{SPL Engineering Approaches}
+Bus $\wedge$ Liquid $\wedge$ Estimation $\wedge$ Warning
+
+\section{SPL Engineering Approaches}
 
 SPLs are composed of features, and those features can be represented in various ways:
 
-\subsubsection{Generative}
+\subsection{Generative}
 
 In Generative Product Lines, each feature is designed and implemented separately, and then given a product configuration, a product is automatically generated out of the separate feature artifacts. Examples of Generative Product Line approaches include Feature-Oriented Programming \cite{Prehofer1997} and Aspect-Oriented Programming \cite{Kiczales1997}.
 
@@ -142,7 +177,7 @@ Figure \ref{fig:FeatureOriented} shows a possible Feature-Oriented implementatio
 
 A product can then be generated out of the individual features given a valid Presence Condition. For example, if we are to generate a product with the \emph{MultiStore} and \emph{AccessControl} features, the generator would automatically generate the code in figure \ref{fig:FeatureOrientedGenerated}.
 
-\subsubsection{Annotative}
+\subsection{Annotative}
 
 Generative approaches are only supported by a limited set of programming languages and tools. In mainstream languages, Annotative approaches are typically used, mainly because they don't depend on syntactic support for features, or compiler/runtime support for feature composition.
 
@@ -210,7 +245,7 @@ class Store {
 }
 \end{lstlisting}
 
-\subsubsection{Delta-Oriented}
+\subsection{Delta-Oriented}
 
 In Delta-Oriented \cite{Schaefer} Product Lines, a base product (referred to as the Core Module) is fully defined, and variants (deltas) are defined in terms of their differences with respect to the base product. 
 
