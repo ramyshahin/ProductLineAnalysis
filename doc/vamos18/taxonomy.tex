@@ -1,8 +1,8 @@
-\documentclass{article}
+\documentclass[11pt]{article}
 
 %% macros
 % reference macros
-\newcommand{\Classen}{\cite{Classen:2010:MCL:1806799.1806850}}
+%\newcommand{\Classen}{\cite{Classen:2010:MCL:1806799.1806850}}
 \begin{document}
 
 \title{A Taxonomy of Software Product Line Analyses}
@@ -15,6 +15,7 @@ TODO
 TODO
 
 \section{Motivation}
+Compositionality of analyses directly impacts the degree of variability the analysis needs to deal with. Since presence conditions are propositional formulas, propositional reasoning is an essential part of any Product Line analysis. The number of propositional variables (which reflects the degree of variability) in formulas is an important factor when it comes to picking the propositional reasoning component used in the analysis. For example, with hundreds or thousands of variables, SAT solvers are usually used. On the other hand, if the number of variables is much lower (10-20), Binary Decision Digarams (BDDs) tend to perform much better. The difference between both reasoning techniques was demonstrated in the difference in performance between Typechef \cite{} and TODO(the other parser) \cite{}.
 
 \subsection{Compositionaility}
 
@@ -46,6 +47,6 @@ TODO
 \section{Conclusion}
 TODO
 
-\bibliographystyle{ieeetr}
-\bibliography{taxonomy} 
+%\bibliographystyle{ieeetr}
+%\bibliography{taxonomy} 
 \end{document}
