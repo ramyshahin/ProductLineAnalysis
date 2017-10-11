@@ -32,8 +32,8 @@ Several attempts have been made to leverage the high degree of commonality acros
 This document aims at:
 \begin{itemize}
 \item Introducing terminology for both Software Product Line and Safety Case concepts
-\item Demonstrating the concepts on simple examples
-\item Identifying any underlying pragmatic questions
+\item Demonstrating the Product Line and Safety Case concepts on a simple exemplar
+\item To come to a mutual agreement on concepts, terminology and the Product Line safety engineering at GM
 \end{itemize}
 
 \subsection{Non-Goals} 
@@ -412,98 +412,74 @@ Goal Structuring Notation is used to layout logical arguments connecting safety 
 
 \subsection{Example}
 
-As a simple case study, we refer to the Fuel Level Display (FLD) system safety case presented in \cite{Dardar_2014}. This is an automotive embedded system with the following requirements:
-
-\begin{itemize}
- \item To track the fuel level in different motor vehicle models
- \item To displaying the fuel level on a gauge visible by the driver
- \item Optionally, to set an alarm if the fuel level goes below a certain threshold 
- \end{itemize}
- 
- This case study was extended into a Fuel Level Display Product Line (FLDPL) in \cite{Gallucci_2013}. Variability is introduced in two different dimensions:
+For a specific Fuel Level Display (FLD) product, safety hazards are identified, and then those hazards are structurally addressed in a safety case. For example, a snippet of the FLD safety case addressing Kalman filter hazards is presented in figure \ref{fig:SafetyCaseExample}.
  
  \begin{figure}
   \centering
-  \includegraphics[width=0.75\textwidth]{FLDPLContext}
-  \caption{FLDPL Features Context}
-  \label{fig:FLDPLContext}
+  \includegraphics[width=0.75\textwidth]{SafetyCaseExample}
+  \caption{Kalman filter safety case example}
+  \label{fig:SafetyCaseExample}
 \end{figure}
-
- \begin{figure}
-  \centering
-  \includegraphics[width=0.75\textwidth]{FLDPLFeatures}
-  \caption{FLDPL Functional Features}
-  \label{fig:FLDPLFeatures}
-\end{figure}
-
- \begin{itemize}
  
- \item Different vehicle types (trucks and buses) and different fuel types (liquid and gas) as depicted in the feature diagram in figure \ref{fig:FLDPLContext}.
- \item Based on the combination of the features listed above, a low level fuel warning feature is either enabled or not, as shown in figure \ref{fig:FLDPLFeatures}.
- 
- \end{itemize}
- 
-\section{Discussion}
-
-\subsection{Product Line Scenarios}
+\section{Product Line Engineering Scenarios}
 
 Software Product Lines can come into existence in several ways. This section briefly outline engineering scenarios for building Product Lines.
 
-\subsubsection{Product Evolution over Time}
+\subsection{Product Evolution over Time}
 
 Starting with a single product, variability might start exhibiting itself in lots of different ways. Different deployment environments, different modes of operations, minor requirement variations from different stakeholders, and varying workloads are all examples of product-level variability. Over time, the maintenance of software artifacts with too much ad-hoc variability becomes a real problem. 
 
 One way to manage ad-hoc variability is to evolve a single product with variability in a product line. This process usually starts with factoring out a common core (common to all variants), and variant-specific artifacts.
 
-\subsubsection{Product Component Reuse}
+\subsection{Product Component Reuse}
 
 Again starting with a single component-oriented product, some components might be potentially reused in other products. Sometimes a component can be reused as is, without the need for any modification. In other cases the component might require minor modifications, resulting in a slightly different version. 
 
 This component-level variability can again evolve into a component-level Product Line. With more and more components being reused in this fashion, a component Product Line library becomes the skeleton of a Software Product Line.
 
-\subsubsection{Product-Line Engineering}
+\subsection{Explicit Product-Line Engineering}
 
 The previously outlined scenarios start with a single product, and with more and more variability introduced the product evolves into a product line. Sometimes on the other hand the designers of a system are aware from day one that they are building a family or products, not just one. If at design time they draw a clear boundary between a common core and a set of varying artifacts, they are actually engineering a Product Line.
 
-\subsection{Product Lines and Safety Cases}
-
-Reasoning about Software Product Lines is not straightforward because of several reasons:
-
-\begin{itemize}
-
-\item The number of possible valid products of a product lines grows exponentially with the number of features. As a result, enumerating all possible valid products becomes intractable, and thus existing product-level reasoning techniques don't directly scale to product lines.
-
-\item A Feature Model is an integral part of a Product Line, and its role is to define the valid set of feature combinations. When reasoning about a Product Line, the Feature Model has to be taken into consideration to avoid including invalid products in any argument.
-
-\item Whenever an argument is made regarding a Product Line, it is essential to specify whether this argument applies to all valid products (universal quantification over products), or only to some (existential quantification). 
-
-\end{itemize}
-
-\subsection{Q1: Product-Line of Safety Cases or a Safety Case of a Product Line}
-
-Safety Analysis is one example of reasoning about a software systems. Techniques like Hazard Analysis, Fault Tree Analysis and Safety Cases have been well studied and applied to software products. However, when it comes to Product Lines, those techniques do not directly scale due to the previously mentioned reasons. 
-
-In addition, one fundamental question pertains to the granularity to which Safety Analysis is performed. We can think of 2 different approaches here:
-
-\begin{itemize}
-
-\item A Safety Case of a Product Line: here safety analysis as a process is applied to a Software Product Line, resulting in a single Safety Case covering the whole Product Line.
-
-\item A Product Line of Safety Cases: since a Safety Case itself is a Software Artifact (albeit a semi-formal one at best), we can have a Product Line of Safety Cases (pretty much like Product Lines of Use Case Diagrams, Class Diagrams or Source Code artifacts). 
-
-\end{itemize}
-
-\subsection{Product Line evolution impact analysis}
-
-As an SPL evolves over time (with changing requirements or more variability), existing safety cases need to evolve as well. This is essential to maintain the validity of the safety arguments. However, the safety assurance process is expensive in terms of resources and is also time consuming and labor intensive. As a result, as much of existing evidences should be reused as possible, without jeopardizing the validity of the safety arguments. Two questions are relevant here:
-
-\begin{itemize}
-
-\item Q2: As an SPL evolves, how can we determine which pieces of evidence are still valid, and can be reused as is, as opposed to pieces of evidence that are invalidated by the SPL changes?
-
-\item Q3: Within a single piece of evidence, how much reuse can be achieved? For example, if the results of a test suite and considered a piece of evidence, how much of the test cases are common across variants and how much are variant-specific? How easy is it to draw a correspondence between features, goals/sub-goals and evidences/sub-evidences? 
-
-\end{itemize}
+%\subsection{Product Lines and Safety Cases}
+%
+%Reasoning about Software Product Lines is not straightforward because of several reasons:
+%
+%\begin{itemize}
+%
+%\item The number of possible valid products of a product lines grows exponentially with the number of features. As a result, enumerating all possible valid products becomes intractable, and thus existing product-level reasoning techniques don't directly scale to product lines.
+%
+%\item A Feature Model is an integral part of a Product Line, and its role is to define the valid set of feature combinations. When reasoning about a Product Line, the Feature Model has to be taken into consideration to avoid including invalid products in any argument.
+%
+%\item Whenever an argument is made regarding a Product Line, it is essential to specify whether this argument applies to all valid products (universal quantification over products), or only to some (existential quantification). 
+%
+%\end{itemize}
+%
+%\subsection{Q1: Product-Line of Safety Cases or a Safety Case of a Product Line}
+%
+%Safety Analysis is one example of reasoning about a software systems. Techniques like Hazard Analysis, Fault Tree Analysis and Safety Cases have been well studied and applied to software products. However, when it comes to Product Lines, those techniques do not directly scale due to the previously mentioned reasons. 
+%
+%In addition, one fundamental question pertains to the granularity to which Safety Analysis is performed. We can think of 2 different approaches here:
+%
+%\begin{itemize}
+%
+%\item A Safety Case of a Product Line: here safety analysis as a process is applied to a Software Product Line, resulting in a single Safety Case covering the whole Product Line.
+%
+%\item A Product Line of Safety Cases: since a Safety Case itself is a Software Artifact (albeit a semi-formal one at best), we can have a Product Line of Safety Cases (pretty much like Product Lines of Use Case Diagrams, Class Diagrams or Source Code artifacts). 
+%
+%\end{itemize}
+%
+%\subsection{Product Line evolution impact analysis}
+%
+%As an SPL evolves over time (with changing requirements or more variability), existing safety cases need to evolve as well. This is essential to maintain the validity of the safety arguments. However, the safety assurance process is expensive in terms of resources and is also time consuming and labor intensive. As a result, as much of existing evidences should be reused as possible, without jeopardizing the validity of the safety arguments. Two questions are relevant here:
+%
+%\begin{itemize}
+%
+%\item Q2: As an SPL evolves, how can we determine which pieces of evidence are still valid, and can be reused as is, as opposed to pieces of evidence that are invalidated by the SPL changes?
+%
+%\item Q3: Within a single piece of evidence, how much reuse can be achieved? For example, if the results of a test suite and considered a piece of evidence, how much of the test cases are common across variants and how much are variant-specific? How easy is it to draw a correspondence between features, goals/sub-goals and evidences/sub-evidences? 
+%
+%\end{itemize}
 
 \bibliographystyle{abbrv}
 \bibliography{SafetyCasesPL}
