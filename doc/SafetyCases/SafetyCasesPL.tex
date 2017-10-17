@@ -11,29 +11,30 @@
 \usepackage{color}
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 
-\title{Safety Cases for Software Product Lines}
-%\author{The Author}
-\date{}                                           % Activate to display a given date or no date
+\title{Safety Cases for Software Product Lines: Terminology and Example}
+\author{Ramy Shahin \\ University of Toronto \\ rshahin@cs.toronto.edu \and
+Marsha Chechik \\ University of Toronto \\ chechik@cs.toronto.edu}
+\date{\today}                                           % Activate to display a given date or no date
 
 \begin{document}
 \maketitle
 
 
 \section{Introduction}
-Software systems are everywhere, including safety critical domains. Software is inherently embedded into medical devices, power plant controllers, airplane controllers, drones, and soon self-driving vehicles. Safety analysis of this category of systems is an essential ingredient of the Software Development Lifecycle (SDLC). Safety cases are the most common artifacts resulting from safety analysis.
+%Software systems are everywhere, including safety critical domains. Software is inherently embedded into medical devices, power plant controllers, airplane controllers, drones, and soon self-driving vehicles. Safety analysis of this category of systems is an essential ingredient of the Software Development Lifecycle (SDLC). Safety cases are the most common artifacts resulting from safety analysis.
 
-Orthogonally, most of the aforementioned examples of safety critical software systems are engineered as Software Product Lines (SPLs). Variability is inherent in families of software systems. Variability can be due to different deployment environments, differences in hardware devices and peripherals, varying requirements across models of systems, and difference in performance characteristics.
+%Orthogonally, most of the aforementioned examples of safety critical software systems are engineered as Software Product Lines (SPLs). Variability is inherent in families of software systems. Variability can be due to different deployment environments, differences in hardware devices and peripherals, varying requirements across models of systems, and difference in performance characteristics.
 
-Variability in an SPL is usually measured in terms of the number of features in a product line. The number of possible products that can be synthesized from an SPL grows exponentially with the number of features. As a result, enumerating all possible products and performing safety analysis at the product level is intractable. 
+%Variability in an SPL is usually measured in terms of the number of features in a product line. The number of possible products that can be synthesized from an SPL grows exponentially with the number of features. As a result, enumerating all possible products and performing safety analysis at the product level is intractable. 
 
-Several attempts have been made to leverage the high degree of commonality across products of an SPL to minimize the cost of product line analysis in general, and safety analysis in particular. This document explores previous attempts and fundamental questions at the crossroads of Safety Analysis and Software Product Lines.
+Several attempts have been made to leverage the high degree of commonality across products of a Software Product Line (SPL) to minimize the cost of product line analysis in general, and safety analysis in particular. This document explores previous attempts and fundamental questions at the crossroads of Safety Analysis and Software Product Lines.
 
 \subsection{Goals}
 This document aims at:
 \begin{itemize}
 \item Introducing terminology for both Software Product Line and Safety Case concepts
 \item Demonstrating the Product Line and Safety Case concepts on a simple exemplar
-\item To come to a mutual agreement on concepts, terminology and the Product Line safety engineering at GM
+\item To try to come to a mutual agreement on concepts, terminology and the Product Line safety engineering at GM
 \end{itemize}
 
 \subsection{Non-Goals} 
@@ -53,30 +54,32 @@ Throughout this document we use a Fuel Level Display Product Line (FLDPL) exampl
 
 The Fuel Level Display (FLD) system is an automotive component implementing two functionalities:
 
-\begin{enumerate}
+\begin{itemize}
 \item Displaying the fuel level of a fuel tank on the driver's dashboard
 \item Triggering a warning when the fuel level goes below a certain threshold (optional feature)
-\end{enumerate}
+\end{itemize}
 
 The Fuel Level Display Product Line (FLDPL) captures four variants of FLDs based on the vehicle type and fuel type:
 
-\begin{enumerate}
+\begin{itemize}
 \item Truck with liquid fuel
 \item Bus with liquid fuel
 \item Truck with gas (doesn't include the fuel level warning feature)
 \item Bus with gas
-\end{enumerate}
+\end{itemize}
 
 For vehicles with gas, the fuel level is reported directly to the driver. However, liquid fuel level in the tank fluctuates due to vehicle movement. To smooth the liquid gas level reported to the driver, the level read from the tank sensor is passed into a filter. Two types of filters are used:
 
-\begin{enumerate}
+\begin{itemize}
 \item a Kalman filter is used in trucks
 \item a Low-Pass filter is used in buses
-\end{enumerate}
+\end{itemize}
 
 \section{Software Product Lines (SPLs)}
 
-Variability is commonplace in software systems. Managing variability across different software artifacts, and throughout the Software Development Life Cycle (SDLC) is always a challenge though. Software Product Line Engineering draws an analogy to industrial product lines, where different variants of a product are manufactured using a common set of parts and machinery. The goal of SPLs is to maximize reuse across different variants of a software product, while at the same time simplifying the extensibility and maintainability of the product line.
+%Variability is commonplace in software systems. Managing variability across different software artifacts, and throughout the Software Development Life Cycle (SDLC) is always a challenge though. Software Product Line Engineering draws an analogy to industrial product lines, where different variants of a product are manufactured using a common set of parts and machinery. 
+
+The goal of SPLs is to maximize reuse across different variants of a software product, while at the same time simplifying the extensibility and maintainability of the product line.
 
 We start with some basic definitions, together with some simple examples illustrating them. The definitions and the object store example presented here are adapted from those in \cite{Thum}.
 
@@ -89,7 +92,7 @@ A Software Product Line (SPL) is a set of similar software products built from a
 
 \end{description}
 
-For our running example, we have four variants of Fuel Level Display systems. In addition, each of those variants can come with or without the warning feature. This family of product variants has a lot in common, so it is more cost effective to build them as an SPL instead of building each product in isolation.
+For our running example, we have four variants of Fuel Level Display systems. In addition, each of those variants can come with or without the warning feature. This family of product variants has a lot in common, so it makes sense to build them as an SPL instead of building each product in isolation.
 
 \subsection{Features}
 
@@ -102,9 +105,9 @@ A feature is an externally visible property, aspect or quality of a software sys
 
 At a high level, our FLDPL has two features: fuel level display and low fuel level warning.
 
-Orthogonally, variation with respect to vehicle types and fuel types are also considered feature variants. 
+Orthogonally, there is variation with respect to vehicle types and fuel types. 
 
-So this is the FLDPL list of features:
+The FLDPL list of features is:
 
 \begin{enumerate}
 \item FuelLevel
@@ -126,7 +129,7 @@ So this is the FLDPL list of features:
 
 For example, a boolean formula expressing the mutual exclusion condition for the Truck and Bus features:
 
-$(Truck \vee Bus) \wedge (\neg Truck \vee \neg Bus) $
+(Truck $\vee$ Bus) $\wedge$ ($\neg$ Truck $\vee \neg$ Bus)
 
 \subsection{Feature Diagram}
 
@@ -140,11 +143,11 @@ a hierarchical graphical representation of a Feature Model, where each non-root 
 \begin{figure}
   \centering
     \includegraphics[width=0.75\textwidth]{FeatureDiagram}
-  \caption{Feature Diagram Example}
+  \caption{Feature Diagram of the FLDPL}
   \label{fig:FeatureDiagram}
 \end{figure}
 
-For example, figure \ref{fig:FeatureDiagram} shows a feature diagram for our SPL.
+For example, figure \ref{fig:FeatureDiagram} shows a feature diagram of the FLDPL. In this diagram, the usage context is composed of two mandatory features: Vehicle type and Fuel type. Vehicle type can be either Truck or Bus (mutually exclusive options). Similarly, Fuel type can be either Liquid or Gas. In addition, the FLD system has one mandatory feature (Fuel Level Estimation) and one optional feature (Low Fuel Level Warning). An annotation (O1) is added to the diagram to specify the set of products where the low fuel level warning feature is present.
 
 \subsection{Presence Condition}
 
@@ -157,6 +160,28 @@ A Presence Condition (PC) is a boolean formula over the set of features that rep
 For example, the presence condition for the Low Fuel Level Warning feature is: 
 
 $\neg ($ Truck $\wedge$ Gas $)$
+
+\subsection{Product Configuration}
+
+\begin{description}
+
+\item[Product Configuration]
+A product configuration is a boolean formula over the set of features of an SPL that specifies the set of features present in a product.
+\end{description}
+
+For example, the configuration of an FLD for a Truck using Gas as fuel would be (Truck $\wedge$ Gas $\wedge$ FuelLevel).
+
+\subsection{150\% Representation}
+
+\begin{description}
+
+\item[150\% Representation]
+The 150\% representation of an SPL is a syntactic representation with syntactic constructs belonging to all the features of the SPL. 
+\end{description}
+
+Since in the vast majority of cases all those syntactic constructs can not all coexist in a product (given feature model constraints), this representation is referred to as 150\%, as opposed to the 100\% representation of a single product.
+
+Examples of 150\% representations can be found in section 4.
 
 \section{SPL Engineering Approaches}
 
@@ -178,7 +203,7 @@ SPLs are composed of features, and those features can be represented in various 
 
 In Generative Product Lines, each feature is designed and implemented separately, and then given a product configuration, a product is automatically generated out of the separate feature artifacts. Examples of Generative Product Line approaches include Feature-Oriented Programming \cite{Prehofer1997} and Aspect-Oriented Programming \cite{Kiczales1997}.
 
-\begin{lstlisting}[language=Java, caption=Generative example, label={lst:Generative}]
+\begin{lstlisting}[language=Java, caption=Generative FLDPL, label={lst:Generative}, float]
 // Feature module FLDGas
 class FLD {
 	void reportFuelLevel(float level) { 
@@ -211,9 +236,9 @@ refines class FLD {
 } 
 \end{lstlisting}
 
-Listing \ref{lst:Generative} shows a Feature-Oriented high-level implementation of FLDPL. \emph{FLDGas}, \emph{FLDLiquidTruck} and \emph{FLDLiquidBus} are three separate implementations of the Fuel Level Display module. \emph{LowGasWarning} is implemented as a cross-cutting feature that refines any of the 3 \emph{FLD} implementations. 
+Listing \ref{lst:Generative} shows a Feature-Oriented high-level implementation of FLDPL. FLDGas, FLDLiquidTruck and FLDLiquidBus are three separate implementations of the Fuel Level Display module. LowGasWarning is implemented as an orthogonal feature that refines any of the 3 FLD implementations. 
 
-\begin{lstlisting}[language=Java, caption=Generated Product, label={lst:Generated}]
+\begin{lstlisting}[language=Java, caption=Generated FLD Product, label={lst:Generated}, float]
 class FLD {
 	const float THRESHOLD;
 
@@ -224,7 +249,7 @@ class FLD {
 } 
 \end{lstlisting}
 
-Given the feature expression (Liquid $\wedge$ Truck $\wedge$ FuelWarning), the product in listing \ref{lst:Generated} is generated.
+Given the product configuration (Liquid $\wedge$ Truck $\wedge$ FuelWarning), the product in listing \ref{lst:Generated} is generated.
 
 \subsection{Annotative}
 
@@ -232,10 +257,9 @@ Generative approaches are only supported by a limited set of programming languag
 
 In Annotative Product Lines, a single set of artifacts is maintained, and feature expressions (Presence Conditions) are used to annotate different syntactic constructs belonging to different families of products. The most commonly used Annotative technique is C Pre-Processor (CPP) macro annotations surrounding fragments of source code.
 
-If we are to rewrite FLDPL using CPP macros, it would look like listing 
-ref{lst:Annotative}. A single feature (e.g. \emph{LOW\_GAS\_WARNING} is now scattered across the code base, and in some cases replicated.
+If we are to rewrite FLDPL using CPP macros, it would look like listing \ref{lst:Annotative}. A single feature implementation (e.g. LOW\_GAS\_WARNING is now scattered across the code base, and in some cases replicated. This code snippet is an example of a 150\% representation, where a product configuration (in terms of macro definitions) excludes some of the syntactic constructs, leaving only those belonging to a specific product.
 
-\begin{lstlisting}[language=Java, caption=Annotative example, label={lst:Annotative}]
+\begin{lstlisting}[language=Java, caption=Annotative FLDPL, label={lst:Annotative}, float]
 class FLD {
 	#if defined (LOW_GAS_WARNING)
 	const float THRESHOLD;
@@ -269,7 +293,7 @@ In Delta-Oriented \cite{Schaefer} Product Lines, a base product (referred to as 
 
 Listing \ref{lst:Delta} shows a Delta-Oriented implementation of FLDPL. The base product here is the Gas FLD. On top of that, deltas for other variants are implemented.
  
-\begin{lstlisting}[caption=Delta-Oriented example, label={lst:Delta}]
+\begin{lstlisting}[caption=Delta-Oriented FLDPL, label={lst:Delta}, float]
 core FLDGas {
 	class FLD {
 		void reportFuelLevel(float level) { 
@@ -313,12 +337,13 @@ A safety case is a structured argument demonstrating the safety of a system with
  
 \subsection{Goal Structuring Notation (GSN)}
 
-Goal Structuring Notation is used to layout logical arguments connecting safety goals to pieces of evidence satisfying them. A safety case in GSN is typically composed of 3 kinds of artifacts:
+Goal Structuring Notation \cite{Kelly} can be used to layout logical arguments connecting safety goals to pieces of evidence satisfying them. As seen in figure \ref{fig:gsn}, a safety case in GSN is typically composed of 3 kinds of artifacts:
 
 \begin{figure}
   \centering
   \includegraphics[width=0.75\textwidth]{gsn}
   \caption{GSN Elements}
+  \label{fig:gsn}
 \end{figure}
 
 \begin{itemize}
@@ -412,7 +437,9 @@ Goal Structuring Notation is used to layout logical arguments connecting safety 
 
 \subsection{Example}
 
-For a specific Fuel Level Display (FLD) product, safety hazards are identified, and then those hazards are structurally addressed in a safety case. For example, a snippet of the FLD safety case addressing Kalman filter hazards is presented in figure \ref{fig:SafetyCaseExample}.
+For a specific Fuel Level Display (FLD) product, safety hazards are identified, and then those hazards are structurally addressed in a safety case. For example, a snippet of the FLD safety case addressing Kalman filter hazards is presented in figure \ref{fig:SafetyCaseExample}. 
+
+Here the robustness of the estimation algorithm in the context of using the Kalman filter is a goal (G\_6). This goal is refined into a more specific goal: the steadiness of the output of the Kalman filter (G\_7).  This goal is further refined into 3 sub-goals (G\_8, G\_9, G\_10). Goal G\_8 s fulfilled by the results of standard deviation analysis (evidence E\_1). In addition, goals G\_9 and G\_10 are fulfilled by simulation results (evidence E\_2).
  
  \begin{figure}
   \centering
@@ -420,27 +447,45 @@ For a specific Fuel Level Display (FLD) product, safety hazards are identified, 
   \caption{Kalman filter safety case example}
   \label{fig:SafetyCaseExample}
 \end{figure}
+
+\section{Questions}
+
+To make sure all parties agree on the context of this project, and that research work is aligned with GM practical problems, we have a few questions:
+
+\begin{enumerate}
+
+\item Is the example used in this document (FLDPL) representative of the SPLs developed at GM?
+
+\item What is the product line engineering approach used by GM engineers (annotative, generative or delta-oriented)?
+
+\item What is the safety case notation used by GM safety engineers?
+
+\item How is safety case variability currently maintained by GM safety engineers?
+
+\item How are hazards, safety case goals, pieces of evidence managed across different products in a product line by GM safety engineers?
+
+\end{enumerate}
  
-\section{Product Line Engineering Scenarios}
-
-Software Product Lines can come into existence in several ways. This section briefly outline engineering scenarios for building Product Lines.
-
-\subsection{Product Evolution over Time}
-
-Starting with a single product, variability might start exhibiting itself in lots of different ways. Different deployment environments, different modes of operations, minor requirement variations from different stakeholders, and varying workloads are all examples of product-level variability. Over time, the maintenance of software artifacts with too much ad-hoc variability becomes a real problem. 
-
-One way to manage ad-hoc variability is to evolve a single product with variability in a product line. This process usually starts with factoring out a common core (common to all variants), and variant-specific artifacts.
-
-\subsection{Product Component Reuse}
-
-Again starting with a single component-oriented product, some components might be potentially reused in other products. Sometimes a component can be reused as is, without the need for any modification. In other cases the component might require minor modifications, resulting in a slightly different version. 
-
-This component-level variability can again evolve into a component-level Product Line. With more and more components being reused in this fashion, a component Product Line library becomes the skeleton of a Software Product Line.
-
-\subsection{Explicit Product-Line Engineering}
-
-The previously outlined scenarios start with a single product, and with more and more variability introduced the product evolves into a product line. Sometimes on the other hand the designers of a system are aware from day one that they are building a family or products, not just one. If at design time they draw a clear boundary between a common core and a set of varying artifacts, they are actually engineering a Product Line.
-
+%\section{Product Line Engineering Scenarios}
+%
+%Software Product Lines can come into existence in several ways. This section briefly outline engineering scenarios for building Product Lines.
+%
+%\subsection{Product Evolution over Time}
+%
+%Starting with a single product, variability might start exhibiting itself in lots of different ways. Different deployment environments, different modes of operations, minor requirement variations from different stakeholders, and varying workloads are all examples of product-level variability. Over time, the maintenance of software artifacts with too much ad-hoc variability becomes a real problem. 
+%
+%One way to manage ad-hoc variability is to evolve a single product with variability in a product line. This process usually starts with factoring out a common core (common to all variants), and variant-specific artifacts.
+%
+%\subsection{Product Component Reuse}
+%
+%Again starting with a single component-oriented product, some components might be potentially reused in other products. Sometimes a component can be reused as is, without the need for any modification. In other cases the component might require minor modifications, resulting in a slightly different version. 
+%
+%This component-level variability can again evolve into a component-level Product Line. With more and more components being reused in this fashion, a component Product Line library becomes the skeleton of a Software Product Line.
+%
+%\subsection{Explicit Product-Line Engineering}
+%
+%The previously outlined scenarios start with a single product, and with more and more variability introduced the product evolves into a product line. Sometimes on the other hand the designers of a system are aware from day one that they are building a family or products, not just one. If at design time they draw a clear boundary between a common core and a set of varying artifacts, they are actually engineering a Product Line.
+%
 %\subsection{Product Lines and Safety Cases}
 %
 %Reasoning about Software Product Lines is not straightforward because of several reasons:
