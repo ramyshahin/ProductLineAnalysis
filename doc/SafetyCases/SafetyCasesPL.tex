@@ -27,17 +27,13 @@ Marsha Chechik \\ University of Toronto \\ chechik@cs.toronto.edu}
 
 %Variability in an SPL is usually measured in terms of the number of features in a product line. The number of possible products that can be synthesized from an SPL grows exponentially with the number of features. As a result, enumerating all possible products and performing safety analysis at the product level is intractable. 
 
-Several attempts have been made to leverage the high degree of commonality across products of a Software Product Line (SPL) to minimize the cost of product line analysis in general, and safety analysis in particular. This document explores previous attempts and fundamental questions at the crossroads of Safety Analysis and Software Product Lines.
+Several attempts have been made to leverage the high degree of commonality across products of a Software Product Line (SPL) to minimize the cost of product line analysis in general, and safety analysis in particular. The goals of this document are:
 
-\subsection{Goals}
-This document aims at:
 \begin{itemize}
 \item Introducing terminology for both Software Product Line and Safety Case concepts
 \item Demonstrating the Product Line and Safety Case concepts on a simple exemplar
 \item To try to come to a mutual agreement on concepts, terminology and the Product Line safety engineering at GM
 \end{itemize}
-
-\subsection{Non-Goals} 
 
 The following are beyond the scope of this document:
 
@@ -50,7 +46,7 @@ The following are beyond the scope of this document:
 
 \section{Running Example}
 
-Throughout this document we use a Fuel Level Display Product Line (FLDPL) example from \cite{Gallucci_2013}. This is a simply product line safety case that extends a single product ISO26262 safety case \cite{Dardar_2014}. The diagrams in this document also come from \cite{Gallucci_2013} unless otherwise specified.
+Throughout this document we use a Fuel Level Display Product Line (FLDPL) example from \cite{Gallucci_2013}. The diagrams in this document also come from \cite{Gallucci_2013} unless otherwise specified.
 
 The Fuel Level Display (FLD) system is an automotive component implementing two functionalities:
 
@@ -81,14 +77,14 @@ For vehicles with gas, the fuel level is reported directly to the driver. Howeve
 
 The goal of SPLs is to maximize reuse across different variants of a software product, while at the same time simplifying the extensibility and maintainability of the product line.
 
-We start with some basic definitions, together with some simple examples illustrating them. The definitions and the object store example presented here are adapted from those in \cite{Thum}.
+We start with some basic definitions, together with some simple examples illustrating them.
 
 \subsection{Software Product Line}
 
 \begin{description}
 
 \item[Software Product Line]
-A Software Product Line (SPL) is a set of similar software products built from a common set of artifacts (e.g. design/specification models, code constructs, test cases, etc...).
+(SPL) is a set of similar software products built from a common set of artifacts (e.g., design/specification models, code constructs, test cases, etc...).
 
 \end{description}
 
@@ -99,7 +95,7 @@ For our running example, we have four variants of Fuel Level Display systems. In
 \begin{description}
 
 \item[Feature]
-A feature is an externally visible property, aspect or quality of a software system.
+is an externally visible property, aspect or quality of a software system.
 
 \end{description}
 
@@ -136,7 +132,7 @@ For example, a boolean formula expressing the mutual exclusion condition for the
 \begin{description}
 
 \item[Feature Diagram]
-a hierarchical graphical representation of a Feature Model, where each non-root feature depends on its parent.
+is a hierarchical graphical representation of a Feature Model, where each non-root feature depends on its parent.
 
 \end{description}
 
@@ -147,14 +143,14 @@ a hierarchical graphical representation of a Feature Model, where each non-root 
   \label{fig:FeatureDiagram}
 \end{figure}
 
-For example, figure \ref{fig:FeatureDiagram} shows a feature diagram of the FLDPL. In this diagram, the usage context is composed of two mandatory features: Vehicle type and Fuel type. Vehicle type can be either Truck or Bus (mutually exclusive options). Similarly, Fuel type can be either Liquid or Gas. In addition, the FLD system has one mandatory feature (Fuel Level Estimation) and one optional feature (Low Fuel Level Warning). An annotation (O1) is added to the diagram to specify the set of products where the low fuel level warning feature is present.
+For example, Figure \ref{fig:FeatureDiagram} shows a feature diagram of the FLDPL. In this diagram, the usage context is composed of two mandatory features: Vehicle type and Fuel type. Vehicle type can be either Truck or Bus (mutually exclusive options). Similarly, Fuel type can be either Liquid or Gas. In addition, the FLD system has one mandatory feature (Fuel Level Estimation) and one optional feature (Low Fuel Level Warning). An annotation (O1) is added to the diagram to specify the set of products where the low fuel level warning feature is present.
 
 \subsection{Presence Condition}
 
 \begin{description}
 
 \item[Presence Condition]
-A Presence Condition (PC) is a boolean formula over the set of features that represents the set of products in which an artifact exists.
+(PC) is a boolean formula over the set of features that represents the set of products in which an artifact exists.
 \end{description}
 
 For example, the presence condition for the Low Fuel Level Warning feature is: 
@@ -166,7 +162,7 @@ $\neg ($ Truck $\wedge$ Gas $)$
 \begin{description}
 
 \item[Product Configuration]
-A product configuration is a boolean formula over the set of features of an SPL that specifies the set of features present in a product.
+is a boolean formula over the set of features of an SPL that specifies the set of features present in a product.
 \end{description}
 
 For example, the configuration of an FLD for a Truck using Gas as fuel would be (Truck $\wedge$ Gas $\wedge$ FuelLevel).
@@ -176,34 +172,34 @@ For example, the configuration of an FLD for a Truck using Gas as fuel would be 
 \begin{description}
 
 \item[150\% Representation]
-The 150\% representation of an SPL is a syntactic representation with syntactic constructs belonging to all the features of the SPL. 
+is a syntactic representation with syntactic constructs belonging to all the features of the SPL. 
 \end{description}
 
-Since in the vast majority of cases all those syntactic constructs can not all coexist in a product (given feature model constraints), this representation is referred to as 150\%, as opposed to the 100\% representation of a single product.
+Since in the vast majority of cases all those syntactic constructs cannot all coexist in a product (given feature model constraints), this representation is referred to as 150\%, as opposed to the 100\% representation of a single product.
 
-Examples of 150\% representations can be found in section 4.
+Examples of 150\% representations can be found in Section 4.
 
 \section{SPL Engineering Approaches}
 
 SPLs are composed of features, and those features can be represented in various ways:
 
 \lstset{
-	basicstyle=\ttfamily,
+     basicstyle=\ttfamily,
      keywordstyle=\color{blue}\ttfamily,
      stringstyle=\color{red}\ttfamily,
      commentstyle=\color{green}\ttfamily,
      morecomment=[l][\color{magenta}]{\#},
-	numbers=left, 
-	tabsize=2,
-	captionpos=b, 
-	frame=shadowbox
+     numbers=left, 
+     tabsize=2,
+     captionpos=b, 
+     frame=shadowbox,
+     language=Java,
+     morekeywords={if, endif, defined, refines, core, delta, modifies, remove, add, when}
 }
 
 \subsection{Generative}
 
-In Generative Product Lines, each feature is designed and implemented separately, and then given a product configuration, a product is automatically generated out of the separate feature artifacts. Examples of Generative Product Line approaches include Feature-Oriented Programming \cite{Prehofer1997} and Aspect-Oriented Programming \cite{Kiczales1997}.
-
-\begin{lstlisting}[language=Java, caption=Generative FLDPL, label={lst:Generative}, float]
+\begin{lstlisting}[caption=Generative FLDPL, label={lst:Generative}, float]
 // Feature module FLDGas
 class FLD {
 	void reportFuelLevel(float level) { 
@@ -236,9 +232,7 @@ refines class FLD {
 } 
 \end{lstlisting}
 
-Listing \ref{lst:Generative} shows a Feature-Oriented high-level implementation of FLDPL. FLDGas, FLDLiquidTruck and FLDLiquidBus are three separate implementations of the Fuel Level Display module. LowGasWarning is implemented as an orthogonal feature that refines any of the 3 FLD implementations. 
-
-\begin{lstlisting}[language=Java, caption=Generated FLD Product, label={lst:Generated}, float]
+\begin{lstlisting}[caption=Generated FLD Product, label={lst:Generated}, float]
 class FLD {
 	const float THRESHOLD;
 
@@ -249,17 +243,15 @@ class FLD {
 } 
 \end{lstlisting}
 
-Given the product configuration (Liquid $\wedge$ Truck $\wedge$ FuelWarning), the product in listing \ref{lst:Generated} is generated.
+In Generative Product Lines, each feature is designed and implemented separately, and then given a product configuration, a product is automatically generated out of the separate feature artifacts. Examples of Generative Product Line approaches include Feature-Oriented Programming \cite{Prehofer1997} and Aspect-Oriented Programming \cite{Kiczales1997}.
+
+Listing \ref{lst:Generative} shows a Feature-Oriented high-level implementation of FLDPL. FLDGas, FLDLiquidTruck and FLDLiquidBus are three separate implementations of the Fuel Level Display module. LowGasWarning is implemented as an orthogonal feature that refines any of the 3 FLD implementations. 
+
+Given the product configuration (Liquid $\wedge$ Truck $\wedge$ FuelWarning), a code generator would automatically produce the product in Listing \ref{lst:Generated}.
 
 \subsection{Annotative}
 
-Generative approaches are only supported by a limited set of programming languages and tools. In mainstream languages, Annotative approaches are typically used, mainly because they don't depend on syntactic support for features, or compiler/runtime support for feature composition.
-
-In Annotative Product Lines, a single set of artifacts is maintained, and feature expressions (Presence Conditions) are used to annotate different syntactic constructs belonging to different families of products. The most commonly used Annotative technique is C Pre-Processor (CPP) macro annotations surrounding fragments of source code.
-
-If we are to rewrite FLDPL using CPP macros, it would look like listing \ref{lst:Annotative}. A single feature implementation (e.g. LOW\_GAS\_WARNING is now scattered across the code base, and in some cases replicated. This code snippet is an example of a 150\% representation, where a product configuration (in terms of macro definitions) excludes some of the syntactic constructs, leaving only those belonging to a specific product.
-
-\begin{lstlisting}[language=Java, caption=Annotative FLDPL, label={lst:Annotative}, float]
+\begin{lstlisting}[caption=Annotative FLDPL, label={lst:Annotative}, float]
 class FLD {
 	#if defined (LOW_GAS_WARNING)
 	const float THRESHOLD;
@@ -287,12 +279,14 @@ class FLD {
 }
 \end{lstlisting}
 
+Generative approaches are only supported by a limited set of programming languages and tools. In mainstream languages, Annotative approaches are typically used, mainly because they don't depend on syntactic support for features, or compiler/runtime support for feature composition.
+
+In Annotative Product Lines, a single set of artifacts is maintained, and feature expressions (Presence Conditions) are used to annotate different syntactic constructs belonging to different families of products. The most commonly used Annotative technique is C Pre-Processor (CPP) macro annotations surrounding fragments of source code.
+
+If we are to rewrite FLDPL using CPP macros, it would look like Listing \ref{lst:Annotative}. A single feature implementation (e.g., LOW\_GAS\_WARNING) is now scattered across the code base (lines 3 and 8). This code snippet is an example of a 150\% representation, where a product configuration (in terms of macro definitions) excludes some of the syntactic constructs, leaving only those belonging to a specific product.
+
 \subsection{Delta-Oriented}
 
-In Delta-Oriented \cite{Schaefer} Product Lines, a base product (referred to as the Core Module) is fully defined, and variants (deltas) are defined in terms of their differences with respect to the base product. 
-
-Listing \ref{lst:Delta} shows a Delta-Oriented implementation of FLDPL. The base product here is the Gas FLD. On top of that, deltas for other variants are implemented.
- 
 \begin{lstlisting}[caption=Delta-Oriented FLDPL, label={lst:Delta}, float]
 core FLDGas {
 	class FLD {
@@ -331,13 +325,17 @@ delta DLowGasWarning when LowGasWarning {
 }
 \end{lstlisting}
 
+In Delta-Oriented \cite{Schaefer} Product Lines, a base product (referred to as the Core Module) is fully defined, and variants (deltas) are defined in terms of their differences with respect to the base product. 
+
+Listing \ref{lst:Delta} shows a Delta-Oriented implementation of FLDPL. The base product here is the Gas FLD (lines 1-7). On top of that, deltas for other variants are implemented. For example, the DLiquidTruck delta (lines 9-15) modifies the FLD class implemented in the base product by removing the reportFuelLevel method and adding another one that passes the fuel level through a Kalman filter. Similarly, DLiquidBus (lines 17-23) and DLowGasWarning (lines 25-35) are deltas for their corresponding features.
+ 
 \section{Safety Cases}
 
 A safety case is a structured argument demonstrating the safety of a system with respect to a set of identified hazards. Hazard analysis and safety case construction are typically done for individual products. Variability in SPLs naturally leads to variability in hazards and safety cases. However, standard hazard analysis and safety case techniques and notations do not accommodate for variability. 
  
 \subsection{Goal Structuring Notation (GSN)}
 
-Goal Structuring Notation \cite{Kelly} can be used to layout logical arguments connecting safety goals to pieces of evidence satisfying them. As seen in figure \ref{fig:gsn}, a safety case in GSN is typically composed of 3 kinds of artifacts:
+Goal Structuring Notation \cite{Kelly} can be used to layout logical arguments connecting safety goals to pieces of evidence satisfying them. As seen in Figure \ref{fig:gsn}, a safety case in GSN is typically composed of 3 kinds of artifacts:
 
 \begin{figure}
   \centering
@@ -347,14 +345,14 @@ Goal Structuring Notation \cite{Kelly} can be used to layout logical arguments c
 \end{figure}
 
 \begin{itemize}
-\item Goals: These are the safety goals (requirements) identified as a result of hazard analysis techniques
-\item Solutions(Evidences): These are pieces of evidence that a risk/hazard is mitigated. Evidences can be test case results, formal verification outputs, or manual investigation reports
-\item Strategies: a strategy provides the logical argument connecting safety goals to their corresponding mitigating evidences
+\item Goals: These are the safety goals (requirements) identified as a result of hazard analysis techniques.
+\item Solutions (Evidences): These are pieces of evidence that a risk/hazard is mitigated. Evidences can be test case results, formal verification outputs, or manual investigation reports.
+\item Strategies: a strategy provides the logical argument connecting safety goals to their corresponding mitigating evidences.
 \end{itemize}
 
 %\subsubsection{Structured Assurance Case Metamodel (SACM)}
 %
-%SACM \cite{SACM} is an Object Management Group (OMG) standard. SACM integrates well with other OMG metamodels (e.g. UML). It provides a much richer notation compared to GSN. The notation is composed of the following metamodels:
+%SACM \cite{SACM} is an Object Management Group (OMG) standard. SACM integrates well with other OMG metamodels (e.g., UML). It provides a much richer notation compared to GSN. The notation is composed of the following metamodels:
 %
 %\begin{itemize}
 %\item An Argumentation Meta-model
@@ -437,13 +435,13 @@ Goal Structuring Notation \cite{Kelly} can be used to layout logical arguments c
 
 \subsection{Example}
 
-For a specific Fuel Level Display (FLD) product, safety hazards are identified, and then those hazards are structurally addressed in a safety case. For example, a snippet of the FLD safety case addressing Kalman filter hazards is presented in figure \ref{fig:SafetyCaseExample}. 
+For a specific Fuel Level Display (FLD) product, safety hazards are identified, and then those hazards are structurally addressed in a safety case. For example, a snippet of the FLD safety case addressing Kalman filter hazards is presented in Figure \ref{fig:SafetyCaseExample}. 
 
-Here the robustness of the estimation algorithm in the context of using the Kalman filter is a goal (G\_6). This goal is refined into a more specific goal: the steadiness of the output of the Kalman filter (G\_7).  This goal is further refined into 3 sub-goals (G\_8, G\_9, G\_10). Goal G\_8 s fulfilled by the results of standard deviation analysis (evidence E\_1). In addition, goals G\_9 and G\_10 are fulfilled by simulation results (evidence E\_2).
+Here the robustness of the estimation algorithm in the context of using the Kalman filter is a goal (G\_6). This goal is refined into a more specific goal: the steadiness of the output of the Kalman filter (G\_7).  This goal is further refined into 3 sub-goals (G\_8, G\_9, G\_10). Results of standard deviation analysis (evidence E\_1) address Goal G\_8. In addition,  simulation results (evidence E\_2) address goals G\_9 and G\_10.
  
  \begin{figure}
   \centering
-  \includegraphics[width=0.75\textwidth]{SafetyCaseExample}
+  \includegraphics[width=1.0\textwidth]{SafetyCaseExample}
   \caption{Kalman filter safety case example}
   \label{fig:SafetyCaseExample}
 \end{figure}
@@ -458,11 +456,13 @@ To make sure all parties agree on the context of this project, and that research
 
 \item What is the product line engineering approach used by GM engineers (annotative, generative or delta-oriented)?
 
-\item What is the safety case notation used by GM safety engineers?
+\item What are the safety case constructs used by GM safety engineers? Is there a standard notation (e.g., GSN) used?
 
-\item How is safety case variability currently maintained by GM safety engineers?
+\item How is safety case variability currently managed by GM safety engineers? 
 
-\item How are hazards, safety case goals, pieces of evidence managed across different products in a product line by GM safety engineers?
+\item How are hazards, safety case goals and pieces of evidence managed across different products in a product line by GM safety engineers?
+
+\item How is variability traced throughout the end-to-end Software Lifecycle at GM? In particular, how does safety case variability map to variability in design and code artifacts?
 
 \end{enumerate}
  
