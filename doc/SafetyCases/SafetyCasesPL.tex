@@ -9,6 +9,7 @@
 \usepackage{hyperref}
 \usepackage{listings}
 \usepackage{color}
+\usepackage[dvipsnames]{xcolor}
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 
 \title{Safety Cases for Software Product Lines: Terminology and Example}
@@ -187,7 +188,7 @@ SPLs are composed of features, and those features can be represented in various 
      basicstyle=\ttfamily,
      keywordstyle=\color{blue}\ttfamily,
      stringstyle=\color{red}\ttfamily,
-     commentstyle=\color{green}\ttfamily,
+     commentstyle=\color{Gray}\ttfamily,
      morecomment=[l][\color{magenta}]{\#},
      numbers=left, 
      tabsize=2,
