@@ -1,0 +1,64 @@
+\documentclass[11pt]{article}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage[T1]{fontenc}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{setspace}
+\doublespacing
+
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\title{Software Product Line Analysis Techniques}
+\author{Ramy Shahin \\ rshahin@cs.toronto.edu}
+\date{\today}                                           % Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+TODO
+\end{abstract}
+
+\section{Introduction}
+TODO
+
+\section{Featured Transition Systems}
+\cite{Classen:2013}
+
+\section{SPLLift}
+\cite{Bodden:2013}
+
+\section{Scalable Analysis of Variable Software}
+\cite{Liebig:2013}
+
+\section{Product Line Type Checking}
+
+In \cite{Kastner:2012}, a Colored Featherweight Java (CFJ) type checker is formalized and certified using the Coq\cite{Bertot:2010} proof assistant. Featherweight Java (FJ) is a simplistic subset of Java, leaving out constructs such as assignment (mutation) and interfaces. CFJ adds IDE-assisted variability to FJ, where different source code features have different colors in the IDE. This type checker is further extended to fully cover Java constructs.
+
+A product line is considered well-typed only if all the products that can be generated out of it are well-typed (typing is preserved by product generation). The type checker here takes the source code of a product line as input, and checks all variants for type errors. In addition to typing preservation, a second goal is backward compatibility. No new syntactic constructs were introduced, which allowed the use of existing tools.
+
+One fundamental limitation of this work is that it severely restricts the allowed forms of variability. First, only disciplined annotations are supported. Although this does not restrict the expressivity of variability, it limits the applicability of this type checker to existing product lines that use undisciplined annotations. More importantly though, variability annotation is only supported within elements of syntactic sequences. For example, a sequence of methods (potentially empty) is defined. Each element (method) within that sequence can be annotated individually. However, variability is not supported for singleton syntactic constructs. This means that we cannot vary the subtype of a class or the return type of a method across products.
+
+This restricted form of variability serves two purposes. First it fulfills the backward compatibility goal, because the 150\% representation (without the preprocessor macros) is still syntacticly correct. Moreover, it turns the variability type checking problem into reachability of definitions. For example, a method definition annotated by a presence condition has to be reachable by all the method calls across all product variants. 
+ 
+The type checker has been evaluated on 5 Java product lines, ranging from 9 to 42 features. Some type errors were found by the checker in some product variants. The performance (in terms of time taken to type check the product line) was evaluated compared to approximate per-product performance, and on these 5 product lines processing time grew much slower than the number of variants. It is worth noting though that these product lines are relatively small, both in terms of number of lines of code and number of features. 
+ 
+\section{SuperC}
+\cite{Gazzillo:2012}
+
+\section{Variability-Aware Abstract Interpretation}
+\cite{Midtgaard:2015}
+
+\section{Strategies for Product-line Verification}
+\cite{Apel:2013}
+
+\bibliographystyle{abbrv}
+\bibliography{quals} 
+\end{document}  
