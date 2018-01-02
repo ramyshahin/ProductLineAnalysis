@@ -17,7 +17,7 @@
 
 \title{Software Product Line Analysis Techniques}
 \author{Ramy Shahin \\ rshahin@cs.toronto.edu}
-\date{December 2, 2017}                                           % Activate to display a given date or no date
+\date{\today}                                           % Activate to display a given date or no date
 
 \begin{document}
 \maketitle
@@ -65,7 +65,16 @@ The type checker has been evaluated on 5 Java product lines, ranging from 9 to 4
 \cite{Midtgaard:2015}
 
 \section{Strategies for Product-line Verification}
-\cite{Apel:2013}
+
+In \cite{Apel:2013}, product-based, sample-based and family-based model-checking strategies of SPLs are compared. Product-based (generating all products and checking each one of them individually) is used as a baseline. Sample-based strategies only generate a sample of products (single-wise, pair-wise and triple-wise in terms of valid feature combinations). Finally, family-based checking checks the whole SPL in one shot, treating variability points as conditionals.
+
+In this work the sampling strategies used are too primitive. Systems defects that are due to the interaction of more than 3 different features (which are not rare) will not be detected by the strategies presented in this paper, simply because this work only samples up to triple-wise feature combinations.
+
+Their family-based approach is more interesting. Features are encoded as boolean variables, and feature expressions as Binary Decision Digarams (BDDs). Variability within a source-code function is mapped into multiple implementations, with an additional dispatcher function choosing which implementation to call based on feature expressions. This simply reduces variability into conditionals, allowing existing model checkers to be used as is.
+
+One caveat that is not explicitly mentioned in the paper is that this family-based approach is not applicable to annotative SPLs. The case studies presented are all generative (each feature is implemented separately and then composed into an SPL). Different function implementations together with the dispatcher function are generated as a part of the SPL generation. However, annotative SPLs are less strict when it comes to variability points (they don't all map to conditionals). Late Splitting and Early Joining can't be directly implemented in CPP-based SPLs for example.
+
+The performance of the different strategies is compared in terms of their speedup with respect to the product-based baseline. In product-based and sample-based strategies, model checking is terminated once a defect is found in a product. However, in the family-based strategy it is not possible to terminate checking when a defect is found, simply because that defect does not necessarily exist in all products. This is a threat to validity of the performance numbers, not mentioned in the paper. The family-based strategy effectively tries to finds all defects in each product in the SPL, while product-based and strategy-based strategies only find the first defect (if exists). Comparing those two different metrics is thus misleading.
 
 \bibliographystyle{abbrv}
 \bibliography{quals} 
