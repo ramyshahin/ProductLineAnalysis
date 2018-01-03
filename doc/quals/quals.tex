@@ -43,9 +43,6 @@ One shortcoming of this paper is that empirical evaluation is done on only one m
 
 In \cite{Bodden:2013}, inter-procedural data flow analysis (based on the IFDS framework) is extended to annotative product lines. In IFDS, the data flow analysis problem is encoded as a graph reachability problem. Variability due to feature expressions is encod 
 
-\section{Scalable Analysis of Variable Software}
-\cite{Liebig:2013}
-
 \section{Product Line Type Checking}
 
 In \cite{Kastner:2012}, a Colored Featherweight Java (CFJ) type checker is formalized and certified using the Coq\cite{Bertot:2010} proof assistant. Featherweight Java (FJ) is a simplistic subset of Java, leaving out constructs such as assignment (mutation) and interfaces. CFJ adds IDE-assisted variability to FJ, where different source code features have different colors in the IDE. This type checker is further extended to fully cover Java constructs.
@@ -75,6 +72,17 @@ Their family-based approach is more interesting. Features are encoded as boolean
 One caveat that is not explicitly mentioned in the paper is that this family-based approach is not applicable to annotative SPLs. The case studies presented are all generative (each feature is implemented separately and then composed into an SPL). Different function implementations together with the dispatcher function are generated as a part of the SPL generation. However, annotative SPLs are less strict when it comes to variability points (they don't all map to conditionals). Late Splitting and Early Joining can't be directly implemented in CPP-based SPLs for example.
 
 The performance of the different strategies is compared in terms of their speedup with respect to the product-based baseline. In product-based and sample-based strategies, model checking is terminated once a defect is found in a product. However, in the family-based strategy it is not possible to terminate checking when a defect is found, simply because that defect does not necessarily exist in all products. This is a threat to validity of the performance numbers, not mentioned in the paper. The family-based strategy effectively tries to finds all defects in each product in the SPL, while product-based and strategy-based strategies only find the first defect (if exists). Comparing those two different metrics is thus misleading.
+
+\section{Scalable Analysis of Variable Software}
+In \cite{Liebig:2013}, variability-aware (family-based) static analyses are compared to some sample-based techniques. Two variability-aware C language analyses are implemented and evaluated: type checking and liveness analysis. Three relatively big open source systems were used for evaluation: the Linux kernel, the Busybox codebase, and the OpenSSL library.
+
+In addition to focusing on static analysis as opposed to model checking, there are two main differences between this work and that of \cite{Apel:2013}. First, the variability-aware analyses are applied to annotative SPLs (using the CPP to incorporate variability). Because annotative SPLs and more permissive than generative SPLs in terms of syntactic variability, some building blocks had to be purposely designed to be variability-aware. Those include variability-aware Abstract Syntax Trees (ASTs), Control Flow Graphs (CFGs) and symbol tables. In addition, a dedicated variability-aware parser (incorporating CPP logic) is used.
+
+The second difference with respect to \cite{Apel:2013} is that the sampling techniques used in the comparison are more elaborate. In addition to pair-wise sampling (covered in \cite{Apel:2013}), single configuration, random and coverage-based sampling were also evaluated.
+
+Similar to \cite{Apel:2013}, the main principles guiding the design of the variability-aware analyses are late splitting and early joining. These principles maximize reuse of intermediate analysis information across different variants, eventually resulting in variability-aware analyses outperformaing brute-force per-product analysis by orders of magnitude. A third principle implicit in \cite{Apel:2013} but explicitly spelled out here is local variability representation. This is the mechanism of maintaining variability within intermediate analysis values.
+
+The evaluation presented in the paper justifies the hypotheses of the authors: the implemented variability-aware analyses under-perform single configuration analyses, but outperform the analysis of pair-wise samples. In addition, in some cases variability-aware analyses also outperform coverage-based analysis. More importantly, variability-aware analyses are complete in terms of covering all valid feature combinations (i.e. all valid products), while all the sampling techniques are incomplete in that regard.
 
 \bibliographystyle{abbrv}
 \bibliography{quals} 
