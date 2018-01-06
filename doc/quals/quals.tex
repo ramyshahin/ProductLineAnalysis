@@ -54,9 +54,6 @@ One fundamental limitation of this work is that it severely restricts the allowe
 This restricted form of variability serves two purposes. First it fulfills the backward compatibility goal, because the 150\% representation (without the preprocessor macros) is still syntacticly correct. Moreover, it turns the variability type checking problem into reachability of definitions. For example, a method definition annotated by a presence condition has to be reachable by all the method calls across all product variants. 
  
 The type checker has been evaluated on 5 Java product lines, ranging from 9 to 42 features. Some type errors were found by the checker in some product variants. The performance (in terms of time taken to type check the product line) was evaluated compared to approximate per-product performance, and on these 5 product lines processing time grew much slower than the number of variants. It is worth noting though that these product lines are relatively small, both in terms of number of lines of code and number of features. 
- 
-\section{SuperC}
-\cite{Gazzillo:2012}
 
 \section{Variability-Aware Abstract Interpretation}
 \cite{Midtgaard:2015}
@@ -83,6 +80,15 @@ The second difference with respect to \cite{Apel:2013} is that the sampling tech
 Similar to \cite{Apel:2013}, the main principles guiding the design of the variability-aware analyses are late splitting and early joining. These principles maximize reuse of intermediate analysis information across different variants, eventually resulting in variability-aware analyses outperformaing brute-force per-product analysis by orders of magnitude. A third principle implicit in \cite{Apel:2013} but explicitly spelled out here is local variability representation. This is the mechanism of maintaining variability within intermediate analysis values.
 
 The evaluation presented in the paper justifies the hypotheses of the authors: the implemented variability-aware analyses under-perform single configuration analyses, but outperform the analysis of pair-wise samples. In addition, in some cases variability-aware analyses also outperform coverage-based analysis. More importantly, variability-aware analyses are complete in terms of covering all valid feature combinations (i.e. all valid products), while all the sampling techniques are incomplete in that regard.
+
+\section{SuperC}
+In \cite{Gazzillo:2012}, a variability-aware C-language parser and preprocessor are presented and evaluated against a similar C parser implemented as a part of the TypeChef project \cite{Kastner:2011}. SuperC includes a lexer, a preprocessor and a Fork Merge LR (FMLR) parser. Several optimizations have been implemented to lower the number of forked subparsers, and consequently speedup parsing. On the x86 Linux kernel codebase, SuperC is 3.4 to 3.8 times faster than TypeChef.
+
+The idea behind FMLR parsing is to fork subparsers (initially sharing the state of their parent) on each variability point. A naive implementation would result in a number of subparsers exponential in the number of variability features. To prevent this exponential explosion, SuperC implements 4 optimizations: follow-set calculation, early reduces, lazy shifts, and shared reduces. With those optimizations, for almost all the Linux kernel compilation units the number of subparsers is less than 20.
+
+In addition to the optimizations, SuperC uses Binary Decision Diagrams (BDDs) to encode and test the satisfiability of presence conditions, while TypeChef uses a SAT-solver. Presence conditions are conjuncted on the nesting of static conditional compilation directives, and disjuncted on merges. With a few (tens) of propositional variables, conjunction and disjunction of BDDs is typically more efficient than applying the same operations to CNF-encoded boolean formulas (processed by SAT-solvers). As a result, BDDs also contribute to SuperC's speedup compared to TypeChef.
+
+Another advantage of SuperC compared to TypeChef is that the SuperC preprocessor and parser take into account the possible interactions between different preprocessing and parsing rules of the C language. TypeChef misses some of those interactions (and also some non-standard preprocessing directives), which is the reason why it fails to parse thousands of the Linux kernel source files. SuperC on the other hand parses the whole codebase.
 
 \bibliographystyle{abbrv}
 \bibliography{quals} 
