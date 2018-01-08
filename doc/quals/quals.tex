@@ -39,9 +39,12 @@ The paper provides a FTS-based formalism, together with model checking algorithm
 One shortcoming of this paper is that empirical evaluation is done on only one model (the mine pump controller model). This model is small compared to realistic models (only 457 FTS states), and the evaluation is done checking only 6 properties. With only one model (moreover, a small one), the evaluation results cannot be safely generalized. 
  
 \section{SPLLift}
-\cite{Bodden:2013}
 
-In \cite{Bodden:2013}, inter-procedural data flow analysis (based on the IFDS framework) is extended to annotative product lines. In IFDS, the data flow analysis problem is encoded as a graph reachability problem. Variability due to feature expressions is encod 
+In \cite{Bodden:2013}, inter-procedural data flow analysis (based on the IFDS \cite{Reps:1995} framework) is extended to annotative product lines. In IFDS, inter-procedural data flow analysis problems are encoded as graph reachability problems. The main idea behind lifting IFDS analyses is to guard data-flow properties of a program statements by presence conditions. This fits well within the IFDS framework because data flow properties are boolean expressions.
+
+This lifting approach scales well with the number of features. Complexity grows polynomially with the number of statements in an SPL, rather than exponentially in the number of features. In addition, the implementation takes the feature model of the SPL into consideration, pruning statements with invalid presence conditions. This eliminates the need to do excessive computations that are of no value to the SPL analysis.
+
+This work was evaluated on 3 lifted analyses: Possible Types, Reaching Definitions and Unititialized Variables. 4 real world SPLs were used as case studies: BerkeleyDB, GPL, Lampiro and MM08. Performance results show that the lifted analyses run in minutes (in some cases seconds), while brute force analysis would take years for some of the case studies. One thing to note though is that the correctness of the lifting approach is shown empirically rather than with a logical proof.
 
 \section{Product Line Type Checking}
 
