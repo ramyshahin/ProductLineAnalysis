@@ -22,9 +22,9 @@
 \begin{document}
 \maketitle
 
-\begin{abstract}
-TODO
-\end{abstract}
+%\begin{abstract}
+%TODO
+%\end{abstract}
 
 \section{Introduction}
 TODO
@@ -42,9 +42,9 @@ One shortcoming of this paper is that empirical evaluation is done on only one m
 
 In \cite{Bodden:2013}, inter-procedural data flow analysis (based on the IFDS \cite{Reps:1995} framework) is extended to annotative product lines. In IFDS, inter-procedural data flow analysis problems are encoded as graph reachability problems. The main idea behind lifting IFDS analyses is to guard data-flow properties of a program statements by presence conditions. This fits well within the IFDS framework because data flow properties are boolean expressions.
 
-This lifting approach scales well with the number of features. Complexity grows polynomially with the number of statements in an SPL, rather than exponentially in the number of features. In addition, the implementation takes the feature model of the SPL into consideration, pruning statements with invalid presence conditions. This eliminates the need to do excessive computations that are of no value to the SPL analysis.
+This lifting approach scales well with the number of features. Complexity grows polynomially with the number of statements in an SPL, rather than exponentially in the number of features. In addition, the implementation takes the feature model of the SPL into consideration, pruning statements with invalid presence conditions. This eliminates the need to do excessive computations that are of no value to the SPL analysis. Presence conditions are encoded as BDDs, which further optimizes their satisfiability checks.
 
-This work was evaluated on 3 lifted analyses: Possible Types, Reaching Definitions and Unititialized Variables. 4 real world SPLs were used as case studies: BerkeleyDB, GPL, Lampiro and MM08. Performance results show that the lifted analyses run in minutes (in some cases seconds), while brute force analysis would take years for some of the case studies. One thing to note though is that the correctness of the lifting approach is shown empirically rather than with a logical proof.
+This work was evaluated on 3 lifted analyses: Possible Types, Reaching Definitions and Uninitialized Variables. 4 real world SPLs were used as case studies: BerkeleyDB, GPL, Lampiro and MM08. Performance results show that the lifted analyses run in minutes (in some cases seconds), while brute force analysis would take years for some of the case studies. One thing to note though is that the correctness of the lifting approach is shown empirically rather than with a logical proof.
 
 \section{Product Line Type Checking}
 
@@ -59,7 +59,14 @@ This restricted form of variability serves two purposes. First it fulfills the b
 The type checker has been evaluated on 5 Java product lines, ranging from 9 to 42 features. Some type errors were found by the checker in some product variants. The performance (in terms of time taken to type check the product line) was evaluated compared to approximate per-product performance, and on these 5 product lines processing time grew much slower than the number of variants. It is worth noting though that these product lines are relatively small, both in terms of number of lines of code and number of features. 
 
 \section{Variability-Aware Abstract Interpretation}
-\cite{Midtgaard:2015}
+
+In \cite{Midtgaard:2015}, a systematic approach to lift abstract interpretation analyses to SPLs is presented. The paper provides a rigorous  formal treatment of abstract interpretation applied to a simple imperative language, with variability at the statement level. Formal proofs for the correctness of the lifting approach are also presented. 
+
+The lifting approach provides systematic liftings of the abstract domains, Galois connections, and corresponding analyses by the use of combinators. It is worth noting that this approach is systematic but not automated. Language-specific theorems need to be proven (3 of them have been proven in the paper), in addition to a language-agnostic framework theorem that has been proven as well. 
+
+The paper also presents some optimizations that would trade analysis precision for speed. The idea is to allow for variational abstraction, which would further abstract variability. Further optimization techniques involve sharing analysis intermediate values while keeping track of presence conditions (either in CNF/DNF formulas or BDDs). In addition, a technique for extracting data-flow equations (both the product-level equations and the lifted equations) is explained.  
+
+This work was evaluated on a Reaching Definitions analysis for Java programs. Three Java SPLs were used: GPL, Prevayler and BerkeleyDB. The speedup due to the different optimizations for the lifting approach (with respect to brute force) is exponential with respect to the number of SPL configurations.
 
 \section{Strategies for Product-line Verification}
 
@@ -67,7 +74,7 @@ In \cite{Apel:2013}, product-based, sample-based and family-based model-checking
 
 In this work the sampling strategies used are too primitive. Systems defects that are due to the interaction of more than 3 different features (which are not rare) will not be detected by the strategies presented in this paper, simply because this work only samples up to triple-wise feature combinations.
 
-Their family-based approach is more interesting. Features are encoded as boolean variables, and feature expressions as Binary Decision Digarams (BDDs). Variability within a source-code function is mapped into multiple implementations, with an additional dispatcher function choosing which implementation to call based on feature expressions. This simply reduces variability into conditionals, allowing existing model checkers to be used as is.
+Their family-based approach is more interesting. Features are encoded as boolean variables, and feature expressions as Binary Decision Diagrams (BDDs). Variability within a source-code function is mapped into multiple implementations, with an additional dispatcher function choosing which implementation to call based on feature expressions. This simply reduces variability into conditionals, allowing existing model checkers to be used as is.
 
 One caveat that is not explicitly mentioned in the paper is that this family-based approach is not applicable to annotative SPLs. The case studies presented are all generative (each feature is implemented separately and then composed into an SPL). Different function implementations together with the dispatcher function are generated as a part of the SPL generation. However, annotative SPLs are less strict when it comes to variability points (they don't all map to conditionals). Late Splitting and Early Joining can't be directly implemented in CPP-based SPLs for example.
 
@@ -80,14 +87,14 @@ In addition to focusing on static analysis as opposed to model checking, there a
 
 The second difference with respect to \cite{Apel:2013} is that the sampling techniques used in the comparison are more elaborate. In addition to pair-wise sampling (covered in \cite{Apel:2013}), single configuration, random and coverage-based sampling were also evaluated.
 
-Similar to \cite{Apel:2013}, the main principles guiding the design of the variability-aware analyses are late splitting and early joining. These principles maximize reuse of intermediate analysis information across different variants, eventually resulting in variability-aware analyses outperformaing brute-force per-product analysis by orders of magnitude. A third principle implicit in \cite{Apel:2013} but explicitly spelled out here is local variability representation. This is the mechanism of maintaining variability within intermediate analysis values.
+Similar to \cite{Apel:2013}, the main principles guiding the design of the variability-aware analyses are late splitting and early joining. These principles maximize reuse of intermediate analysis information across different variants, eventually resulting in variability-aware analyses outperforming brute-force per-product analysis by orders of magnitude. A third principle implicit in \cite{Apel:2013} but explicitly spelled out here is local variability representation. This is the mechanism of maintaining variability within intermediate analysis values.
 
 The evaluation presented in the paper justifies the hypotheses of the authors: the implemented variability-aware analyses under-perform single configuration analyses, but outperform the analysis of pair-wise samples. In addition, in some cases variability-aware analyses also outperform coverage-based analysis. More importantly, variability-aware analyses are complete in terms of covering all valid feature combinations (i.e. all valid products), while all the sampling techniques are incomplete in that regard.
 
 \section{SuperC}
-In \cite{Gazzillo:2012}, a variability-aware C-language parser and preprocessor are presented and evaluated against a similar C parser implemented as a part of the TypeChef project \cite{Kastner:2011}. SuperC includes a lexer, a preprocessor and a Fork Merge LR (FMLR) parser. Several optimizations have been implemented to lower the number of forked subparsers, and consequently speedup parsing. On the x86 Linux kernel codebase, SuperC is 3.4 to 3.8 times faster than TypeChef.
+In \cite{Gazzillo:2012}, a variability-aware C-language parser and preprocessor are presented and evaluated against a similar C parser implemented as a part of the TypeChef project \cite{Kastner:2011}. SuperC includes a lexer, a preprocessor and a Fork Merge LR (FMLR) parser. Several optimizations have been implemented to lower the number of forked sub-parsers, and consequently speedup parsing. On the x86 Linux kernel codebase, SuperC is 3.4 to 3.8 times faster than TypeChef.
 
-The idea behind FMLR parsing is to fork subparsers (initially sharing the state of their parent) on each variability point. A naive implementation would result in a number of subparsers exponential in the number of variability features. To prevent this exponential explosion, SuperC implements 4 optimizations: follow-set calculation, early reduces, lazy shifts, and shared reduces. With those optimizations, for almost all the Linux kernel compilation units the number of subparsers is less than 20.
+The idea behind FMLR parsing is to fork sub-parsers (initially sharing the state of their parent) on each variability point. A naive implementation would result in a number of sub-parsers exponential in the number of variability features. To prevent this exponential explosion, SuperC implements 4 optimizations: follow-set calculation, early reduces, lazy shifts, and shared reduces. With those optimizations, for almost all the Linux kernel compilation units the number of sub-parsers is less than 20.
 
 In addition to the optimizations, SuperC uses Binary Decision Diagrams (BDDs) to encode and test the satisfiability of presence conditions, while TypeChef uses a SAT-solver. Presence conditions are conjuncted on the nesting of static conditional compilation directives, and disjuncted on merges. With a few (tens) of propositional variables, conjunction and disjunction of BDDs is typically more efficient than applying the same operations to CNF-encoded boolean formulas (processed by SAT-solvers). As a result, BDDs also contribute to SuperC's speedup compared to TypeChef.
 
