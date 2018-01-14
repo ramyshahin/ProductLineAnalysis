@@ -30,11 +30,18 @@
 TODO
 
 \section{Featured Transition Systems}
-\cite{Classen:2013}
 
-In \cite{Classen:2013}, Labeled Transition Systems (LTSs) are extended with feature expressions into Featured Transition Systems (FTSs). FTSs can be used to encode variability-aware models, which can be checked by the SNIP model checker. 
+Classen et al.\cite{Classen:2013} address the problem of model checking variability-aware systems. The paper introduces the Featured Transition System (FTS) formalism of models, the feature Linear Temporal Logic (fLTL) for expressing temporal logic properties, and the SNIP model checker that checks fLTL properties against FTS models.
 
-The paper provides a FTS-based formalism, together with model checking algorithms, complexity analysis (with proofs) and the featured LTL (fLTL) logic. Several state space reduction optimizations are also explained. The empirical evaluation highlights the speedup due to the optimized algorithm.
+An FTS extends a Labeled Transition System (LTS) with a total function $\gamma$ mapping state transitions to presence conditions. This way behavior due to different model variants can be guarded by the presence conditions of those variants. In addition, an FTS is nonmonotonic in the sense that existing behavior can be removed by a variant by assigning the negation of the presence condition of that variant to the transitions associated with the behavior.
+
+Parallel composition of FTSs is also defined similarly to that of LTSs. When two FTSs are parallely composed, independent transition actions are asynchronously interleaved. However, shared actions are synchronized and their corresponding presence conditions are conjoined. 
+
+Properties over FTSs are specified in fLTL, which associates presence conditions to LTL formulas. Now a variability-aware model checker needs to check an fLTL property against an FTS model. The checker returns true if the property holds in the set of products defined by the property's presence condition. If the property is violated in any of those products, a set of counterexample/presence condition pairs is returned. Each counterexample covers a set of products in which the property is violated, and each product in which the property is violated  has to be covered by a counterexample.
+
+The FTS model checking algorithm extends the state reachability algorithm for LTSs with the identification of the sets of products in which each state is reachable from an initial state. Sets ot products are defined in terms of feature expressions, which are encoded as BDDs. The FD of the model is used to exclude invalid products. Since only a single counterexample is needed whenever a product violates the property, the search can be pruned for products where a counterexample has already been found.
+
+The SNIP model checker implements FTS model checking. Its input language is fPromela, which extends Promela (used in the SPIN model checker) by feature expression guard annotation over statements. It also implements variability-aware vacuity detection and deadlock detection.
 
 One shortcoming of this paper is that empirical evaluation is done on only one model (the mine pump controller model). This model is small compared to realistic models (only 457 FTS states), and the evaluation is done checking only 6 properties. With only one model (moreover, a small one), the evaluation results cannot be safely generalized. 
  
