@@ -1,4 +1,4 @@
-import Dependencies._
+//import Dependencies._
 
 lazy val root = (project in file(".")).
   settings(
@@ -8,5 +8,6 @@ lazy val root = (project in file(".")).
       version      := "0.1.0-SNAPSHOT"
     )),
     name := "spl",
-    libraryDependencies += scalaTest % Test
+	  libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.4",
+	  libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % "test"
   )
