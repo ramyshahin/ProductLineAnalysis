@@ -17,7 +17,7 @@ class SPLSuite extends FunSuite {
   val _p_q = And(_p, _q)
 
   val x = List((7, pq), (-3, p_q), (-8, _pq), (0, _p_q))
-  val y = List((-11, _p))
+  val y = List((5, p), (-11, _p))
   val z = List((6, p))
 
   def plus (x : Int) (y : Int) : Int = x + y
@@ -25,7 +25,7 @@ class SPLSuite extends FunSuite {
   test("plus") {
     val lifted_plus = SPL.mkVarT(plus _)
     val result = SPL.apply2(lifted_plus, x, y)
-    assert(result == List((-19,_pq), (-11,_p_q)))
+    assert(result == List((12, pq), (2, p_q), (-19,_pq), (-11,_p_q)))
   }
 }
 
