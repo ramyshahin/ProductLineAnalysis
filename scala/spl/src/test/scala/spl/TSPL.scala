@@ -74,5 +74,16 @@ class SPLSuite extends FunSuite {
     val ret = Visitor.visit(l5)
     assert(ret == 20)
   }
+
+  test("deep_cons") {
+    val l0 = Lifted_Nil[Int]()
+    val l1 = Lifted_Cons(a, l0)
+    val l2 = Lifted_Cons(b, l1)
+    val l3 = Lifted_Cons(c, l2)
+    val l4 = Lifted_Cons(d, l3)
+    val l5 = Lifted_Cons(x, l4)
+
+    assert(l5.length() == SPL.mkVarT(5))
+  }
 }
 
