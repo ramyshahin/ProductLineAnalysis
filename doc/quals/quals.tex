@@ -34,7 +34,25 @@ A \term{Software Product Line (SPL)} is a family of related software products bu
 
 When building an SPL, software analysis tools are still needed to find bugs, generate test cases, collect metrics or track progress. A plethora of tools already exists, covering many different categories of analyses. However, these tools work on the artifacts of a single product. Because an SPL encompasses a superset of features existing in a single product, those tools are not capable of identifying which artifacts belong to which set of products. Consequently, those tools cannot be used as is on an SPL. A naive solution is to generate all possible products of an SPL and run tools on each one of them. This is generally intractable though, because the number of products grows exponentially with the number of SPL features.
 
-This report covers some research work attempting to solve this problem. One paper compares brute force (product-based), variability-aware (family-based) and sampling techniques~\cite{Apel:2013}. Another extends this work to more elaborate sampling techniques and more general categories of analysis~\cite{Liebig:2013}. At the theoretical end of the spectrum, one paper provides an elaborate mathematical foundation for lifting abstract interpretation based analyses to SPLs~\cite{Midtgaard:2015}. At the other end, some papers provide pragmatic implementations of type checkers~\cite{Kastner:2012}, source code syntax checkers~\cite{Gazzillo:2012}, data flow analyses~\cite{Bodden:2013}, and model checkers~\cite{Classen:2013}.
+This report covers some research work attempting to solve this problem. One paper compares brute force (product-based), variability-aware (family-based) and sampling techniques~\cite{Apel:2013}. Another extends this work to more elaborate sampling techniques and more general categories of analysis~\cite{Liebig:2013}. At the theoretical end of the spectrum, one paper provides an elaborate mathematical foundation for lifting abstract interpretation based analyses to SPLs~\cite{Midtgaard:2015}. At the other end, some papers provide pragmatic implementations of type checkers~\cite{Kastner:2012}, source code syntax checkers~\cite{Gazzillo:2012}, data flow analyses~\cite{Bodden:2013}, and model checkers~\cite{Classen:2013}. Table \ref{tbl1} summarizes the papers covered, with limitations explained throughout this report.
+
+\begin{table}[h!]
+\begin{tabular}{ |l|l|l|l|}
+\hline
+Paper & Analysis & Limitations \\
+\hline
+Apel et al.~\cite{Apel:2013} & Model Checking & Generative SPLs only  \\
+Liebig et al.~\cite{Liebig:2013} & Static Analysis & Hand-crafted analyses and infrastructure  \\
+Midtgaard et al.~\cite{Midtgaard:2015} & Abstract Interpretation & Systematic but not automated \\
+K\"{a}stner et a.~\cite{Kastner:2012} & Type Checking & Limited source code variability \\
+Gazzillo and Grimm~\cite{Gazzillo:2012} & Parsing (Syntax Checking) & Fully hand-crafted \\
+Bodden et al.~\cite{Bodden:2013} & Data-flow Analysis & IFDS analyses only \\
+Classen et al.~\cite{Classen:2013} & Model Checking & Hand-crafted \\
+\hline
+\end{tabular}
+\caption{Different SPL analysis techniques covered in this report.}
+\label{tbl1}
+\end{table}
 
 \section{Strategies for Product-line Verification}
 
@@ -126,27 +144,9 @@ One shortcoming of this paper is that empirical evaluation is done on only one m
 
 \section{Conclusion}
 
-\begin{table}[h!]
-\begin{tabular}{ |l|l|l|l|}
-\hline
-Paper & Analysis & Limitation \\
-\hline
-Apel et al.~\cite{Apel:2013} & Model Checking & Generative SPLs only  \\
-Liebig et al.~\cite{Liebig:2013} & Static Analysis & Hand-crafted analyses and infrastructure  \\
-Midtgaard et al.~\cite{Midtgaard:2015} & Abstract Interpretation & Systematic but not automated \\
-K\"{a}stner et a.~\cite{Kastner:2012} & Type Checking & Limited source code variability \\
-Gazzillo and Grimm~\cite{Gazzillo:2012} & Parsing (Syntax Checking) & Fully hand-crafted \\
-Bodden et al.~\cite{Bodden:2013} & Data-flow Analysis & IFDS analyses only \\
-Classen et al.~\cite{Classen:2013} & Model Checking & Hand-crafted \\
-\hline
-\end{tabular}
-\caption{Different SPL analysis techniques covered in this report.}
-\label{tbl1}
-\end{table}
+Family-based analysis of SPLs covers all valid product line instances, and in many cases outperforms sampling techniques~\cite{Apel:2013, Liebig:2013}. Different family-based analysis techniques have been covered in this report. 
 
-Family-based analysis of SPLs covers all valid product line instances, and in many cases outperforms sampling techniques~\cite{Apel:2013, Liebig:2013}. Different family-based analysis techniques have been covered in this report. Table \ref{tbl1} summarizes the papers covered.
-
-Late splitting and early joining are two principles that underly many of the techniques presented. These two principles maximize reuse of intermediate results calculated as a part of the analysis process. Local variability representation is another principle that manages intermediate value variability. These principles together with some analysis specific design decisions can effectively lead to an efficient family-based analysis.
+Late splitting and early joining are two principles that underly many of the techniques presented. These two principles maximize reuse of intermediate results calculated as a part of the analysis process. Local variability representation is another principle that manages intermediate value variability. These principles together with some analysis-specific design decisions can effectively lead to an efficient family-based analysis.
 \bibliographystyle{abbrv}
 \bibliography{quals} 
 \end{document}  
