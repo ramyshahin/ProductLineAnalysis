@@ -1,0 +1,15 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+
+\begin{document}
+
+\section{Related Work}
+
+Apel et al.~\cite{Apel:2013} compare the performance of family-based SPL analyses to that of single-wise, pairwise and triple-wise sampling-based strategies. In addition to being complete with respect to covering all valid products, family-based analysis was shown to outperform triple-wise sampling-based strategies. This paper explicitly generated code for different variants (at the source code function level), with dispatch functions calling different variants based on feature expressions. In contrast, Liebig et al.~\cite{Liebig:2013} implemented family-based analyses for type checking and liveness analysis. They compared their analyses to more elaborate sampling strategies (e.g. coverage-based sampling), and again family-based analyses outperformed sampling.
+
+Several attempts have been made to lift product-level analyses to SPLs. Midtgaard et al.~\cite{Midtgaard:2015} provide a thorough theoretical treatment of systematically (but not automatically) lifting abstract interpretation analyses to SPLs. They also touch upon the idea of abstracting variability to improve performance on the expense of accuracy. K\"{a}stner et al.~\cite{Kastner:2012} provide a variability-aware type checker for Feather-weight Java, with correctness proofs in Coq. In this paper they only support very limited forms of variability though. Gazzillo and Grimm~\cite{Gazzillo:2012} designed an efficient variability-aware C-language Fork-Merge-LR (FMLR) parser. It highly outperforms other attempts (e.g. the TypeChef C-language parser~\cite{Kastner:2011}), but all the optimizations were hand-crafted. Bodden et al.~\cite{Bodden:2013} provide a lifting of interprocedural IFDS~\cite{Reps:1995} data-flow analyses to SPLs. They exploit the fact that these analyses reduce to graph reachability, and annotate graph edges with presence conditions. Similarly, Classen et al.~\cite{Classen:2013} extend Labeled Transition Systems (LTSs) to Featured Transition Systems (FTSs) by annotating state transitions with presence conditions. In addition, they extended Linear Temporal Logic (LTL) with features (fLTL), and similarly the Promela model specification language with features (fPromela). 
+
+\bibliographystyle{abbrv}
+\bibliography{quals} 
+
+\end{document}
