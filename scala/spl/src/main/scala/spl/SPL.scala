@@ -5,25 +5,33 @@ import prop._
 object SPL {
   type PresenceCondition = Prop
 
-  type Val[T] = (T, PresenceCondition)
+  class Val[T] (
+    _v : => T,
+    _pc : PresenceCondition){
+    lazy val v :T = _v;
+    val pc :PresenceCondition = _pc;
+  }
 
-  type Var[T] = List[Val[T]]
+  type Var[T] = List[Val[T]];
 
-  def mkVarT[T](a : T) : Var[T] = List((a, True()))
+  def mkVarT[T](a : T) : Var[T] = List(new Val(a, True()))
 
   def normalize[A](xs : Var[A]) : Var[A] = {
     xs.map(x => {
-      val vs = xs.filter(v => x != v && x._1 == v._1)
+      val vs = xs.filter(v => x != v && x.v == v.pc)
       if (vs == Nil) x
       else {
         val h = vs.head
-        (x._1, Or(x._2, h._2))
+        new Val(x.v, Or(x.pc, h.pc))
       }
     })
   }
 
+  //def lifted_cond[T](c: Var[Boolean])(lazy a: Var[T])(lazy b: Var[T]) = Var[T] = {
+//
+  //}
   def apply[A,B](f : Var[A => B], a : Var[A]) : Var[B] = {
-    val vs = for (_f <- f; _a <- a; pc = And(_f._2, _a._2); if pc.isSAT()) yield (_f._1(_a._1), pc)
+    val vs = for (_f <- f; _a <- a; pc = And(_f.pc, _a.pc); if pc.isSAT()) yield new Val(_f.v(_a.v), pc)
     //normalize(vs)
     return vs
   }

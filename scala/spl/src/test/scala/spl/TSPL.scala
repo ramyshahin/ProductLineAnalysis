@@ -21,6 +21,9 @@ object Visitor {
   val lifted_map = SPL.mkVarT(map _)
   val lifted_foo = SPL.mkVarT(foo _)
 
+  //def liftedMap(f: SPL.Var[Int => Int])(xs: SPL.Var[List[Int]]) : SPL.Var[List[Int]] = {
+//
+//  }
   def visit(xs : SPL.Var[List[Int]]) : Int = {
     SPL.apply2(lifted_map, lifted_foo, xs)
     val ret = count
@@ -43,9 +46,9 @@ class SPLSuite extends FunSuite {
   val _pq = And(_p, q)
   val _p_q = And(_p, _q)
 
-  val x = List((7, pq), (-3, p_q), (-8, _pq), (0, _p_q))
-  val y = List((5, p), (-11, _p))
-  val z = List((6, p))
+  val x = List(new SPL.Val(7, pq), new SPL.Val(-3, p_q), new SPL.Val(-8, _pq), new SPL.Val(0, _p_q))
+  val y = List(new SPL.Val(5, p), new SPL.Val(-11, _p))
+  val z = List(new SPL.Val(6, p))
 
   val a = SPL.mkVarT(1)
   val b = SPL.mkVarT(2)
@@ -58,13 +61,13 @@ class SPLSuite extends FunSuite {
   test("plus") {
     val lifted_plus = SPL.mkVarT(plus _)
     val result = SPL.apply2(lifted_plus, x, y)
-    assert(result == List((12, pq), (2, p_q), (-19,_pq), (-11,_p_q)))
+    assert(result == List(new SPL.Val(12, pq), new SPL.Val(2, p_q), new SPL.Val(-19,_pq), new SPL.Val(-11,_p_q)))
   }
 
   test("cons") {
     val lifted_cons = SPL.mkVarT(cons _)
 
-    val l0 = SPL.mkVarT(Nil)
+    val l0 = SPL.mkVarT(List[Int]())
     val l1 = SPL.apply2(lifted_cons, a, l0)
     val l2 = SPL.apply2(lifted_cons, b, l1)
     val l3 = SPL.apply2(lifted_cons, c, l2)
