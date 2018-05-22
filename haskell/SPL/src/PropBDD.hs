@@ -8,21 +8,21 @@ import Cudd.Cudd
 manager = cuddInit
 
 type Prop = DDNode
-type Universe = [(String,Prop)]
+type Universe = [Prop]
 
 mkUniverse :: [String] -> Universe
-mkUniverse xs = map (\(s,r) -> (s, ithVar manager r)) (zip xs [0..])
+mkUniverse xs = map (\(s,r) -> (ithVar manager r)) (zip xs [0..])
 
 queryOrUpdate :: Universe -> String -> (Universe, Prop)
 queryOrUpdate [] s = (u', p)
     where   u' = mkUniverse [s]
-            p  = snd $ head u' 
+            p  = head u' 
 
-queryOrUpdate u@((s',p'):u') s =
-    if s == s' 
-    then (u,p')
-    else ((s',p'):u'', p'')
-         where (u'',p'') = queryOrUpdate u' s
+--queryOrUpdate u@((s',p'):u') s =
+--    if s == s' 
+--    then (u,p')
+--    else ((s',p'):u'', p'')
+--         where (u'',p'') = queryOrUpdate u' s
          
 tt = readOne manager
 ff = readLogicZero manager

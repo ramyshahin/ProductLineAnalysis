@@ -4,7 +4,7 @@ module SPL_prop where
 
 import Test.QuickCheck.All
 import SPL
-import Prop
+import PropBDD
 import Shallow.VList as S
 import Deep.VList as D
 import Control.Applicative
