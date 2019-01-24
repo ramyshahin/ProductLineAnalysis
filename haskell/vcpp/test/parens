@@ -1,5 +1,0 @@
-#if ( defined(__GLASGOW_HASKELL__) && __GLASGOW_HASKELL__ >= 600 ) \
-    || ( defined(__NHC__) && __NHC__ >= 117 )
-#define FINALIZERPTR yes
-#endif
-FINALIZERPTR

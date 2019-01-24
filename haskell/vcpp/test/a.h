@@ -1,6 +1,6 @@
-//#ifndef _A
-#define _A
-
-a = 10;
-
+#ifdef _A
+int a = 0;
+#else
+int b = 1;
 #endif
+

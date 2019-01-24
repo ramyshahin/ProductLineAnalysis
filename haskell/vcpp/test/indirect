@@ -1,2 +1,0 @@
-#define F "inclusion"
-#include F
