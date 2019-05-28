@@ -89,9 +89,11 @@ instance Applicative Var where
 --    Var (t :: *)                      = Var' t
 
 mkVar :: t -> PresenceCondition -> Var t
+{-# INLINE mkVar #-}
 mkVar v pc = Var [(v,pc)]
 
 mkVarT :: t -> Var t
+{-# INLINE mkVarT #-}
 mkVarT v = mkVar v tt
 
 mkVars :: [(t,PresenceCondition)] -> Var t
@@ -120,10 +122,12 @@ groupVals xs cmp = groupVals_ xs [] cmp
 -- compaction seems to be turning some lazy expressions into strict,
 -- resulting in condiitional expression bugs
 compact :: Var t -> Var t
-compact (Var v) = Var (groupVals v (===))
+--compact (Var v) = Var (groupVals v (===))
+compact = id 
 
 compactEq :: Eq t => Var t -> Var t
-compactEq (Var v) = Var (groupVals v (====))
+--compactEq (Var v) = Var (groupVals v (====))
+compactEq = id
 
 valIndex :: Eq t => Var t -> t -> [Val t]
 valIndex (Var v) x =
@@ -179,10 +183,12 @@ inv (Var v) = {-trace ("inv: " ++ (show (Var v))) $-}
     all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
 
 apply_ :: Val (a -> b) -> Var a -> Var b
+{-# NOINLINE apply_ #-}
 apply_ (fn, fnpc) x'  = --localCtxt fnpc $
     let (Var x) = compact x'
     in mkVars [(fn x'', pc) | (x'',xpc) <- x, let pc = conj[fnpc,xpc], sat(pc)]
 
+{-# INLINE apply #-}
 apply :: Var (a -> b) -> Var a -> Var b
 apply (Var fn) x = --compact $
      unions [apply_ f x | f <- fn] 

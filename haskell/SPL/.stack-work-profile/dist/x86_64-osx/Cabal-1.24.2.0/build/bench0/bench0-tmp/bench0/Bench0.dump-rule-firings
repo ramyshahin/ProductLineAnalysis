@@ -1,0 +1,48 @@
+Rule fired: unpack
+Rule fired: unpack
+Rule fired: unpack
+Rule fired: unpack
+Rule fired: Class op negate
+Rule fired: negateInteger
+Rule fired: Class op negate
+Rule fired: negateInteger
+Rule fired: Class op negate
+Rule fired: negateInteger
+Rule fired: Class op enumFromTo
+Rule fired: Class op +
+Rule fired: Class op *
+Rule fired: Class op +
+Rule fired: Class op +
+Rule fired: Class op negate
+Rule fired: Class op negate
+Rule fired: Class op <*>
+Rule fired: Class op <*>
+Rule fired: Class op negate
+Rule fired:
+    SPEC/main@main:Main (SPL-0.1.0.0@SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:SPL.$fShowVar_$cshowsPrec{v r69} [gid] :: forall (a{tv a1CJ} [tv] :: *).
+                                                                                                              base-4.9.1.0:GHC.Show.Show{tc 2h}
+                                                                                                                (a{tv a1CJ} [tv] :: *) =>
+                                                                                                              ghc-prim-0.5.0.0:GHC.Types.Int{(w) tc 3u}
+                                                                                                              -> SPL-0.1.0.0@SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:SPL.Var{tc r1B}
+                                                                                                                   (a{tv a1CJ} [tv] :: *)
+                                                                                                              -> base-4.9.1.0:GHC.Show.ShowS{tc r2u}) @ ghc-prim-0.5.0.0:GHC.Types.Int{(w) tc 3u}
+Rule fired:
+    SPEC/main@main:Main (SPL-0.1.0.0@SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:SPL.$fShowVar{v r5e} [gid[DFunId]] :: forall (a{tv a1sa} [tv] :: *).
+                                                                                                          base-4.9.1.0:GHC.Show.Show{tc 2h}
+                                                                                                            (a{tv a1sa} [tv] :: *) =>
+                                                                                                          base-4.9.1.0:GHC.Show.Show{tc 2h}
+                                                                                                            (SPL-0.1.0.0@SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:SPL.Var{tc r1B}
+                                                                                                               (a{tv a1sa} [tv] :: *))) @ ghc-prim-0.5.0.0:GHC.Types.Int{(w) tc 3u}
+Rule fired: negateInt#
+Rule fired: negateInt#
+Rule fired: Class op show
+Rule fired: negateInt#
+Rule fired: enumDeltaToInteger1
+Rule fired: unpack-list
+Rule fired: unpack-list
+Rule fired: unpack-list
+Rule fired: unpack-list
+Rule fired: foldr/app
+Rule fired: foldr/app
+Rule fired: SC:go0
+Rule fired: ++

@@ -1,0 +1,196 @@
+
+==================== FINAL INTERFACE ====================
+2019-03-07 05:03:01.711355 UTC
+
+interface SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList [hpc] 8002
+  interface hash: c9c8262c2cfda89c7cb6647e878c9906
+  ABI hash: f31bcbe438b77aa56d31bd92ec97cf47
+  export-list hash: 47408454888b9c36b2991bcd71b51e6d
+  orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
+  flag hash: fa5c7378f9d5d0d8c0f2a13ee0fd1077
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  Shallow.VList.mkVList
+  Shallow.VList.vCons
+  Shallow.VList.vNil
+  Shallow.VList.vhead
+  Shallow.VList.vlength
+  Shallow.VList.vmap
+  Shallow.VList.vnull
+  Shallow.VList.vtail
+  Shallow.VList.|!!|
+  Shallow.VList.VList
+module dependencies: PropBDD SPL
+package dependencies: array-0.5.1.1@array-0.5.1.1 base-4.9.1.0
+                      containers-0.5.7.1@containers-0.5.7.1
+                      cudd-0.1.0.4@cudd-0.1.0.4-FSAkhUabwhMcZB0faAolK
+                      deepseq-1.4.2.0@deepseq-1.4.2.0 ghc-prim-0.5.0.0
+                      integer-gmp-1.0.0.1
+                      parallel-3.2.1.0@parallel-3.2.1.0-CNlrARikHUx7Z7NHwpxRS3
+orphans: base-4.9.1.0:GHC.Base base-4.9.1.0:GHC.Float
+family instance modules: base-4.9.1.0:Control.Applicative
+                         base-4.9.1.0:Data.Complex base-4.9.1.0:Data.Either
+                         base-4.9.1.0:Data.Functor.Const base-4.9.1.0:Data.Functor.Identity
+                         base-4.9.1.0:Data.List.NonEmpty base-4.9.1.0:Data.Monoid
+                         base-4.9.1.0:Data.Semigroup base-4.9.1.0:Data.Type.Equality
+                         base-4.9.1.0:Data.Version base-4.9.1.0:Data.Void
+                         base-4.9.1.0:GHC.Exts base-4.9.1.0:GHC.Generics
+                         base-4.9.1.0:GHC.IO.Exception base-4.9.1.0:GHC.TypeLits
+                         containers-0.5.7.1@containers-0.5.7.1:Data.Map.Base
+                         containers-0.5.7.1@containers-0.5.7.1:Data.Set.Base
+import  -/  SPL fe488233b733de36632706b6b8af2a83
+  exports: a2d28348b799da63d289715ec341de8a
+  Var 3d3b229fbc24d03635a863a001709584
+  compact 3d3b229fbc24d03635a863a001709584
+  liftV d3d571acbb557897923fbe19b0074cfe
+  liftV2 3477cc1444e325184c90a12dc48ccbf5
+  mkVarT 3d3b229fbc24d03635a863a001709584
+  restrict 48d6d5d2ea9f40bc29e58b54d3a7fea4
+  undefinedAt b35ff8327766aba4a3531780a3f88ce6
+  union 23a5a9173b49ea7f422cf80e0f714d5a
+import  -/  base-4.9.1.0:Data.Foldable 3e0b6967a1da89945d0e2d47266337a2
+import  -/  base-4.9.1.0:GHC.Base c4231c43c07e46080a26bf94094c7aa1
+import  -/  base-4.9.1.0:GHC.List ab8c4e523e6c479c549d3bcd5fc4a439
+import  -/  base-4.9.1.0:Prelude 22dd289b8469a8fa8dc81cab7b237771
+1be63ca993543fac6c3fe7ba29d11521
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module
+                   Shallow.VList.$trModule2
+                   Shallow.VList.$trModule1) -}
+f4571201338a6930667ac7c1c8c3586a
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "Shallow.VList"#) -}
+8f56036f23c1867bf0dae5c493d5c723
+  $trModule2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS
+                   "SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG"#) -}
+0330ba4ff1a90a1ea26f0cc635ed4d2c
+  type VList a = SPL.Var [a]
+aa1215f102f83ad0006df86d5b747732
+  mkVList :: [SPL.Var a] -> Shallow.VList.VList a
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: (\ @ a (xs :: [SPL.Var a]) ->
+                 {__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList.mkVList} True True} Shallow.VList.mkVList1
+                                                                                                @ a
+                                                                                                xs) -}
+28bdca53c18c23d2548ca5423c4a1566
+  mkVList1 :: [SPL.Var a] -> SPL.Var [a]
+  {- Arity: 1, Strictness: <S,1*U> -}
+a4bca76841cb68c1f1a620f16a810c18
+  vCons :: SPL.Var a -> SPL.Var [a] -> SPL.Var [a]
+  {- Arity: 2, Strictness: <L,U><L,U>,
+     Unfolding: (\ @ a (x :: SPL.Var a) (xs :: SPL.Var [a]) ->
+                 {__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList.vCons} True True} SPL.compact
+                                                                                              @ [a]
+                                                                                              (let {
+                                                                                                 ds :: SPL.Var
+                                                                                                         [a]
+                                                                                                 = {__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList.vCons.defs} True True} SPL.liftV2
+                                                                                                                                                                                     @ a
+                                                                                                                                                                                     @ [a]
+                                                                                                                                                                                     @ [a]
+                                                                                                                                                                                     (GHC.Types.:
+                                                                                                                                                                                        @ a)
+                                                                                                                                                                                     x
+                                                                                                                                                                                     xs
+                                                                                               } in
+                                                                                               let {
+                                                                                                 ds1 :: [([a],
+                                                                                                          PropBDD.Prop)]
+                                                                                                 = {__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList.vCons.undefs} True True} SPL.cond'2
+                                                                                                                                                                                       @ [a]
+                                                                                                                                                                                       (SPL.undefinedAt
+                                                                                                                                                                                          @ a
+                                                                                                                                                                                          x)
+                                                                                                                                                                                       xs
+                                                                                               } in
+                                                                                               ({__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:SPL.union} True True} GHC.Base.++
+                                                                                                                                                                   @ ([a],
+                                                                                                                                                                      SPL.PresenceCondition)
+                                                                                                                                                                   ds
+                                                                                                                                                                     `cast`
+                                                                                                                                                                   (SPL.N:Var[0]
+                                                                                                                                                                        <[a]>_R)
+                                                                                                                                                                   ds1)
+                                                                                                 `cast`
+                                                                                               (Sym (SPL.N:Var[0]
+                                                                                                         <[a]>_R)))) -}
+daef93b201479b396b655e94c7ea2623
+  vNil :: SPL.Var [a]
+  {- Unfolding: (\ @ a ->
+                 {__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList.vNil} True True} SPL.mkVarT
+                                                                                             @ [a]
+                                                                                             (GHC.Types.[]
+                                                                                                @ a)) -}
+232e26edb052f436e29f89ebde117062
+  vhead :: Shallow.VList.VList a -> SPL.Var a
+  {- Unfolding: (\ @ a ->
+                 {__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList.vhead} True True} SPL.liftV
+                                                                                              @ [a]
+                                                                                              @ a
+                                                                                              (GHC.List.head
+                                                                                                 @ a)) -}
+46e1668c6e2f1dc82db468236516ca75
+  vlength :: Shallow.VList.VList a -> SPL.Var GHC.Types.Int
+  {- Unfolding: (\ @ a ->
+                 {__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList.vlength} True True} SPL.liftV
+                                                                                                @ [a]
+                                                                                                @ GHC.Types.Int
+                                                                                                (GHC.List.length
+                                                                                                   @ a)) -}
+ccf7889e4d348d55c19528849fd0bddb
+  vmap ::
+    SPL.Var (a -> b) -> Shallow.VList.VList a -> Shallow.VList.VList b
+  {- Unfolding: (\ @ a @ b ->
+                 {__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList.vmap} True True} SPL.liftV2
+                                                                                             @ (a
+                                                                                                -> b)
+                                                                                             @ [a]
+                                                                                             @ [b]
+                                                                                             (GHC.Base.map
+                                                                                                @ a
+                                                                                                @ b)) -}
+ab6971ec2b863617b276163a76572d38
+  vnull :: Shallow.VList.VList a -> SPL.Var GHC.Types.Bool
+  {- Unfolding: (\ @ a ->
+                 {__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList.vnull} True True} SPL.liftV
+                                                                                              @ [a]
+                                                                                              @ GHC.Types.Bool
+                                                                                              (GHC.List.null
+                                                                                                 @ a)) -}
+400f4d2363550b3c9ac9e9e0d4962166
+  vtail :: Shallow.VList.VList a -> Shallow.VList.VList a
+  {- Unfolding: (\ @ a ->
+                 {__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList.vtail} True True} SPL.liftV
+                                                                                              @ [a]
+                                                                                              @ [a]
+                                                                                              (GHC.List.tail
+                                                                                                 @ a)) -}
+04bd00c3cbc7d05a3062e5480b41044f
+  (|!!|) :: Shallow.VList.VList a -> GHC.Types.Int -> SPL.Var a
+  {- Arity: 2, Strictness: <L,U><L,U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ @ a (vs :: Shallow.VList.VList a) (i :: GHC.Types.Int) ->
+                 {__scc {SPL-0.1.0.0-1gMIn6ueMVA5fHj2IG3fJG:Shallow.VList.|!!|} True True} SPL.liftV2
+                                                                                             @ [a]
+                                                                                             @ GHC.Types.Int
+                                                                                             @ a
+                                                                                             (GHC.List.!!
+                                                                                                @ a)
+                                                                                             vs
+                                                                                             (SPL.mkVarT
+                                                                                                @ GHC.Types.Int
+                                                                                                i)) -}
+vectorised variables:
+vectorised tycons:
+vectorised reused tycons:
+parallel variables:
+parallel tycons:
+trusted: none
+require own pkg trusted: False
+

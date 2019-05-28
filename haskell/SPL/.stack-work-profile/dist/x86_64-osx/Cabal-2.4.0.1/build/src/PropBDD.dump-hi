@@ -1,0 +1,284 @@
+
+==================== FINAL INTERFACE ====================
+2019-03-10 04:20:03.868119 UTC
+
+interface SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD [hpc] 8063
+  interface hash: c35d6f1133a7dc5b5403fde1dbea7ac0
+  ABI hash: 26340779dada9254b6fa27adf741484c
+  export-list hash: e66a3ac1040f7241f5d9a8b0e3f63d04
+  orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
+  flag hash: 0e83803fe381b2ba75a30c723e620eac
+  opt_hash: 5835274e0c52a5d281a4b935bfdb5c93
+  hpc_hash: 93b885adfe0da089cdf634904fd59f71
+  plugin_hash: ad164012d6b1e14942349d58b1132007
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  PropBDD.conj
+  PropBDD.disj
+  PropBDD.ff
+  PropBDD.impl
+  PropBDD.implies
+  PropBDD.manager
+  PropBDD.mkUniverse
+  PropBDD.neg
+  PropBDD.queryOrUpdate
+  PropBDD.sat
+  PropBDD.tautology
+  PropBDD.tt
+  PropBDD.unsat
+  PropBDD.Prop
+  PropBDD.Universe
+module dependencies:
+package dependencies: base-4.12.0.0 cudd-0.1.0.4 ghc-prim-0.5.3
+                      integer-gmp-1.0.2.0
+orphans: base-4.12.0.0:GHC.Float base-4.12.0.0:GHC.Base
+family instance modules: base-4.12.0.0:Control.Applicative
+                         base-4.12.0.0:Data.Functor.Const
+                         base-4.12.0.0:Data.Functor.Identity base-4.12.0.0:Data.Monoid
+                         base-4.12.0.0:Data.Semigroup.Internal base-4.12.0.0:GHC.Generics
+                         base-4.12.0.0:GHC.IO.Exception
+import  -/  base-4.12.0.0:Data.Foldable 00188ddf89c975fee76bdfad479443c1
+import  -/  base-4.12.0.0:GHC.Base cc906f98291a1b830546e99a96674547
+import  -/  base-4.12.0.0:GHC.List 734a72beb76d276fb4a0ba2689a5711f
+import  -/  base-4.12.0.0:Prelude 5c01365ec01f83bd405ac01cbb9a8d76
+import  -/  cudd-0.1.0.4:Cudd.Cudd 8e5f64d98883acb5a72c2b3a145a538a
+import  -/  ghc-prim-0.5.3:GHC.Classes e0d9c979f6368701f34fa421754d2cce
+ee52ff9803918bff286c2e8065c8e58c
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module
+                   PropBDD.$trModule3
+                   PropBDD.$trModule1) -}
+92ee629ac9746fcf2f4d01574c5ea17c
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS PropBDD.$trModule2) -}
+5bb6caf12393e617edcabd84fc496d7c
+  $trModule2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("PropBDD"#) -}
+33dcae3c0ec8459a1fb690104b6fc50e
+  $trModule3 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS PropBDD.$trModule4) -}
+e0f580217b2b8ad06081b55222555260
+  $trModule4 :: GHC.Prim.Addr#
+  {- HasNoCafRefs,
+     Unfolding: ("SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL"#) -}
+0cb8b07c97187edb8f9f9eee81c5f0d8
+  type Prop = Cudd.Cudd.DDNode
+37fafdb020e6c10bedd4ff51dcb761bc
+  type Universe = [PropBDD.Prop]
+1197108a188c79bd6158d8c5950f2993
+  conj :: [PropBDD.Prop] -> PropBDD.Prop
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.conj} True True} GHC.Base.foldr
+                                                                                       @ Cudd.Cudd.DDNode
+                                                                                       @ Cudd.Cudd.DDNode
+                                                                                       PropBDD.conj1
+                                                                                         `cast`
+                                                                                       (<Cudd.Cudd.DDNode>_R
+                                                                                        ->_R <Cudd.Cudd.DDNode>_R
+                                                                                        ->_R Sym (Cudd.Cudd.N:DDNode[0]))
+                                                                                       PropBDD.tt) -}
+206f7295b5f6826ba3666f254372b71a
+  conj1 ::
+    Cudd.Cudd.DDNode
+    -> Cudd.Cudd.DDNode -> GHC.ForeignPtr.ForeignPtr Cudd.C.CDDNode
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.conj} False True} Cudd.Cudd.bAnd1
+                                                                                        PropBDD.tt2
+                                                                                          `cast`
+                                                                                        (Sym (Cudd.Cudd.N:DDManager[0]))) -}
+1b91eda1850e60a4ad61f372e64c20ff
+  disj :: [PropBDD.Prop] -> PropBDD.Prop
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.disj} True True} GHC.Base.foldr
+                                                                                       @ Cudd.Cudd.DDNode
+                                                                                       @ Cudd.Cudd.DDNode
+                                                                                       PropBDD.disj2
+                                                                                         `cast`
+                                                                                       (<Cudd.Cudd.DDNode>_R
+                                                                                        ->_R <Cudd.Cudd.DDNode>_R
+                                                                                        ->_R Sym (Cudd.Cudd.N:DDNode[0]))
+                                                                                       PropBDD.disj1
+                                                                                         `cast`
+                                                                                       (Sym (Cudd.Cudd.N:DDNode[0]))) -}
+c95b934eb719098de1aafe965807e867
+  disj1 :: GHC.ForeignPtr.ForeignPtr Cudd.C.CDDNode
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.ff} True True} Cudd.Cudd.readLogicZero1
+                                                                                     PropBDD.tt2
+                                                                                       `cast`
+                                                                                     (Sym (Cudd.Cudd.N:DDManager[0]))) -}
+eab0a2525b1411f17ad99a94014289b4
+  disj2 ::
+    Cudd.Cudd.DDNode
+    -> Cudd.Cudd.DDNode -> GHC.ForeignPtr.ForeignPtr Cudd.C.CDDNode
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.disj} False True} Cudd.Cudd.bOr1
+                                                                                        PropBDD.tt2
+                                                                                          `cast`
+                                                                                        (Sym (Cudd.Cudd.N:DDManager[0]))) -}
+43853334710315909251f3cd973a9e5e
+  ff :: Cudd.Cudd.DDNode
+  {- Unfolding: InlineRule (0, True, True)
+                PropBDD.disj1 `cast` (Sym (Cudd.Cudd.N:DDNode[0])) -}
+ee349544abe0717fff507c4ac1f2f78e
+  impl :: Cudd.Cudd.DDNode -> PropBDD.Prop -> PropBDD.Prop
+  {- Arity: 2, Strictness: <L,U><L,U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (p :: Cudd.Cudd.DDNode) (q :: PropBDD.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.impl} True True} PropBDD.disj
+                                                                                       (GHC.Types.:
+                                                                                          @ PropBDD.Prop
+                                                                                          (PropBDD.impl1
+                                                                                             p)
+                                                                                            `cast`
+                                                                                          (Sym (Cudd.Cudd.N:DDNode[0]))
+                                                                                          (GHC.Types.:
+                                                                                             @ PropBDD.Prop
+                                                                                             q
+                                                                                             (GHC.Types.[]
+                                                                                                @ PropBDD.Prop)))) -}
+567dbe9735b3075aaaf13c039739d506
+  impl1 ::
+    Cudd.Cudd.DDNode -> GHC.ForeignPtr.ForeignPtr Cudd.C.CDDNode
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.neg} True True} Cudd.Cudd.bNot1
+                                                                                      PropBDD.tt2
+                                                                                        `cast`
+                                                                                      (Sym (Cudd.Cudd.N:DDManager[0]))) -}
+23e0cd77bfc19211bbe702f6f2de9d71
+  implies :: PropBDD.Prop -> PropBDD.Prop -> GHC.Types.Bool
+  {- Arity: 2, Strictness: <L,U><L,U>,
+     Unfolding: (\ (p :: PropBDD.Prop) (q :: PropBDD.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.implies} True True} let {
+                                                                                          p1 :: PropBDD.Prop
+                                                                                          = {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.impl} True True} PropBDD.disj
+                                                                                                                                                                  (GHC.Types.:
+                                                                                                                                                                     @ PropBDD.Prop
+                                                                                                                                                                     (PropBDD.impl1
+                                                                                                                                                                        p)
+                                                                                                                                                                       `cast`
+                                                                                                                                                                     (Sym (Cudd.Cudd.N:DDNode[0]))
+                                                                                                                                                                     (GHC.Types.:
+                                                                                                                                                                        @ PropBDD.Prop
+                                                                                                                                                                        q
+                                                                                                                                                                        (GHC.Types.[]
+                                                                                                                                                                           @ PropBDD.Prop)))
+                                                                                        } in
+                                                                                        {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.tautology} True True} Cudd.Cudd.$fEqDDNode2
+                                                                                                                                                                   p1
+                                                                                                                                                                     `cast`
+                                                                                                                                                                   (Cudd.Cudd.N:DDNode[0])
+                                                                                                                                                                   PropBDD.tt
+                                                                                                                                                                     `cast`
+                                                                                                                                                                   (Cudd.Cudd.N:DDNode[0])) -}
+708e4b184e21543d50d63fa2ff78b86b
+  manager :: Cudd.Cudd.DDManager
+  {- Unfolding: InlineRule (0, True, True)
+                PropBDD.tt2 `cast` (Sym (Cudd.Cudd.N:DDManager[0])) -}
+8c3cdafe99d0a17d2397580a58621bba
+  mkUniverse :: [GHC.Base.String] -> PropBDD.Universe
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: (\ (xs :: [GHC.Base.String]) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.mkUniverse} True True} PropBDD.mkUniverse_go2
+                                                                                             xs
+                                                                                             PropBDD.mkUniverse1) -}
+c770f2ff73ba0987a72186025d5e3b67
+  mkUniverse1 :: [GHC.Types.Int]
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.mkUniverse} False True} GHC.Enum.eftInt
+                                                                                              0#
+                                                                                              9223372036854775807#) -}
+2a8b33e1e15868bc6000a640e20aa8a5
+  mkUniverse_$sgo2 ::
+    [GHC.Types.Int]
+    -> [GHC.Types.Char] -> [[GHC.Types.Char]] -> [Cudd.Cudd.DDNode]
+  {- Arity: 3, Strictness: <S,1*U><L,A><L,1*U> -}
+ba59ba850fbf2dd467601b7953ace6d4
+  mkUniverse_go2 ::
+    [[GHC.Types.Char]] -> [GHC.Types.Int] -> [Cudd.Cudd.DDNode]
+  {- Arity: 2, Strictness: <S,1*U><L,1*U> -}
+694869409f8cd198db3f842ddb9d8c0b
+  neg :: Cudd.Cudd.DDNode -> Cudd.Cudd.DDNode
+  {- Unfolding: InlineRule (0, True, True)
+                PropBDD.impl1
+                  `cast`
+                (<Cudd.Cudd.DDNode>_R ->_R Sym (Cudd.Cudd.N:DDNode[0])) -}
+0def8fed71c3245267bf5581508cff31
+  queryOrUpdate ::
+    PropBDD.Universe
+    -> GHC.Base.String -> (PropBDD.Universe, PropBDD.Prop)
+  {- Arity: 2, Strictness: <S,1*U><L,A>m,
+     Unfolding: InlineRule (2, True, False)
+                (\ (ds :: [PropBDD.Prop]) (s :: GHC.Base.String) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.queryOrUpdate} True True} case ds of wild {
+                                                                                                []
+                                                                                                -> let {
+                                                                                                     u' :: PropBDD.Universe
+                                                                                                     = {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.queryOrUpdate.u'} True True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.mkUniverse} True True} PropBDD.mkUniverse_$sgo2
+                                                                                                                                                                                                                                                                   PropBDD.mkUniverse1
+                                                                                                                                                                                                                                                                   s
+                                                                                                                                                                                                                                                                   (GHC.Types.[]
+                                                                                                                                                                                                                                                                      @ GHC.Base.String)
+                                                                                                   } in
+                                                                                                   (u',
+                                                                                                    {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.queryOrUpdate.p} True True} GHC.List.head
+                                                                                                                                                                                     @ PropBDD.Prop
+                                                                                                                                                                                     u')
+                                                                                                : ipv ipv1
+                                                                                                -> PropBDD.queryOrUpdate1 }) -}
+7f83da74f6e83c025d0eb0c80da08bbd
+  queryOrUpdate1 :: (PropBDD.Universe, PropBDD.Prop)
+  {- Strictness: x -}
+7650a737238435fb3efc82aa6f4041d8
+  sat :: PropBDD.Prop -> GHC.Types.Bool
+  {- Arity: 1, Strictness: <L,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (p :: PropBDD.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.sat} True True} Cudd.Cudd.$fEqDDNode1
+                                                                                      p `cast`
+                                                                                      (Cudd.Cudd.N:DDNode[0])
+                                                                                      PropBDD.disj1) -}
+e72a70dc72f5354978b101b3b7ad01cb
+  tautology :: PropBDD.Prop -> GHC.Types.Bool
+  {- Arity: 1, Strictness: <L,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (p :: PropBDD.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.tautology} True True} Cudd.Cudd.$fEqDDNode2
+                                                                                            p `cast`
+                                                                                            (Cudd.Cudd.N:DDNode[0])
+                                                                                            PropBDD.tt
+                                                                                              `cast`
+                                                                                            (Cudd.Cudd.N:DDNode[0])) -}
+d7dbb7fb65c834182f53a455dcb03ff1
+  tt :: Cudd.Cudd.DDNode
+  {- Inline:,
+     Unfolding: InlineRule (0, True, True)
+                PropBDD.tt1 `cast` (Sym (Cudd.Cudd.N:DDNode[0])) -}
+2a3ec4e9ddc76af9e4f985d6256fe2ae
+  tt1 :: GHC.ForeignPtr.ForeignPtr Cudd.C.CDDNode
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.tt} True True} Cudd.Cudd.readOne1
+                                                                                     PropBDD.tt2
+                                                                                       `cast`
+                                                                                     (Sym (Cudd.Cudd.N:DDManager[0]))) -}
+b6d0291a045e1d271271c93698f8d285
+  tt2 :: GHC.Ptr.Ptr Cudd.C.CDDManager
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.manager} True False} Cudd.Cudd.cuddInit1) -}
+ee71168ee681ca6a8fe82fcf8352f433
+  unsat :: PropBDD.Prop -> GHC.Types.Bool
+  {- Arity: 1, Strictness: <L,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (p :: PropBDD.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:PropBDD.unsat} True True} Cudd.Cudd.$fEqDDNode2
+                                                                                        p `cast`
+                                                                                        (Cudd.Cudd.N:DDNode[0])
+                                                                                        PropBDD.disj1) -}
+"SC:go20" forall (sc :: [GHC.Types.Int])
+                 (sc1 :: [GHC.Types.Char])
+                 (sc2 :: [[GHC.Types.Char]])
+  PropBDD.mkUniverse_go2 (GHC.Types.: @ GHC.Base.String sc1 sc2) sc
+  = PropBDD.mkUniverse_$sgo2 sc sc1 sc2
+trusted: none
+require own pkg trusted: False
+module header:
+  Nothing
+declaration docs:
+arg docs:
+

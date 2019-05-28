@@ -16,7 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Prop, PropBDD, SPL, Shallow.VList, Deep.VList
-  build-depends:       base, z3, cudd, vector, parallel, containers, hashtables, hashable, generic-deriving, language-c
+  build-depends:       base, z3, cudd, vector, parallel, containers, hashtables, hashable, generic-deriving
   ghc-options:         -O2
   default-language:    Haskell2010
 
@@ -29,13 +29,21 @@ test-suite spl-test
   ghc-options:         -O2 -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
-benchmark spl-bench 
+benchmark bench0
   type:                exitcode-stdio-1.0
-  hs-source-dirs:      bench
-  main-is:             List_bench.hs
-  build-depends:       base, criterion, random, random-source, SPL
-  ghc-options:         -O2
+  hs-source-dirs:      bench0
+  main-is:             Bench0.hs
+  build-depends:       base, SPL
+  ghc-options:         -O2 -ddump-inlinings -ddump-rule-firings 
   default-language:    Haskell2010
+
+--benchmark spl-bench 
+--  type:                exitcode-stdio-1.0
+--  hs-source-dirs:      bench
+--  main-is:             List_bench.hs
+--  build-depends:       base, criterion, random, random-source, SPL
+--  ghc-options:         -O2
+--  default-language:    Haskell2010
 
 source-repository head
   type:     git

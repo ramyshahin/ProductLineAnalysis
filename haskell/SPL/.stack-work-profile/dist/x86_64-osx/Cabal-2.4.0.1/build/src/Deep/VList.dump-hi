@@ -1,0 +1,367 @@
+
+==================== FINAL INTERFACE ====================
+2019-03-10 04:20:05.045326 UTC
+
+interface SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList [hpc] 8063
+  interface hash: 352aa3adf59e1cb0d078d32686cbfc7f
+  ABI hash: 9ebb397b97e47f19075fe070b80830ba
+  export-list hash: 3824430481092e2d8dc9382d66f7ab46
+  orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
+  flag hash: 23e25a8bbb2cfbe5dbceef467b706995
+  opt_hash: 5835274e0c52a5d281a4b935bfdb5c93
+  hpc_hash: 93b885adfe0da089cdf634904fd59f71
+  plugin_hash: ad164012d6b1e14942349d58b1132007
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  Deep.VList.mkVList
+  Deep.VList.vCons
+  Deep.VList.vNil
+  Deep.VList.vhead
+  Deep.VList.vlength
+  Deep.VList.vmap
+  Deep.VList.vtail
+  Deep.VList.VList
+module dependencies: Prop PropBDD SPL
+package dependencies: array-0.5.3.0 base-4.12.0.0 binary-0.8.6.0
+                      bytestring-0.10.8.2 containers-0.6.0.1 cudd-0.1.0.4 deepseq-1.4.4.0
+                      generic-deriving-1.12.3 ghc-prim-0.5.3 hashable-1.2.7.0
+                      hashtables-1.2.3.1 integer-gmp-1.0.2.0 parallel-3.2.2.0
+                      primitive-0.6.4.0 text-1.2.3.1 transformers-0.5.5.0 vector-0.12.0.2
+                      z3-4.3.1
+orphans: vector-0.12.0.2:Data.Vector.Unboxed
+         vector-0.12.0.2:Data.Vector.Fusion.Bundle
+         transformers-0.5.5.0:Control.Monad.Trans.Error
+         hashable-1.2.7.0:Data.Hashable.Generic text-1.2.3.1:Data.Text.Lazy
+         text-1.2.3.1:Data.Text binary-0.8.6.0:Data.Binary.Generic
+         bytestring-0.10.8.2:Data.ByteString.Builder
+         text-1.2.3.1:Data.Text.Show base-4.12.0.0:GHC.Float
+         base-4.12.0.0:GHC.Base
+family instance modules: base-4.12.0.0:Control.Applicative
+                         base-4.12.0.0:Data.Complex base-4.12.0.0:Data.Functor.Compose
+                         base-4.12.0.0:Data.Functor.Const
+                         base-4.12.0.0:Data.Functor.Identity
+                         base-4.12.0.0:Data.Functor.Product base-4.12.0.0:Data.Functor.Sum
+                         base-4.12.0.0:Data.Monoid base-4.12.0.0:Data.Semigroup
+                         base-4.12.0.0:Data.Semigroup.Internal base-4.12.0.0:Data.Version
+                         base-4.12.0.0:Data.Void base-4.12.0.0:GHC.Exts
+                         base-4.12.0.0:GHC.Generics base-4.12.0.0:GHC.IO.Exception
+                         containers-0.6.0.1:Data.IntMap.Internal
+                         containers-0.6.0.1:Data.IntSet.Internal
+                         containers-0.6.0.1:Data.Map.Internal
+                         containers-0.6.0.1:Data.Sequence.Internal
+                         containers-0.6.0.1:Data.Set.Internal containers-0.6.0.1:Data.Tree
+                         primitive-0.6.4.0:Control.Monad.Primitive
+                         primitive-0.6.4.0:Data.Primitive.Array
+                         primitive-0.6.4.0:Data.Primitive.ByteArray
+                         primitive-0.6.4.0:Data.Primitive.PrimArray
+                         primitive-0.6.4.0:Data.Primitive.SmallArray
+                         primitive-0.6.4.0:Data.Primitive.UnliftedArray
+                         text-1.2.3.1:Data.Text text-1.2.3.1:Data.Text.Lazy
+                         vector-0.12.0.2:Data.Vector vector-0.12.0.2:Data.Vector.Primitive
+                         vector-0.12.0.2:Data.Vector.Unboxed
+                         vector-0.12.0.2:Data.Vector.Unboxed.Base
+import  -/  Prop 7d0adce033cabb04ee64dcbcfd95fee3
+  exports: 5f2cb5e7da78f1b9dbc629ef4de64ee9
+import  -/  SPL 29367586413bfaa8069c603b144284ac
+  exports: 40369a917ec8447fc0e3b995fdab7421
+  Var aeeb629bf9d735af7db26c34e6ae66de
+  Var 475a314e24adb901a231766e201ad80e
+  liftV c910a1a011d076facadbf03954925c4f
+  mkVarT 475a314e24adb901a231766e201ad80e
+  restrict 850b00edb49c76f195aff76f6e177550
+  undefinedAt 50373db62dc2230495c653d4f83b65f4
+  union 0fbaa2c5bc8ee839204cf72c8bb18df3
+  union2 2f8e59b1970ed69903b4ca5a008226ed
+import  -/  base-4.12.0.0:Data.Foldable 00188ddf89c975fee76bdfad479443c1
+import  -/  base-4.12.0.0:GHC.Base cc906f98291a1b830546e99a96674547
+import  -/  base-4.12.0.0:GHC.List 734a72beb76d276fb4a0ba2689a5711f
+import  -/  base-4.12.0.0:Prelude 5c01365ec01f83bd405ac01cbb9a8d76
+import  -/  ghc-prim-0.5.3:GHC.Classes e0d9c979f6368701f34fa421754d2cce
+4ebf8515c9721cbe9ee6abcbab2a3da7
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module
+                   Deep.VList.$trModule3
+                   Deep.VList.$trModule1) -}
+2af17965282fc08c4c5c49ea932e6f01
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Deep.VList.$trModule2) -}
+5a62e02b0974ffffcaa567f9d1e8c828
+  $trModule2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Deep.VList"#) -}
+f5eeb2028d3ebfcc3f5c95d62c411783
+  $trModule3 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Deep.VList.$trModule4) -}
+12decf2e1272ac13ef21acf70ba3475c
+  $trModule4 :: GHC.Prim.Addr#
+  {- HasNoCafRefs,
+     Unfolding: ("SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL"#) -}
+e8139eba39683ecb0e671fe83fa39a93
+  type VList a = SPL.Var [SPL.Var a]
+273d0f4ac5e3f2da5fd7ad92adc1130b
+  mkVList :: [SPL.Var a] -> Deep.VList.VList a
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: (\ @ a (xs :: [SPL.Var a]) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.mkVList} True True} Deep.VList.mkVList1
+                                                                                             @ a
+                                                                                             xs) -}
+a0a86a8135a2f30de8ae2cb365c0cd09
+  mkVList1 :: [SPL.Var a] -> Deep.VList.VList a
+  {- Arity: 1, Strictness: <S,1*U> -}
+a97f4caa649c26e3b179f0840d713dd9
+  vCons :: SPL.Var a -> Deep.VList.VList a -> Deep.VList.VList a
+  {- Arity: 2, Strictness: <L,U><S,U>,
+     Unfolding: (\ @ a (x :: SPL.Var a) (xs :: Deep.VList.VList a) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vCons} True True} let {
+                                                                                           ds :: [SPL.Val
+                                                                                                    [SPL.Var
+                                                                                                       a]]
+                                                                                           = {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vCons.def} True True} letrec {
+                                                                                                                                                                           go :: [([SPL.Var
+                                                                                                                                                                                      a],
+                                                                                                                                                                                   SPL.PresenceCondition)]
+                                                                                                                                                                                 -> [SPL.Val
+                                                                                                                                                                                       [SPL.Var
+                                                                                                                                                                                          a]]
+                                                                                                                                                                             {- Arity: 1,
+                                                                                                                                                                                Strictness: <S,1*U> -}
+                                                                                                                                                                           = \ (ds1 :: [([SPL.Var
+                                                                                                                                                                                            a],
+                                                                                                                                                                                         SPL.PresenceCondition)]) ->
+                                                                                                                                                                             case ds1 of wild {
+                                                                                                                                                                               []
+                                                                                                                                                                               -> GHC.Types.[]
+                                                                                                                                                                                    @ (SPL.Val
+                                                                                                                                                                                         [SPL.Var
+                                                                                                                                                                                            a])
+                                                                                                                                                                               : y ys
+                                                                                                                                                                               -> case y of wild1 { (,) xs'' xspc ->
+                                                                                                                                                                                  {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vCons.def.r'} True False} case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vCons.def.(...)} True True} SPL.cond'2
+                                                                                                                                                                                                                                                                                                                                                           @ a
+                                                                                                                                                                                                                                                                                                                                                           xspc
+                                                                                                                                                                                                                                                                                                                                                           x of wild2 {
+                                                                                                                                                                                                                                                                    []
+                                                                                                                                                                                                                                                                    -> go
+                                                                                                                                                                                                                                                                         ys
+                                                                                                                                                                                                                                                                    : ds2 ds3
+                                                                                                                                                                                                                                                                    -> GHC.Types.:
+                                                                                                                                                                                                                                                                         @ (SPL.Val
+                                                                                                                                                                                                                                                                              [SPL.Var
+                                                                                                                                                                                                                                                                                 a])
+                                                                                                                                                                                                                                                                         (GHC.Types.:
+                                                                                                                                                                                                                                                                            @ (SPL.Var
+                                                                                                                                                                                                                                                                                 a)
+                                                                                                                                                                                                                                                                            ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vCons.def.r} True False} wild2)
+                                                                                                                                                                                                                                                                              `cast`
+                                                                                                                                                                                                                                                                            (Sym (SPL.N:Var[0]
+                                                                                                                                                                                                                                                                                      <a>_R))
+                                                                                                                                                                                                                                                                            xs'',
+                                                                                                                                                                                                                                                                          xspc)
+                                                                                                                                                                                                                                                                         (go
+                                                                                                                                                                                                                                                                            ys) } } }
+                                                                                                                                                                         } in
+                                                                                                                                                                         go
+                                                                                                                                                                           xs
+                                                                                                                                                                             `cast`
+                                                                                                                                                                           (SPL.N:Var[0]
+                                                                                                                                                                                <[SPL.Var
+                                                                                                                                                                                    a]>_R)
+                                                                                         } in
+                                                                                         let {
+                                                                                           ds1 :: [([SPL.Var
+                                                                                                       a],
+                                                                                                    PropBDD.Prop)]
+                                                                                           = {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vCons.undef} True True} SPL.cond'2
+                                                                                                                                                                             @ [SPL.Var
+                                                                                                                                                                                  a]
+                                                                                                                                                                             (SPL.undefinedAt1
+                                                                                                                                                                                @ a
+                                                                                                                                                                                x)
+                                                                                                                                                                               `cast`
+                                                                                                                                                                             (Sym (Cudd.Cudd.N:DDNode[0]))
+                                                                                                                                                                             xs
+                                                                                         } in
+                                                                                         ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:SPL.union} True True} GHC.Base.++
+                                                                                                                                                             @ ([SPL.Var
+                                                                                                                                                                   a],
+                                                                                                                                                                SPL.PresenceCondition)
+                                                                                                                                                             ds
+                                                                                                                                                             ds1)
+                                                                                           `cast`
+                                                                                         (Sym (SPL.N:Var[0]
+                                                                                                   <[SPL.Var
+                                                                                                       a]>_R))) -}
+1033caad4b4855539d80fe246cd6ceb0
+  vNil :: SPL.Var [a]
+  {- Unfolding: InlineRule (0, True, True)
+                Deep.VList.vNil1
+                  `cast`
+                (forall (a :: <*>_N). Sym (SPL.N:Var[0] <[a]>_R)) -}
+f5935694316ae8cc55056815ac16a2dc
+  vNil1 :: [SPL.Val [a]]
+  {- Unfolding: (\ @ a ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vNil} True False} GHC.Types.:
+                                                                                           @ (SPL.Val
+                                                                                                [a])
+                                                                                           (Deep.VList.vNil2
+                                                                                              @ a)
+                                                                                           (GHC.Types.[]
+                                                                                              @ (SPL.Val
+                                                                                                   [a]))) -}
+64900b215e138addcf1b97db2d5a2a0a
+  vNil2 :: ([a], SPL.PresenceCondition)
+  {- Strictness: m,
+     Unfolding: (\ @ a -> (GHC.Types.[] @ a, PropBDD.tt)) -}
+cc47c0ddfc9d88de3648409bbf0c6035
+  vhead :: Deep.VList.VList a -> SPL.Var a
+  {- Arity: 1, Strictness: <L,U>,
+     Unfolding: (\ @ a (xs :: Deep.VList.VList a) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vhead} True True} let {
+                                                                                           ds :: SPL.Var
+                                                                                                   (SPL.Var
+                                                                                                      a)
+                                                                                           = SPL.liftV
+                                                                                               @ [SPL.Var
+                                                                                                    a]
+                                                                                               @ (SPL.Var
+                                                                                                    a)
+                                                                                               (GHC.List.head
+                                                                                                  @ (SPL.Var
+                                                                                                       a))
+                                                                                               xs
+                                                                                         } in
+                                                                                         {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:SPL.union2} True True} let {
+                                                                                                                                                             xs1 :: [SPL.Var
+                                                                                                                                                                       a]
+                                                                                                                                                             = GHC.Base.map
+                                                                                                                                                                 @ (SPL.Var
+                                                                                                                                                                      a,
+                                                                                                                                                                    SPL.PresenceCondition)
+                                                                                                                                                                 @ (SPL.Var
+                                                                                                                                                                      a)
+                                                                                                                                                                 (SPL.union4
+                                                                                                                                                                    @ a)
+                                                                                                                                                                 ds
+                                                                                                                                                                   `cast`
+                                                                                                                                                                 (SPL.N:Var[0]
+                                                                                                                                                                      <SPL.Var
+                                                                                                                                                                         a>_R)
+                                                                                                                                                           } in
+                                                                                                                                                           ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:SPL.unions} True True} SPL.union3
+                                                                                                                                                                                                                                @ a
+                                                                                                                                                                                                                                xs1)
+                                                                                                                                                             `cast`
+                                                                                                                                                           (Sym (SPL.N:Var[0]
+                                                                                                                                                                     <a>_R))) -}
+aa6b81cfeaca718bccbc88c67a52474d
+  vlength :: Deep.VList.VList a -> SPL.Var GHC.Types.Int
+  {- Unfolding: (\ @ a ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vlength} True True} SPL.liftV
+                                                                                             @ [SPL.Var
+                                                                                                  a]
+                                                                                             @ GHC.Types.Int
+                                                                                             (GHC.List.length
+                                                                                                @ (SPL.Var
+                                                                                                     a))) -}
+ffb8789e5c4410b47881803b87a4b409
+  vmap ::
+    SPL.Var (a -> b) -> Deep.VList.VList a -> Deep.VList.VList b
+  {- Arity: 2, Strictness: <L,U><S,1*U>,
+     Unfolding: InlineRule (0, True, True)
+                Deep.VList.vmap1
+                  `cast`
+                (forall (a :: <*>_N) (b :: <*>_N).
+                 <SPL.Var (a -> b)>_R
+                 ->_R <Deep.VList.VList a>_R
+                 ->_R Sym (SPL.N:Var[0] <[SPL.Var b]>_R)) -}
+996a478e27d52a2dc66f78f6292e5861
+  vmap1 ::
+    SPL.Var (a -> b) -> Deep.VList.VList a -> [SPL.Val [SPL.Var b]]
+  {- Arity: 2, Strictness: <L,U><S,1*U>,
+     Unfolding: (\ @ a
+                   @ b
+                   (f :: SPL.Var (a -> b))
+                   (xs :: Deep.VList.VList a) ->
+                 let {
+                   lvl :: SPL.Var a -> SPL.Var b
+                     {- Arity: 1, Strictness: <L,U>,
+                        Unfolding: InlineRule (1, True, False)
+                                   (\ (x :: SPL.Var a) ->
+                                    {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vmap.\} True True} SPL.$fApplicativeVar_$c<*>
+                                                                                                               @ a
+                                                                                                               @ b
+                                                                                                               f
+                                                                                                               x) -}
+                   = \ (x :: SPL.Var a) ->
+                     {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vmap.\} True True} SPL.$fApplicativeVar_$c<*>
+                                                                                                @ a
+                                                                                                @ b
+                                                                                                f
+                                                                                                x
+                 } in
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vmap} True True} letrec {
+                                                                                          go :: [([SPL.Var
+                                                                                                     a],
+                                                                                                  SPL.PresenceCondition)]
+                                                                                                -> [SPL.Val
+                                                                                                      [SPL.Var
+                                                                                                         b]]
+                                                                                            {- Arity: 1,
+                                                                                               Strictness: <S,1*U> -}
+                                                                                          = \ (ds :: [([SPL.Var
+                                                                                                          a],
+                                                                                                       SPL.PresenceCondition)]) ->
+                                                                                            case ds of wild {
+                                                                                              []
+                                                                                              -> GHC.Types.[]
+                                                                                                   @ (SPL.Val
+                                                                                                        [SPL.Var
+                                                                                                           b])
+                                                                                              : y ys
+                                                                                              -> case y of wild1 { (,) xs'' pc ->
+                                                                                                 GHC.Types.:
+                                                                                                   @ (SPL.Val
+                                                                                                        [SPL.Var
+                                                                                                           b])
+                                                                                                   (GHC.Base.map
+                                                                                                      @ (SPL.Var
+                                                                                                           a)
+                                                                                                      @ (SPL.Var
+                                                                                                           b)
+                                                                                                      lvl
+                                                                                                      xs'',
+                                                                                                    pc)
+                                                                                                   (go
+                                                                                                      ys) } }
+                                                                                        } in
+                                                                                        go
+                                                                                          xs
+                                                                                            `cast`
+                                                                                          (SPL.N:Var[0]
+                                                                                               <[SPL.Var
+                                                                                                   a]>_R)) -}
+ae7a9fbbb4d640f092efe518441f4110
+  vtail :: Deep.VList.VList a -> Deep.VList.VList a
+  {- Arity: 1, Strictness: <L,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ @ a (xs :: Deep.VList.VList a) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Deep.VList.vtail} True True} SPL.liftV
+                                                                                           @ [SPL.Var
+                                                                                                a]
+                                                                                           @ [SPL.Var
+                                                                                                a]
+                                                                                           (GHC.List.tail
+                                                                                              @ (SPL.Var
+                                                                                                   a))
+                                                                                           xs) -}
+trusted: none
+require own pkg trusted: False
+module header:
+  Nothing
+declaration docs:
+arg docs:
+

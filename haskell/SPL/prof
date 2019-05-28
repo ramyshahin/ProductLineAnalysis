@@ -1,0 +1,1 @@
+stack --work-dir .stack-work-profile --benchmark-arguments="+RTS -p -RTS" --profile bench

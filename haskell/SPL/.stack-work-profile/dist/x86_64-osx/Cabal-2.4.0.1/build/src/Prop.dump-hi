@@ -1,0 +1,1163 @@
+
+==================== FINAL INTERFACE ====================
+2019-03-08 02:01:16.795862 UTC
+
+interface SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop [hpc] 8063
+  interface hash: a5ff11e61a166d8a4abe86b68d8ae529
+  ABI hash: 7d0adce033cabb04ee64dcbcfd95fee3
+  export-list hash: 5f2cb5e7da78f1b9dbc629ef4de64ee9
+  orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
+  flag hash: a95b739f7c9601cc93b9954af816d8c5
+  opt_hash: 5835274e0c52a5d281a4b935bfdb5c93
+  hpc_hash: 93b885adfe0da089cdf634904fd59f71
+  plugin_hash: ad164012d6b1e14942349d58b1132007
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  Prop.atom
+  Prop.cacheSize
+  Prop.checkSAT
+  Prop.conf
+  Prop.conj
+  Prop.ctxt
+  Prop.disj
+  Prop.ff
+  Prop.impl
+  Prop.implies
+  Prop.mkProp
+  Prop.mkUniverse
+  Prop.mkZ3Script
+  Prop.neg
+  Prop.sat
+  Prop.satCache
+  Prop.solver
+  Prop.tautology
+  Prop.tt
+  Prop.unsat
+  Prop.Prop{Prop.P}
+  Prop.SATCache
+module dependencies:
+package dependencies: array-0.5.3.0 base-4.12.0.0 binary-0.8.6.0
+                      bytestring-0.10.8.2 containers-0.6.0.1 deepseq-1.4.4.0
+                      generic-deriving-1.12.3 ghc-prim-0.5.3 hashable-1.2.7.0
+                      hashtables-1.2.3.1 integer-gmp-1.0.2.0 primitive-0.6.4.0
+                      text-1.2.3.1 transformers-0.5.5.0 vector-0.12.0.2 z3-4.3.1
+orphans: vector-0.12.0.2:Data.Vector.Unboxed
+         vector-0.12.0.2:Data.Vector.Fusion.Bundle
+         transformers-0.5.5.0:Control.Monad.Trans.Error
+         hashable-1.2.7.0:Data.Hashable.Generic text-1.2.3.1:Data.Text.Lazy
+         text-1.2.3.1:Data.Text binary-0.8.6.0:Data.Binary.Generic
+         bytestring-0.10.8.2:Data.ByteString.Builder
+         text-1.2.3.1:Data.Text.Show base-4.12.0.0:GHC.Float
+         base-4.12.0.0:GHC.Base
+family instance modules: base-4.12.0.0:Control.Applicative
+                         base-4.12.0.0:Data.Complex base-4.12.0.0:Data.Functor.Compose
+                         base-4.12.0.0:Data.Functor.Const
+                         base-4.12.0.0:Data.Functor.Identity
+                         base-4.12.0.0:Data.Functor.Product base-4.12.0.0:Data.Functor.Sum
+                         base-4.12.0.0:Data.Monoid base-4.12.0.0:Data.Semigroup
+                         base-4.12.0.0:Data.Semigroup.Internal base-4.12.0.0:Data.Version
+                         base-4.12.0.0:Data.Void base-4.12.0.0:GHC.Exts
+                         base-4.12.0.0:GHC.Generics base-4.12.0.0:GHC.IO.Exception
+                         containers-0.6.0.1:Data.IntMap.Internal
+                         containers-0.6.0.1:Data.IntSet.Internal
+                         containers-0.6.0.1:Data.Map.Internal
+                         containers-0.6.0.1:Data.Sequence.Internal
+                         containers-0.6.0.1:Data.Set.Internal containers-0.6.0.1:Data.Tree
+                         primitive-0.6.4.0:Control.Monad.Primitive
+                         primitive-0.6.4.0:Data.Primitive.Array
+                         primitive-0.6.4.0:Data.Primitive.ByteArray
+                         primitive-0.6.4.0:Data.Primitive.PrimArray
+                         primitive-0.6.4.0:Data.Primitive.SmallArray
+                         primitive-0.6.4.0:Data.Primitive.UnliftedArray
+                         text-1.2.3.1:Data.Text text-1.2.3.1:Data.Text.Lazy
+                         vector-0.12.0.2:Data.Vector vector-0.12.0.2:Data.Vector.Primitive
+                         vector-0.12.0.2:Data.Vector.Unboxed
+                         vector-0.12.0.2:Data.Vector.Unboxed.Base
+import  -/  base-4.12.0.0:Control.Monad.IO.Class e8f65a5571f64fe686cca3ac75a1aa0e
+import  -/  base-4.12.0.0:Data.Foldable 00188ddf89c975fee76bdfad479443c1
+import  -/  base-4.12.0.0:Data.List ce2c69da408fdc014383cede9e1f9adf
+import  -/  base-4.12.0.0:Data.OldList c2cab40fed7d27b5e717779f9a3c09ea
+import  -/  base-4.12.0.0:GHC.Base cc906f98291a1b830546e99a96674547
+import  -/  base-4.12.0.0:GHC.Generics 7aea30cad019e3a5fc11eb21c8019cc5
+import  -/  base-4.12.0.0:GHC.IO.Unsafe b9716290bd560f0c4b285e916a56af21
+import  -/  base-4.12.0.0:GHC.List 734a72beb76d276fb4a0ba2689a5711f
+import  -/  base-4.12.0.0:GHC.Show 4e438f26d903388cc6c2c5d64ed01b98
+import  -/  base-4.12.0.0:Prelude 5c01365ec01f83bd405ac01cbb9a8d76
+import  -/  base-4.12.0.0:System.IO.Unsafe 557ea6d3b6b3c4b4f565668cbd563e94
+import  -/  generic-deriving-1.12.3:Generics.Deriving 535b35e69f6eb302516a671ff0da7be0
+import  -/  ghc-prim-0.5.3:GHC.Classes e0d9c979f6368701f34fa421754d2cce
+import  -/  ghc-prim-0.5.3:GHC.Types 57064c9f957b09bc2e360061ad5cae0b
+import  -/  hashable-1.2.7.0:Data.Hashable 7be283f98e000ab7212bb4eebeb0c96d
+import  -/  hashable-1.2.7.0:Data.Hashable.Class 23d19f070114c631180101fd4d067ae2
+import  -/  hashtables-1.2.3.1:Data.HashTable.IO f5ee91e29446cb69b4e3bd88d7b6040c
+import  -/  z3-4.3.1:Z3.Base 223a75463cb746d58c7d4bf9017bba30
+94a3f9c62499b86e2ea4844937bc867a
+  $fEqProp :: GHC.Classes.Eq Prop.Prop
+  DFunId
+  {- HasNoCafRefs, Strictness: m, Inline: CONLIKE,
+     Unfolding: DFun:.
+                  @ Prop.Prop Prop.$fEqProp_$c== Prop.$fEqProp_$c/= -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fEqProp_$c/= :: Prop.Prop -> Prop.Prop -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs,
+     Strictness: <S(LS),1*U(A,1*U)><S(LS),1*U(A,1*U)>,
+     Inline: (sat-args=2),
+     Unfolding: InlineRule (2, False, False)
+                (\ (x :: Prop.Prop) (y :: Prop.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True False} case x of wild { Prop.P ds a1 ->
+                                                                                 case y of wild1 { Prop.P ds1 a2 ->
+                                                                                 case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} False True} GHC.Base.eqString
+                                                                                                                                                        a1
+                                                                                                                                                        a2 of wild2 {
+                                                                                   GHC.Types.False
+                                                                                   -> GHC.Types.True
+                                                                                   GHC.Types.True
+                                                                                   -> GHC.Types.False } } }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fEqProp_$c== :: Prop.Prop -> Prop.Prop -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs,
+     Strictness: <S(LS),1*U(A,1*U)><S(LS),1*U(A,1*U)>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (ds :: Prop.Prop) (ds1 :: Prop.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True True} case ds of wild { Prop.P ds2 a1 ->
+                                                                                case ds1 of wild1 { Prop.P ds3 a2 ->
+                                                                                GHC.Base.eqString
+                                                                                  a1
+                                                                                  a2 } }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fHashableProp :: Data.Hashable.Class.Hashable Prop.Prop
+  DFunId
+  {- Strictness: m, Inline: CONLIKE,
+     Unfolding: DFun:.
+                  @ Prop.Prop
+                  Prop.$fHashableProp_$chashWithSalt
+                  Prop.$fHashableProp_$chash -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fHashableProp_$chash :: Prop.Prop -> GHC.Types.Int
+  {- Unfolding: ({__scc {hashable-1.2.7.0:Data.Hashable.Class.hash} True False} \ (ds :: Prop.Prop) ->
+                                                                                {__scc {hashable-1.2.7.0:Data.Hashable.Class.hash} False True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.hashWithSalt} True True} case ds of wild { Prop.P ds1 s ->
+                                                                                                                                                                                                                        ({__scc {hashable-1.2.7.0:Data.Hashable.Class.hashWithSalt} True True} {__scc {hashable-1.2.7.0:Data.Hashable.Class.hashWithSalt1} True True} Data.Hashable.Class.$fHashable1[]_$cliftHashWithSalt
+                                                                                                                                                                                                                                                                                                                                                                        @ GHC.Types.Char
+                                                                                                                                                                                                                                                                                                                                                                        Data.Hashable.Class.$fHashableChar_$chashWithSalt)
+                                                                                                                                                                                                                          Data.Hashable.Class.defaultSalt
+                                                                                                                                                                                                                          s }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fHashableProp_$chashWithSalt ::
+    GHC.Types.Int -> Prop.Prop -> GHC.Types.Int
+  {- Arity: 2, Strictness: <S(S),1*U(U)><S(LS),1*U(A,1*U)>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (x :: GHC.Types.Int) (ds :: Prop.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.hashWithSalt} True True} case ds of wild { Prop.P ds1 s ->
+                                                                                          ({__scc {hashable-1.2.7.0:Data.Hashable.Class.hashWithSalt} True True} {__scc {hashable-1.2.7.0:Data.Hashable.Class.hashWithSalt1} True True} Data.Hashable.Class.$fHashable1[]_$cliftHashWithSalt
+                                                                                                                                                                                                                                          @ GHC.Types.Char
+                                                                                                                                                                                                                                          Data.Hashable.Class.$fHashableChar_$chashWithSalt)
+                                                                                            x
+                                                                                            s }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fOrdProp :: GHC.Classes.Ord Prop.Prop
+  DFunId
+  {- Strictness: m, Inline: CONLIKE,
+     Unfolding: DFun:.
+                  @ Prop.Prop
+                  Prop.$fEqProp
+                  Prop.$fOrdProp_$ccompare
+                  Prop.$fOrdProp_$c<
+                  Prop.$fOrdProp_$c<=
+                  Prop.$fOrdProp_$c>
+                  Prop.$fOrdProp_$c>=
+                  Prop.$fOrdProp_$cmax
+                  Prop.$fOrdProp_$cmin -}
+2bbba0d302ef87988b84f5689ef771ae
+  $fOrdProp1 :: Z3.Base.AST
+  {- Unfolding: (Control.Exception.Base.absentError
+                   @ Z3.Base.AST
+                   Prop.$fOrdProp2) -}
+aa2e4f21b2966863d499cc840f032186
+  $fOrdProp2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("ww AST"#) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fOrdProp_$c< :: Prop.Prop -> Prop.Prop -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs,
+     Strictness: <S(LS),1*U(A,1*U)><S(LS),1*U(A,1*U)>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (ds :: Prop.Prop) (ds1 :: Prop.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<} True True} case ds of wild { Prop.P ds2 a1 ->
+                                                                               case ds1 of wild1 { Prop.P ds3 a2 ->
+                                                                               GHC.Classes.$fOrd[]_$s$c<1
+                                                                                 a1
+                                                                                 a2 } }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fOrdProp_$c<= :: Prop.Prop -> Prop.Prop -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs,
+     Strictness: <S(LS),1*U(A,U)><S(LS),1*U(A,U)>, Inline: [2],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: Prop.Prop) (w1 :: Prop.Prop) ->
+                 case w of ww { Prop.P ww1 ww2 ->
+                 case w1 of ww3 { Prop.P ww4 ww5 -> Prop.$w$c<= ww2 ww5 } }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fOrdProp_$c> :: Prop.Prop -> Prop.Prop -> GHC.Types.Bool
+  {- Arity: 2, Strictness: <S(LS),1*U(A,U)><S(LS),1*U(A,U)>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (x :: Prop.Prop) (y :: Prop.Prop) ->
+                 case Prop.$fOrdProp_$ccompare x y of wild {
+                   DEFAULT -> GHC.Types.False GHC.Types.GT -> GHC.Types.True }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fOrdProp_$c>= :: Prop.Prop -> Prop.Prop -> GHC.Types.Bool
+  {- Arity: 2, Strictness: <S(LS),1*U(A,U)><S(LS),1*U(A,U)>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (x :: Prop.Prop) (y :: Prop.Prop) ->
+                 case Prop.$fOrdProp_$ccompare x y of wild {
+                   DEFAULT -> GHC.Types.True GHC.Types.LT -> GHC.Types.False }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fOrdProp_$ccompare :: Prop.Prop -> Prop.Prop -> GHC.Types.Ordering
+  {- Arity: 2, Strictness: <S(LS),1*U(A,U)><S(LS),1*U(A,U)>,
+     Inline: [2],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: Prop.Prop) (w1 :: Prop.Prop) ->
+                 case w of ww { Prop.P ww1 ww2 ->
+                 case w1 of ww3 { Prop.P ww4 ww5 -> Prop.$w$ccompare ww2 ww5 } }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fOrdProp_$cmax :: Prop.Prop -> Prop.Prop -> Prop.Prop
+  {- Arity: 2, HasNoCafRefs,
+     Strictness: <S(LS),1*U(U,U)><S(LS),1*U(U,U)>m, Inline: [2],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: Prop.Prop) (w1 :: Prop.Prop) ->
+                 case w of ww { Prop.P ww1 ww2 ->
+                 case w1 of ww3 { Prop.P ww4 ww5 ->
+                 let {
+                   x :: Prop.Prop = Prop.P ww1 ww2
+                 } in
+                 case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<=} True True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<} True False} x of wild { Prop.P ds a1 ->
+                 case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<=} False True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<} False True} GHC.Classes.$fOrd[]_$s$c<1
+                                                                                                                                                       a1
+                                                                                                                                                       ww5 of wild1 {
+                   GHC.Types.False
+                   -> case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<=} False True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True True} GHC.Base.eqString
+                                                                                                                                                            a1
+                                                                                                                                                            ww5 of wild2 {
+                        GHC.Types.False -> Prop.P ds a1 GHC.Types.True -> Prop.P ww4 ww5 }
+                   GHC.Types.True -> Prop.P ww4 ww5 } } } }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fOrdProp_$cmin :: Prop.Prop -> Prop.Prop -> Prop.Prop
+  {- Arity: 2, HasNoCafRefs,
+     Strictness: <S(LS),1*U(U,U)><S(LS),1*U(U,U)>m, Inline: [2],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: Prop.Prop) (w1 :: Prop.Prop) ->
+                 case w of ww { Prop.P ww1 ww2 ->
+                 case w1 of ww3 { Prop.P ww4 ww5 ->
+                 let {
+                   x :: Prop.Prop = Prop.P ww1 ww2
+                 } in
+                 case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<=} True True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<} True False} x of wild { Prop.P ds a1 ->
+                 case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<=} False True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<} False True} GHC.Classes.$fOrd[]_$s$c<1
+                                                                                                                                                       a1
+                                                                                                                                                       ww5 of wild1 {
+                   GHC.Types.False
+                   -> case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<=} False True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True True} GHC.Base.eqString
+                                                                                                                                                            a1
+                                                                                                                                                            ww5 of wild2 {
+                        GHC.Types.False -> Prop.P ww4 ww5 GHC.Types.True -> Prop.P ds a1 }
+                   GHC.Types.True -> Prop.P ds a1 } } } }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fShowProp :: GHC.Show.Show Prop.Prop
+  DFunId
+  {- HasNoCafRefs, Strictness: m, Inline: CONLIKE,
+     Unfolding: DFun:.
+                  @ Prop.Prop
+                  Prop.$fShowProp_$cshowsPrec
+                  Prop.$fShowProp_$cshow
+                  Prop.$fShowProp_$cshowList -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fShowProp1 :: Prop.Prop -> GHC.Base.String -> [GHC.Types.Char]
+  {- Arity: 2, HasNoCafRefs, Strictness: <S(LS),1*U(A,1*U)><L,1*U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (x :: Prop.Prop) (s :: GHC.Base.String)[OneShot] ->
+                 GHC.Base.augment
+                   @ GHC.Types.Char
+                   (\ @ b
+                      (c :: GHC.Types.Char -> b -> b)[OneShot]
+                      (n :: b)[OneShot] ->
+                    GHC.Base.foldr
+                      @ GHC.Types.Char
+                      @ b
+                      c
+                      n
+                      ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.show} True True} case x of wild { Prop.P ds s1 ->
+                                                                                        s1 }))
+                   s) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fShowProp_$cshow :: Prop.Prop -> GHC.Base.String
+  {- Arity: 1, HasNoCafRefs, Strictness: <S(LS),1*U(A,1*U)>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Prop.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.show} True True} case ds of wild { Prop.P ds1 s ->
+                                                                                  s }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fShowProp_$cshowList :: [Prop.Prop] -> GHC.Show.ShowS
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><L,U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (ls :: [Prop.Prop]) (s :: GHC.Base.String) ->
+                 GHC.Show.showList__ @ Prop.Prop Prop.$fShowProp1 ls s) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $fShowProp_$cshowsPrec ::
+    GHC.Types.Int -> Prop.Prop -> GHC.Show.ShowS
+  {- Arity: 3, HasNoCafRefs,
+     Strictness: <L,A><S(LS),1*U(A,1*U)><L,1*U>,
+     Unfolding: InlineRule (3, True, False)
+                (\ (ds :: GHC.Types.Int) (x :: Prop.Prop) (s :: GHC.Base.String) ->
+                 GHC.Base.augment
+                   @ GHC.Types.Char
+                   (\ @ b
+                      (c :: GHC.Types.Char -> b -> b)[OneShot]
+                      (n :: b)[OneShot] ->
+                    GHC.Base.foldr
+                      @ GHC.Types.Char
+                      @ b
+                      c
+                      n
+                      ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.show} True True} case x of wild { Prop.P ds1 s1 ->
+                                                                                        s1 }))
+                   s) -}
+dac130e0732866effbd9ce83908fe9cf
+  $tc'P :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   10462178795227195733##
+                   10234971476181812010##
+                   Prop.$trModule
+                   Prop.$tc'P2
+                   0#
+                   Prop.$tc'P1) -}
+f7175f228360426b48d2116ab4271237
+  $tc'P1 :: GHC.Types.KindRep
+  {- HasNoCafRefs, Strictness: m4, Inline: [~] -}
+499ad342c1dfdefc37cd4d498edb5393
+  $tc'P2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Prop.$tc'P3) -}
+6407a9dbdc2d594c53941d6378356116
+  $tc'P3 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("'P"#) -}
+603c2b6b985b48fb5288b2f1ba3659e4
+  $tcProp :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   6505823745517166047##
+                   4074744357113754691##
+                   Prop.$trModule
+                   Prop.$trModule1
+                   0#
+                   GHC.Types.krep$*) -}
+ccad7c1e7c6d3c06e5325145c9826c6b
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module Prop.$trModule3 Prop.$trModule1) -}
+a9af74e59eef780ab103fa72bf566a0a
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Prop.$trModule2) -}
+a15a47f7b87d447d03aed014faa1a211
+  $trModule2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Prop"#) -}
+c4cf3d90bcda89a41074cb605b7d5172
+  $trModule3 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Prop.$trModule4) -}
+69848714911d4133c42713374fb91b7b
+  $trModule4 :: GHC.Prim.Addr#
+  {- HasNoCafRefs,
+     Unfolding: ("SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL"#) -}
+d4d4d5ad114f87264c523b508294f0b0
+  $w$c<= :: GHC.Base.String -> GHC.Base.String -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,U><S,U>, Inline: [2],
+     Unfolding: (\ (ww :: GHC.Base.String) (ww1 :: GHC.Base.String) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<=} True True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<} True False} case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<} False True} GHC.Classes.$fOrd[]_$s$c<1
+                                                                                                                                                                                                                     ww
+                                                                                                                                                                                                                     ww1 of wild {
+                                                                                                                                                 GHC.Types.False
+                                                                                                                                                 -> {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True True} GHC.Base.eqString
+                                                                                                                                                                                                                     ww
+                                                                                                                                                                                                                     ww1
+                                                                                                                                                 GHC.Types.True
+                                                                                                                                                 -> GHC.Types.True }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  $w$ccompare ::
+    GHC.Base.String -> GHC.Base.String -> GHC.Types.Ordering
+  {- Arity: 2, Strictness: <S,U><S,U>, Inline: [2],
+     Unfolding: (\ (ww :: GHC.Base.String) (ww1 :: GHC.Base.String) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True False} case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} False True} GHC.Base.eqString
+                                                                                                                                                        ww
+                                                                                                                                                        ww1 of wild {
+                                                                                   GHC.Types.False
+                                                                                   -> let {
+                                                                                        wild1 :: Prop.Prop
+                                                                                        = Prop.P
+                                                                                            Prop.$fOrdProp1
+                                                                                            ww
+                                                                                      } in
+                                                                                      case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<=} True True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<} True False} wild1 of wild2 { Prop.P ds a1 ->
+                                                                                      case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<=} False True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<} False True} GHC.Classes.$fOrd[]_$s$c<1
+                                                                                                                                                                                                                            a1
+                                                                                                                                                                                                                            ww1 of wild3 {
+                                                                                        GHC.Types.False
+                                                                                        -> case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.<=} False True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True True} GHC.Base.eqString
+                                                                                                                                                                                                                                 a1
+                                                                                                                                                                                                                                 ww1 of wild4 {
+                                                                                             GHC.Types.False
+                                                                                             -> GHC.Types.GT
+                                                                                             GHC.Types.True
+                                                                                             -> GHC.Types.LT }
+                                                                                        GHC.Types.True
+                                                                                        -> GHC.Types.LT } }
+                                                                                   GHC.Types.True
+                                                                                   -> GHC.Types.EQ }) -}
+3389e46fba3ac0248abf0c57896b9057
+  $watom :: GHC.Base.String -> (# Z3.Base.AST, GHC.Base.String #)
+  {- Arity: 1, Strictness: <L,U>, Inline: [2],
+     Unfolding: (\ (w :: GHC.Base.String) ->
+                 case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.atom} True True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.mkProp} True False} Prop.P
+                                                                                                                                                             (case GHC.Magic.runRW#
+                                                                                                                                                                     @ ('GHC.Types.TupleRep
+                                                                                                                                                                          '[ 'GHC.Types.TupleRep
+                                                                                                                                                                               '[],
+                                                                                                                                                                             'GHC.Types.LiftedRep])
+                                                                                                                                                                     @ (# GHC.Prim.State#
+                                                                                                                                                                            GHC.Prim.RealWorld,
+                                                                                                                                                                          Z3.Base.AST #)
+                                                                                                                                                                     (\ (s :: GHC.Prim.State#
+                                                                                                                                                                                GHC.Prim.RealWorld)[OneShot] ->
+                                                                                                                                                                      case GHC.Prim.noDuplicate#
+                                                                                                                                                                             @ GHC.Prim.RealWorld
+                                                                                                                                                                             s of s' { DEFAULT ->
+                                                                                                                                                                      {__scc {z3-4.3.1:Z3.Base.mkFreshBoolVar} True False} {__scc {z3-4.3.1:Z3.Base.mkFreshBoolVar} False True} case Z3.Base.mkBoolSort1
+                                                                                                                                                                                                                                                                                       Prop.ctxt
+                                                                                                                                                                                                                                                                                       s' of ds1 { (#,#) ipv ipv1 ->
+                                                                                                                                                                                                                                                                                (Z3.Base.mkFreshVar
+                                                                                                                                                                                                                                                                                   Prop.ctxt
+                                                                                                                                                                                                                                                                                   w
+                                                                                                                                                                                                                                                                                   ipv1)
+                                                                                                                                                                                                                                                                                  `cast`
+                                                                                                                                                                                                                                                                                (GHC.Types.N:IO[0]
+                                                                                                                                                                                                                                                                                     <Z3.Base.AST>_R)
+                                                                                                                                                                                                                                                                                  ipv } }) of ds { (#,#) ipv ipv1 ->
+                                                                                                                                                              ipv1 })
+                                                                                                                                                             w of ww { Prop.P ww1 ww2 ->
+                 (# ww1, ww2 #) }) -}
+5f3ca61140f5dea5f0af5bd08b07ec92
+  $wcheckSAT :: Z3.Base.AST -> GHC.Base.String -> Z3.Base.Result
+  {- Arity: 2, Strictness: <L,U><L,U>, Inline: [2] -}
+277f6b4ff20e50cdcec188ec8174dd75
+  $wimpl ::
+    Z3.Base.AST
+    -> GHC.Base.String -> Z3.Base.AST -> GHC.Base.String -> Prop.Prop
+  {- Arity: 4, Strictness: <L,U><S,U><L,U><L,U>, Inline: [2],
+     Unfolding: (\ (ww :: Z3.Base.AST)
+                   (ww1 :: GHC.Base.String)
+                   (ww2 :: Z3.Base.AST)
+                   (ww3 :: GHC.Base.String) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.impl} True True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True False} case Prop.ff of wild { Prop.P ds a2 ->
+                                                                                                                                                  case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} False True} GHC.Base.eqString
+                                                                                                                                                                                                                         ww1
+                                                                                                                                                                                                                         a2 of wild1 {
+                                                                                                                                                    GHC.Types.False
+                                                                                                                                                    -> {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True False} case Prop.tt of wild2 { Prop.P ds1 a1 ->
+                                                                                                                                                                                                                       case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} False True} GHC.Base.eqString
+                                                                                                                                                                                                                                                                                              ww1
+                                                                                                                                                                                                                                                                                              a1 of wild3 {
+                                                                                                                                                                                                                         GHC.Types.False
+                                                                                                                                                                                                                         -> {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True False} case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} False True} GHC.Base.eqString
+                                                                                                                                                                                                                                                                                                                                                                   ww3
+                                                                                                                                                                                                                                                                                                                                                                   a1 of wild4 {
+                                                                                                                                                                                                                                                                                              GHC.Types.False
+                                                                                                                                                                                                                                                                                              -> {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.mkProp} True False} Prop.P
+                                                                                                                                                                                                                                                                                                                                                                       (case GHC.Magic.runRW#
+                                                                                                                                                                                                                                                                                                                                                                               @ ('GHC.Types.TupleRep
+                                                                                                                                                                                                                                                                                                                                                                                    '[ 'GHC.Types.TupleRep
+                                                                                                                                                                                                                                                                                                                                                                                         '[],
+                                                                                                                                                                                                                                                                                                                                                                                       'GHC.Types.LiftedRep])
+                                                                                                                                                                                                                                                                                                                                                                               @ (# GHC.Prim.State#
+                                                                                                                                                                                                                                                                                                                                                                                      GHC.Prim.RealWorld,
+                                                                                                                                                                                                                                                                                                                                                                                    Z3.Base.AST #)
+                                                                                                                                                                                                                                                                                                                                                                               (\ (s :: GHC.Prim.State#
+                                                                                                                                                                                                                                                                                                                                                                                          GHC.Prim.RealWorld)[OneShot] ->
+                                                                                                                                                                                                                                                                                                                                                                                case GHC.Prim.noDuplicate#
+                                                                                                                                                                                                                                                                                                                                                                                       @ GHC.Prim.RealWorld
+                                                                                                                                                                                                                                                                                                                                                                                       s of s' { DEFAULT ->
+                                                                                                                                                                                                                                                                                                                                                                                (Z3.Base.mkImplies
+                                                                                                                                                                                                                                                                                                                                                                                   Prop.ctxt
+                                                                                                                                                                                                                                                                                                                                                                                   ww
+                                                                                                                                                                                                                                                                                                                                                                                   ww2)
+                                                                                                                                                                                                                                                                                                                                                                                  `cast`
+                                                                                                                                                                                                                                                                                                                                                                                (GHC.Types.N:IO[0]
+                                                                                                                                                                                                                                                                                                                                                                                     <Z3.Base.AST>_R)
+                                                                                                                                                                                                                                                                                                                                                                                  s' }) of ds2 { (#,#) ipv ipv1 ->
+                                                                                                                                                                                                                                                                                                                                                                        ipv1 })
+                                                                                                                                                                                                                                                                                                                                                                       (GHC.Base.++
+                                                                                                                                                                                                                                                                                                                                                                          @ GHC.Types.Char
+                                                                                                                                                                                                                                                                                                                                                                          ww1
+                                                                                                                                                                                                                                                                                                                                                                          (GHC.CString.unpackAppendCString#
+                                                                                                                                                                                                                                                                                                                                                                             Prop.impl1
+                                                                                                                                                                                                                                                                                                                                                                             ww3))
+                                                                                                                                                                                                                                                                                              GHC.Types.True
+                                                                                                                                                                                                                                                                                              -> wild2 }
+                                                                                                                                                                                                                         GHC.Types.True
+                                                                                                                                                                                                                         -> Prop.P
+                                                                                                                                                                                                                              ww2
+                                                                                                                                                                                                                              ww3 } }
+                                                                                                                                                    GHC.Types.True
+                                                                                                                                                    -> Prop.tt } }) -}
+7b72a834fb24c27faf1b0a23be32293b
+  $wimplies ::
+    Z3.Base.AST
+    -> GHC.Base.String
+    -> Z3.Base.AST
+    -> GHC.Base.String
+    -> GHC.Types.Bool
+  {- Arity: 4, Strictness: <L,U><S,U><L,U><L,U>, Inline: [2],
+     Unfolding: (\ (ww :: Z3.Base.AST)
+                   (ww1 :: GHC.Base.String)
+                   (ww2 :: Z3.Base.AST)
+                   (ww3 :: GHC.Base.String) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.implies} True True} case Prop.$wimpl
+                                                                                            ww
+                                                                                            ww1
+                                                                                            ww2
+                                                                                            ww3 of ww4 { Prop.P ww5 ww6 ->
+                                                                                     {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.tautology} True True} case Prop.$wneg
+                                                                                                                                                                  ww5
+                                                                                                                                                                  ww6 of ww7 { (#,#) ww8 ww9 ->
+                                                                                                                                                           {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.unsat} True True} let {
+                                                                                                                                                                                                                               ds :: Z3.Base.Result
+                                                                                                                                                                                                                               = Prop.$wcheckSAT
+                                                                                                                                                                                                                                   ww8
+                                                                                                                                                                                                                                   ww9
+                                                                                                                                                                                                                             } in
+                                                                                                                                                                                                                             {__scc {z3-4.3.1:Z3.Base.==} True True} case ds of wild {
+                                                                                                                                                                                                                                                                       DEFAULT
+                                                                                                                                                                                                                                                                       -> GHC.Types.False
+                                                                                                                                                                                                                                                                       Z3.Base.Unsat
+                                                                                                                                                                                                                                                                       -> GHC.Types.True } } }) -}
+a4be7a633b617512a022d4e7f76c5cf1
+  $wneg ::
+    Z3.Base.AST
+    -> GHC.Base.String -> (# Z3.Base.AST, GHC.Base.String #)
+  {- Arity: 2, Strictness: <L,U><L,1*U>, Inline: [2],
+     Unfolding: (\ (ww :: Z3.Base.AST) (ww1 :: GHC.Base.String) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.neg} True False} case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.neg} False True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.mkProp} True False} Prop.P
+                                                                                                                                                                                                                              (case GHC.Magic.runRW#
+                                                                                                                                                                                                                                      @ ('GHC.Types.TupleRep
+                                                                                                                                                                                                                                           '[ 'GHC.Types.TupleRep
+                                                                                                                                                                                                                                                '[],
+                                                                                                                                                                                                                                              'GHC.Types.LiftedRep])
+                                                                                                                                                                                                                                      @ (# GHC.Prim.State#
+                                                                                                                                                                                                                                             GHC.Prim.RealWorld,
+                                                                                                                                                                                                                                           Z3.Base.AST #)
+                                                                                                                                                                                                                                      (\ (s :: GHC.Prim.State#
+                                                                                                                                                                                                                                                 GHC.Prim.RealWorld)[OneShot] ->
+                                                                                                                                                                                                                                       case GHC.Prim.noDuplicate#
+                                                                                                                                                                                                                                              @ GHC.Prim.RealWorld
+                                                                                                                                                                                                                                              s of s' { DEFAULT ->
+                                                                                                                                                                                                                                       (Z3.Base.mkNot
+                                                                                                                                                                                                                                          Prop.ctxt
+                                                                                                                                                                                                                                          ww)
+                                                                                                                                                                                                                                         `cast`
+                                                                                                                                                                                                                                       (GHC.Types.N:IO[0]
+                                                                                                                                                                                                                                            <Z3.Base.AST>_R)
+                                                                                                                                                                                                                                         s' }) of ds { (#,#) ipv ipv1 ->
+                                                                                                                                                                                                                               ipv1 })
+                                                                                                                                                                                                                              (GHC.CString.unpackAppendCString#
+                                                                                                                                                                                                                                 Prop.implies3
+                                                                                                                                                                                                                                 (GHC.Base.++
+                                                                                                                                                                                                                                    @ GHC.Types.Char
+                                                                                                                                                                                                                                    ww1
+                                                                                                                                                                                                                                    Prop.implies1)) of ww2 { Prop.P ww3 ww4 ->
+                                                                                  (# ww3,
+                                                                                     ww4 #) }) -}
+94a3f9c62499b86e2ea4844937bc867a
+  data Prop = P Z3.Base.AST GHC.Base.String
+d3b6c7161a5957913d60d32a02795636
+  type SATCache =
+    Data.HashTable.IO.BasicHashTable Prop.Prop Z3.Base.Result
+da442094687fcd55316484e8f8993fc5
+  atom :: GHC.Base.String -> Prop.Prop
+  {- Arity: 1, Strictness: <L,U>m, Inline: [2],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: GHC.Base.String) ->
+                 case Prop.$watom w of ww { (#,#) ww1 ww2 -> Prop.P ww1 ww2 }) -}
+7f9cc56207854d8a2473cc063ea4acd0
+  cacheSize :: GHC.Types.Int
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.cacheSize} True False} GHC.Types.I#
+                                                                                          1000#) -}
+eacdd162e8a105565b3526c0ef8f92c1
+  checkSAT :: Prop.Prop -> Z3.Base.Result
+  {- Arity: 1, Strictness: <S,1*U(U,U)>, Inline: [2],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: Prop.Prop) ->
+                 case w of ww { Prop.P ww1 ww2 -> Prop.$wcheckSAT ww1 ww2 }) -}
+9575257b786349aea1f46215153f9a8d
+  conf :: Z3.Base.Config
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.conf} True True} GHC.IO.Unsafe.unsafePerformIO
+                                                                                    @ Z3.Base.Config
+                                                                                    Z3.Base.mkConfig1
+                                                                                      `cast`
+                                                                                    (Sym (GHC.Types.N:IO[0]
+                                                                                              <Z3.Base.Config>_R))) -}
+72bd90667b0de99e989cee0fd661553f
+  conj :: [Prop.Prop] -> Prop.Prop
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: (\ (ps'' :: [Prop.Prop]) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.conj} True True} case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.conj.ps} True True} GHC.List.filter
+                                                                                                                                                             @ Prop.Prop
+                                                                                                                                                             Prop.conj4
+                                                                                                                                                             (Data.OldList.nubBy
+                                                                                                                                                                @ Prop.Prop
+                                                                                                                                                                Prop.$fEqProp_$c==
+                                                                                                                                                                ps'') of wild {
+                                                                                    [] -> Prop.tt
+                                                                                    : ds1 ds2
+                                                                                    -> case GHC.List.$wlenAcc
+                                                                                              @ Prop.Prop
+                                                                                              wild
+                                                                                              0# of ww2 {
+                                                                                         DEFAULT
+                                                                                         -> {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True False} case Prop.ff of wild1 { Prop.P ds a1 ->
+                                                                                                                                                            case ds1 of wild2 { Prop.P ds4 a2 ->
+                                                                                                                                                            case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} False True} GHC.Base.eqString
+                                                                                                                                                                                                                                   a1
+                                                                                                                                                                                                                                   a2 of wild3 {
+                                                                                                                                                              GHC.Types.False
+                                                                                                                                                              -> letrec {
+                                                                                                                                                                   go :: [Prop.Prop]
+                                                                                                                                                                         -> Data.Semigroup.Internal.Any
+                                                                                                                                                                     {- Arity: 1,
+                                                                                                                                                                        Strictness: <S,1*U> -}
+                                                                                                                                                                   = \ (ds5 :: [Prop.Prop]) ->
+                                                                                                                                                                     case ds5 of wild4 {
+                                                                                                                                                                       []
+                                                                                                                                                                       -> GHC.Types.False
+                                                                                                                                                                            `cast`
+                                                                                                                                                                          (Sym (Data.Semigroup.Internal.N:Any[0]))
+                                                                                                                                                                       : y ys
+                                                                                                                                                                       -> {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True False} case y of wild5 { Prop.P ds6 a4 ->
+                                                                                                                                                                                                                                          case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} False True} GHC.Base.eqString
+                                                                                                                                                                                                                                                                                                                 a1
+                                                                                                                                                                                                                                                                                                                 a4 of wild6 {
+                                                                                                                                                                                                                                            GHC.Types.False
+                                                                                                                                                                                                                                            -> go
+                                                                                                                                                                                                                                                 ys
+                                                                                                                                                                                                                                            GHC.Types.True
+                                                                                                                                                                                                                                            -> GHC.Types.True
+                                                                                                                                                                                                                                                 `cast`
+                                                                                                                                                                                                                                               (Sym (Data.Semigroup.Internal.N:Any[0])) } } }
+                                                                                                                                                                 } in
+                                                                                                                                                                 case (go
+                                                                                                                                                                         ds2)
+                                                                                                                                                                        `cast`
+                                                                                                                                                                      (Data.Semigroup.Internal.N:Any[0]) of wild4 {
+                                                                                                                                                                   GHC.Types.False
+                                                                                                                                                                   -> let {
+                                                                                                                                                                        sorted_ps :: [Prop.Prop]
+                                                                                                                                                                        = {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.conj.sorted_ps} True True} Data.OldList.sortBy
+                                                                                                                                                                                                                                                       @ Prop.Prop
+                                                                                                                                                                                                                                                       Prop.$fOrdProp_$ccompare
+                                                                                                                                                                                                                                                       wild
+                                                                                                                                                                      } in
+                                                                                                                                                                      {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.mkProp} True False} Prop.P
+                                                                                                                                                                                                                                            (case GHC.Magic.runRW#
+                                                                                                                                                                                                                                                    @ ('GHC.Types.TupleRep
+                                                                                                                                                                                                                                                         '[ 'GHC.Types.TupleRep
+                                                                                                                                                                                                                                                              '[],
+                                                                                                                                                                                                                                                            'GHC.Types.LiftedRep])
+                                                                                                                                                                                                                                                    @ (# GHC.Prim.State#
+                                                                                                                                                                                                                                                           GHC.Prim.RealWorld,
+                                                                                                                                                                                                                                                         Z3.Base.AST #)
+                                                                                                                                                                                                                                                    (\ (s :: GHC.Prim.State#
+                                                                                                                                                                                                                                                               GHC.Prim.RealWorld)[OneShot] ->
+                                                                                                                                                                                                                                                     case GHC.Prim.noDuplicate#
+                                                                                                                                                                                                                                                            @ GHC.Prim.RealWorld
+                                                                                                                                                                                                                                                            s of s' { DEFAULT ->
+                                                                                                                                                                                                                                                     (Z3.Base.mkAnd
+                                                                                                                                                                                                                                                        Prop.ctxt
+                                                                                                                                                                                                                                                        ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.conj.ps'} True True} GHC.Base.map
+                                                                                                                                                                                                                                                                                                                                @ Prop.Prop
+                                                                                                                                                                                                                                                                                                                                @ Z3.Base.AST
+                                                                                                                                                                                                                                                                                                                                Prop.conj3
+                                                                                                                                                                                                                                                                                                                                sorted_ps))
+                                                                                                                                                                                                                                                       `cast`
+                                                                                                                                                                                                                                                     (GHC.Types.N:IO[0]
+                                                                                                                                                                                                                                                          <Z3.Base.AST>_R)
+                                                                                                                                                                                                                                                       s' }) of ds5 { (#,#) ipv ipv1 ->
+                                                                                                                                                                                                                                             ipv1 })
+                                                                                                                                                                                                                                            ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.conj.str} True True} GHC.CString.unpackAppendCString#
+                                                                                                                                                                                                                                                                                                                    Prop.conj2
+                                                                                                                                                                                                                                                                                                                    (case sorted_ps of wild5 {
+                                                                                                                                                                                                                                                                                                                       []
+                                                                                                                                                                                                                                                                                                                       -> Prop.conj1
+                                                                                                                                                                                                                                                                                                                       : x xs
+                                                                                                                                                                                                                                                                                                                       -> GHC.Types.:
+                                                                                                                                                                                                                                                                                                                            @ GHC.Types.Char
+                                                                                                                                                                                                                                                                                                                            GHC.Show.showList__3
+                                                                                                                                                                                                                                                                                                                            (GHC.Base.++
+                                                                                                                                                                                                                                                                                                                               @ GHC.Types.Char
+                                                                                                                                                                                                                                                                                                                               ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.show} True True} case x of wild6 { Prop.P ds5 s ->
+                                                                                                                                                                                                                                                                                                                                                                                                 s })
+                                                                                                                                                                                                                                                                                                                               (Prop.conj_showl
+                                                                                                                                                                                                                                                                                                                                  xs)) }))
+                                                                                                                                                                   GHC.Types.True
+                                                                                                                                                                   -> wild1 }
+                                                                                                                                                              GHC.Types.True
+                                                                                                                                                              -> wild1 } } }
+                                                                                         1#
+                                                                                         -> ds1 } }) -}
+77dc021b22eb4941a2f8bc9b548a967b
+  conj1 :: [GHC.Types.Char]
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.conj} False True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.conj.str} False True} GHC.CString.unpackAppendCString#
+                                                                                                                                                           GHC.Show.showList__4
+                                                                                                                                                           (GHC.Types.[]
+                                                                                                                                                              @ GHC.Types.Char)) -}
+d7d5e504a784b9b639edd51848526259
+  conj2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("And"#) -}
+9d0d61d29d3cc929a9094bef3e1e7dae
+  conj3 :: Prop.Prop -> Z3.Base.AST
+  {- Arity: 1, HasNoCafRefs, Strictness: <S(SL),1*U(1*U(U,U),A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Prop.Prop) ->
+                 case ds of wild { Prop.P x ds1 ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.conj.ps'.\} True False} x }) -}
+9d4fa77503e4b78f174c43fe0d252d28
+  conj4 :: Prop.Prop -> GHC.Types.Bool
+  {- Arity: 1, Unfolding: (Prop.$fEqProp_$c/= Prop.tt) -}
+200b84a2e363e21ed6c5dcad10819ba4
+  conj_showl :: [Prop.Prop] -> GHC.Base.String
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>m2 -}
+5e689f13d5fd8b9bd357c34b3fdc0721
+  ctxt :: Z3.Base.Context
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.ctxt} True True} case GHC.Magic.runRW#
+                                                                                         @ ('GHC.Types.TupleRep
+                                                                                              '[ 'GHC.Types.TupleRep
+                                                                                                   '[],
+                                                                                                 'GHC.Types.LiftedRep])
+                                                                                         @ (# GHC.Prim.State#
+                                                                                                GHC.Prim.RealWorld,
+                                                                                              Z3.Base.Context #)
+                                                                                         Prop.ctxt1 of ds { (#,#) ipv ipv1 ->
+                                                                                  ipv1 }) -}
+e0863f1c5acb71098503d0e19fc0ffdc
+  ctxt1 ::
+    GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, Z3.Base.Context #)
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (s :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case GHC.Prim.noDuplicate#
+                        @ GHC.Prim.RealWorld
+                        s of s' { DEFAULT ->
+                 Z3.Base.mkContext1 Prop.conf s' }) -}
+6528b42c2118ce2bf9dd52a90db6b7d3
+  disj :: [Prop.Prop] -> Prop.Prop
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: (\ (ps'' :: [Prop.Prop]) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.disj} True True} case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.disj.ps} True True} GHC.List.filter
+                                                                                                                                                             @ Prop.Prop
+                                                                                                                                                             Prop.disj4
+                                                                                                                                                             (Data.OldList.nubBy
+                                                                                                                                                                @ Prop.Prop
+                                                                                                                                                                Prop.$fEqProp_$c==
+                                                                                                                                                                ps'') of wild {
+                                                                                    [] -> Prop.ff
+                                                                                    : ds1 ds2
+                                                                                    -> case GHC.List.$wlenAcc
+                                                                                              @ Prop.Prop
+                                                                                              wild
+                                                                                              0# of ww2 {
+                                                                                         DEFAULT
+                                                                                         -> {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True False} case Prop.tt of wild1 { Prop.P ds a1 ->
+                                                                                                                                                            case ds1 of wild2 { Prop.P ds4 a2 ->
+                                                                                                                                                            case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} False True} GHC.Base.eqString
+                                                                                                                                                                                                                                   a1
+                                                                                                                                                                                                                                   a2 of wild3 {
+                                                                                                                                                              GHC.Types.False
+                                                                                                                                                              -> letrec {
+                                                                                                                                                                   go :: [Prop.Prop]
+                                                                                                                                                                         -> Data.Semigroup.Internal.Any
+                                                                                                                                                                     {- Arity: 1,
+                                                                                                                                                                        Strictness: <S,1*U> -}
+                                                                                                                                                                   = \ (ds5 :: [Prop.Prop]) ->
+                                                                                                                                                                     case ds5 of wild4 {
+                                                                                                                                                                       []
+                                                                                                                                                                       -> GHC.Types.False
+                                                                                                                                                                            `cast`
+                                                                                                                                                                          (Sym (Data.Semigroup.Internal.N:Any[0]))
+                                                                                                                                                                       : y ys
+                                                                                                                                                                       -> {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} True False} case y of wild5 { Prop.P ds6 a4 ->
+                                                                                                                                                                                                                                          case {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.==} False True} GHC.Base.eqString
+                                                                                                                                                                                                                                                                                                                 a1
+                                                                                                                                                                                                                                                                                                                 a4 of wild6 {
+                                                                                                                                                                                                                                            GHC.Types.False
+                                                                                                                                                                                                                                            -> go
+                                                                                                                                                                                                                                                 ys
+                                                                                                                                                                                                                                            GHC.Types.True
+                                                                                                                                                                                                                                            -> GHC.Types.True
+                                                                                                                                                                                                                                                 `cast`
+                                                                                                                                                                                                                                               (Sym (Data.Semigroup.Internal.N:Any[0])) } } }
+                                                                                                                                                                 } in
+                                                                                                                                                                 case (go
+                                                                                                                                                                         ds2)
+                                                                                                                                                                        `cast`
+                                                                                                                                                                      (Data.Semigroup.Internal.N:Any[0]) of wild4 {
+                                                                                                                                                                   GHC.Types.False
+                                                                                                                                                                   -> let {
+                                                                                                                                                                        sorted_ps :: [Prop.Prop]
+                                                                                                                                                                        = {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.disj.sorted_ps} True True} Data.OldList.sortBy
+                                                                                                                                                                                                                                                       @ Prop.Prop
+                                                                                                                                                                                                                                                       Prop.$fOrdProp_$ccompare
+                                                                                                                                                                                                                                                       wild
+                                                                                                                                                                      } in
+                                                                                                                                                                      {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.mkProp} True False} Prop.P
+                                                                                                                                                                                                                                            (case GHC.Magic.runRW#
+                                                                                                                                                                                                                                                    @ ('GHC.Types.TupleRep
+                                                                                                                                                                                                                                                         '[ 'GHC.Types.TupleRep
+                                                                                                                                                                                                                                                              '[],
+                                                                                                                                                                                                                                                            'GHC.Types.LiftedRep])
+                                                                                                                                                                                                                                                    @ (# GHC.Prim.State#
+                                                                                                                                                                                                                                                           GHC.Prim.RealWorld,
+                                                                                                                                                                                                                                                         Z3.Base.AST #)
+                                                                                                                                                                                                                                                    (\ (s :: GHC.Prim.State#
+                                                                                                                                                                                                                                                               GHC.Prim.RealWorld)[OneShot] ->
+                                                                                                                                                                                                                                                     case GHC.Prim.noDuplicate#
+                                                                                                                                                                                                                                                            @ GHC.Prim.RealWorld
+                                                                                                                                                                                                                                                            s of s' { DEFAULT ->
+                                                                                                                                                                                                                                                     (Z3.Base.mkOr
+                                                                                                                                                                                                                                                        Prop.ctxt
+                                                                                                                                                                                                                                                        ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.disj.ps'} True True} GHC.Base.map
+                                                                                                                                                                                                                                                                                                                                @ Prop.Prop
+                                                                                                                                                                                                                                                                                                                                @ Z3.Base.AST
+                                                                                                                                                                                                                                                                                                                                Prop.disj3
+                                                                                                                                                                                                                                                                                                                                sorted_ps))
+                                                                                                                                                                                                                                                       `cast`
+                                                                                                                                                                                                                                                     (GHC.Types.N:IO[0]
+                                                                                                                                                                                                                                                          <Z3.Base.AST>_R)
+                                                                                                                                                                                                                                                       s' }) of ds5 { (#,#) ipv ipv1 ->
+                                                                                                                                                                                                                                             ipv1 })
+                                                                                                                                                                                                                                            ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.disj.str} True True} GHC.CString.unpackAppendCString#
+                                                                                                                                                                                                                                                                                                                    Prop.disj2
+                                                                                                                                                                                                                                                                                                                    (case sorted_ps of wild5 {
+                                                                                                                                                                                                                                                                                                                       []
+                                                                                                                                                                                                                                                                                                                       -> Prop.disj1
+                                                                                                                                                                                                                                                                                                                       : x xs
+                                                                                                                                                                                                                                                                                                                       -> GHC.Types.:
+                                                                                                                                                                                                                                                                                                                            @ GHC.Types.Char
+                                                                                                                                                                                                                                                                                                                            GHC.Show.showList__3
+                                                                                                                                                                                                                                                                                                                            (GHC.Base.++
+                                                                                                                                                                                                                                                                                                                               @ GHC.Types.Char
+                                                                                                                                                                                                                                                                                                                               ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.show} True True} case x of wild6 { Prop.P ds5 s ->
+                                                                                                                                                                                                                                                                                                                                                                                                 s })
+                                                                                                                                                                                                                                                                                                                               (Prop.conj_showl
+                                                                                                                                                                                                                                                                                                                                  xs)) }))
+                                                                                                                                                                   GHC.Types.True
+                                                                                                                                                                   -> wild1 }
+                                                                                                                                                              GHC.Types.True
+                                                                                                                                                              -> wild1 } } }
+                                                                                         1#
+                                                                                         -> ds1 } }) -}
+1805df81496738acdf46d4793203f968
+  disj1 :: [GHC.Types.Char]
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.disj} False True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.disj.str} False True} GHC.CString.unpackAppendCString#
+                                                                                                                                                           GHC.Show.showList__4
+                                                                                                                                                           (GHC.Types.[]
+                                                                                                                                                              @ GHC.Types.Char)) -}
+63751197142703153eefb5f5ff62d7ad
+  disj2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Or"#) -}
+14f7015dac9a99c763be54006120412b
+  disj3 :: Prop.Prop -> Z3.Base.AST
+  {- Arity: 1, HasNoCafRefs, Strictness: <S(SL),1*U(1*U(U,U),A)>m,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: Prop.Prop) ->
+                 case ds of wild { Prop.P x ds1 ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.disj.ps'.\} True False} x }) -}
+7b3d97dad089e563777da04d11443bb7
+  disj4 :: Prop.Prop -> GHC.Types.Bool
+  {- Arity: 1, Unfolding: (Prop.$fEqProp_$c/= Prop.ff) -}
+d3cdbb1c0b309e8c1cc9f0cb4477b17c
+  ff :: Prop.Prop
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.ff} True True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.mkProp} True False} Prop.P
+                                                                                                                                                      Prop.ff3
+                                                                                                                                                      Prop.ff1) -}
+7425618c3a8cc2e6840ff58132c7bbf6
+  ff1 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# Prop.ff2) -}
+6db631883a7255e7aa514e63e3765c5a
+  ff2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("False"#) -}
+9bb2d64b548f72378ff09a888d1429a6
+  ff3 :: Z3.Base.AST
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.ff} False True} case GHC.Magic.runRW#
+                                                                                        @ ('GHC.Types.TupleRep
+                                                                                             '[ 'GHC.Types.TupleRep
+                                                                                                  '[],
+                                                                                                'GHC.Types.LiftedRep])
+                                                                                        @ (# GHC.Prim.State#
+                                                                                               GHC.Prim.RealWorld,
+                                                                                             Z3.Base.AST #)
+                                                                                        Prop.ff4 of ds { (#,#) ipv ipv1 ->
+                                                                                 ipv1 }) -}
+72266edd546863b6d8c21ef84ab6d7e3
+  ff4 ::
+    GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, Z3.Base.AST #)
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (s :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case GHC.Prim.noDuplicate#
+                        @ GHC.Prim.RealWorld
+                        s of s' { DEFAULT ->
+                 Z3.Base.mkBool1 Prop.ctxt s' }) -}
+77ae789206df48f093c4970ffab69fa5
+  impl :: Prop.Prop -> Prop.Prop -> Prop.Prop
+  {- Arity: 2, Strictness: <S(LS),1*U(U,U)><S,1*U(U,U)>, Inline: [2],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: Prop.Prop) (w1 :: Prop.Prop) ->
+                 case w of ww { Prop.P ww1 ww2 ->
+                 case w1 of ww3 { Prop.P ww4 ww5 ->
+                 Prop.$wimpl ww1 ww2 ww4 ww5 } }) -}
+355c1b4065f52d1452eb4f1af13eb657
+  impl1 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: (" => "#) -}
+de7747709d869288a066b9ffcbcac1c0
+  implies :: Prop.Prop -> Prop.Prop -> GHC.Types.Bool
+  {- Arity: 2, Strictness: <S(LS),1*U(U,U)><S,1*U(U,U)>, Inline: [2],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: Prop.Prop) (w1 :: Prop.Prop) ->
+                 case w of ww { Prop.P ww1 ww2 ->
+                 case w1 of ww3 { Prop.P ww4 ww5 ->
+                 Prop.$wimplies ww1 ww2 ww4 ww5 } }) -}
+f2a1782038544eedcc721556fbb4101a
+  implies1 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# Prop.implies2) -}
+6ca82a65204929bac82639f8b48a3b4e
+  implies2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: (")"#) -}
+02860207a3b10cf4caf35b7c941bb76f
+  implies3 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Not("#) -}
+c911a2c676d481e0e4e99d13d3d08a83
+  mkProp :: Z3.Base.AST -> GHC.Base.String -> Prop.Prop
+  {- Arity: 2, HasNoCafRefs, Strictness: <L,U><L,U>m,
+     Unfolding: InlineRule (2, True, True)
+                (\ (a :: Z3.Base.AST) (s :: GHC.Base.String) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.mkProp} True False} Prop.P
+                                                                                       a
+                                                                                       s) -}
+76deeb644d64a05b828bf686ef57a953
+  mkUniverse :: [GHC.Base.String] -> [Prop.Prop]
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (as :: [GHC.Base.String]) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.mkUniverse} True True} GHC.Base.build
+                                                                                          @ Prop.Prop
+                                                                                          (\ @ b1
+                                                                                             (c :: Prop.Prop
+                                                                                                   -> b1
+                                                                                                   -> b1)[OneShot]
+                                                                                             (n :: b1)[OneShot] ->
+                                                                                           GHC.Base.foldr
+                                                                                             @ [GHC.Types.Char]
+                                                                                             @ b1
+                                                                                             (GHC.Base.mapFB
+                                                                                                @ Prop.Prop
+                                                                                                @ b1
+                                                                                                @ [GHC.Types.Char]
+                                                                                                c
+                                                                                                Prop.atom)
+                                                                                             n
+                                                                                             as)) -}
+8ab196242665b87e6f664e5325ba4b28
+  mkZ3Script :: Z3.Base.AST -> GHC.Types.IO ()
+  {- Arity: 1, Strictness: <L,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (a :: Z3.Base.AST) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.mkZ3Script} True True} Z3.Base.solverAssertCnstr
+                                                                                          Prop.ctxt
+                                                                                          Prop.solver
+                                                                                          a) -}
+efa1c72cda76c1ef876a6a38c066aa89
+  neg :: Prop.Prop -> Prop.Prop
+  {- Arity: 1, Strictness: <S,1*U(U,1*U)>m, Inline: [2],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: Prop.Prop) ->
+                 case w of ww { Prop.P ww1 ww2 ->
+                 case Prop.$wneg ww1 ww2 of ww3 { (#,#) ww4 ww5 ->
+                 Prop.P ww4 ww5 } }) -}
+4871bf24d18c54353fa1efb01aa67778
+  sat :: Prop.Prop -> GHC.Types.Bool
+  {- Arity: 1, Strictness: <S,1*U(U,U)>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (p :: Prop.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.sat} True True} let {
+                                                                                   ds :: Z3.Base.Result
+                                                                                   = Prop.checkSAT p
+                                                                                 } in
+                                                                                 {__scc {z3-4.3.1:Z3.Base.==} True True} case ds of wild {
+                                                                                                                           Z3.Base.Sat
+                                                                                                                           -> GHC.Types.True
+                                                                                                                           Z3.Base.Unsat
+                                                                                                                           -> GHC.Types.False
+                                                                                                                           Z3.Base.Undef
+                                                                                                                           -> GHC.Types.False }) -}
+8a6d6deb3ca0417c8244c2c5d64867b4
+  satCache :: Prop.SATCache
+  {- Unfolding: InlineRule (0, True, True)
+                Prop.satCache1
+                  `cast`
+                (Data.HashTable.ST.Basic.HashTable
+                   (Sym (Control.Monad.Primitive.D:R:PrimStateIO[0]))
+                   <Prop.Prop>_R
+                   <Z3.Base.Result>_R)_R -}
+b1e3fb7d3c3997b1052807e22e7fab84
+  satCache1 ::
+    Data.HashTable.ST.Basic.HashTable
+      GHC.Prim.RealWorld Prop.Prop Z3.Base.Result
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.satCache} True True} case GHC.Magic.runRW#
+                                                                                             @ ('GHC.Types.TupleRep
+                                                                                                  '[ 'GHC.Types.TupleRep
+                                                                                                       '[],
+                                                                                                     'GHC.Types.LiftedRep])
+                                                                                             @ (# GHC.Prim.State#
+                                                                                                    GHC.Prim.RealWorld,
+                                                                                                  Data.HashTable.ST.Basic.HashTable
+                                                                                                    GHC.Prim.RealWorld
+                                                                                                    Prop.Prop
+                                                                                                    Z3.Base.Result #)
+                                                                                             Prop.satCache2 of ds { (#,#) ipv ipv1 ->
+                                                                                      ipv1 }) -}
+6842e83b1fa841bd289f235246cb87d9
+  satCache2 ::
+    GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld,
+          Data.HashTable.ST.Basic.HashTable
+            GHC.Prim.RealWorld Prop.Prop Z3.Base.Result #)
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (s :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case GHC.Prim.noDuplicate#
+                        @ GHC.Prim.RealWorld
+                        s of s' { DEFAULT ->
+                 (Data.HashTable.ST.Basic.$fHashTableHashTable_$cnewSized
+                    @ GHC.Prim.RealWorld
+                    @ Prop.Prop
+                    @ Z3.Base.Result
+                    Prop.cacheSize)
+                   `cast`
+                 (GHC.ST.N:ST[0]
+                      <GHC.Prim.RealWorld>_N
+                      <Data.HashTable.ST.Basic.HashTable
+                         GHC.Prim.RealWorld Prop.Prop Z3.Base.Result>_R)
+                   s' }) -}
+afcdf90d0d5e952ee52f0c4f4c8893af
+  solver :: Z3.Base.Solver
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.solver} True True} case GHC.Magic.runRW#
+                                                                                           @ ('GHC.Types.TupleRep
+                                                                                                '[ 'GHC.Types.TupleRep
+                                                                                                     '[],
+                                                                                                   'GHC.Types.LiftedRep])
+                                                                                           @ (# GHC.Prim.State#
+                                                                                                  GHC.Prim.RealWorld,
+                                                                                                Z3.Base.Solver #)
+                                                                                           Prop.solver1 of ds { (#,#) ipv ipv1 ->
+                                                                                    ipv1 }) -}
+134bb7a42d3b99ef1a0c9f3bad508192
+  solver1 ::
+    GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, Z3.Base.Solver #)
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (s :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case GHC.Prim.noDuplicate#
+                        @ GHC.Prim.RealWorld
+                        s of s' { DEFAULT ->
+                 Z3.Base.mkSimpleSolver1 Prop.ctxt s' }) -}
+b28f9bc78267b4623d71cf4c66ca9104
+  tautology :: Prop.Prop -> GHC.Types.Bool
+  {- Arity: 1, Strictness: <S,1*U(U,1*U)>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (p :: Prop.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.tautology} True True} let {
+                                                                                         p1 :: Prop.Prop
+                                                                                         = Prop.neg
+                                                                                             p
+                                                                                       } in
+                                                                                       {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.unsat} True True} let {
+                                                                                                                                                           ds :: Z3.Base.Result
+                                                                                                                                                           = Prop.checkSAT
+                                                                                                                                                               p1
+                                                                                                                                                         } in
+                                                                                                                                                         {__scc {z3-4.3.1:Z3.Base.==} True True} case ds of wild {
+                                                                                                                                                                                                   DEFAULT
+                                                                                                                                                                                                   -> GHC.Types.False
+                                                                                                                                                                                                   Z3.Base.Unsat
+                                                                                                                                                                                                   -> GHC.Types.True }) -}
+c7f43b73d1ef747ed9a47f8df6883092
+  tt :: Prop.Prop
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.tt} True True} {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.mkProp} True False} Prop.P
+                                                                                                                                                      Prop.tt3
+                                                                                                                                                      Prop.tt1) -}
+8260ffec7ef16ec208ab97e2bebc8737
+  tt1 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# Prop.tt2) -}
+c4714b918d333f7a24a4aa5843c75664
+  tt2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("True"#) -}
+59d40d6344eae40497784deedd5d009d
+  tt3 :: Z3.Base.AST
+  {- Unfolding: ({__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.tt} False True} case GHC.Magic.runRW#
+                                                                                        @ ('GHC.Types.TupleRep
+                                                                                             '[ 'GHC.Types.TupleRep
+                                                                                                  '[],
+                                                                                                'GHC.Types.LiftedRep])
+                                                                                        @ (# GHC.Prim.State#
+                                                                                               GHC.Prim.RealWorld,
+                                                                                             Z3.Base.AST #)
+                                                                                        Prop.tt4 of ds { (#,#) ipv ipv1 ->
+                                                                                 ipv1 }) -}
+abe4b63c2718fa2993f6451071ee403b
+  tt4 ::
+    GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, Z3.Base.AST #)
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (s :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case GHC.Prim.noDuplicate#
+                        @ GHC.Prim.RealWorld
+                        s of s' { DEFAULT ->
+                 Z3.Base.mkAnd1 Prop.ctxt s' }) -}
+681aa3ea395bc5be6b20071333bfb433
+  unsat :: Prop.Prop -> GHC.Types.Bool
+  {- Arity: 1, Strictness: <S,1*U(U,U)>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (p :: Prop.Prop) ->
+                 {__scc {SPL-0.1.0.0-7EAm8K7cadUG9BMDvVycjL:Prop.unsat} True True} let {
+                                                                                     ds :: Z3.Base.Result
+                                                                                     = Prop.checkSAT
+                                                                                         p
+                                                                                   } in
+                                                                                   {__scc {z3-4.3.1:Z3.Base.==} True True} case ds of wild {
+                                                                                                                             DEFAULT
+                                                                                                                             -> GHC.Types.False
+                                                                                                                             Z3.Base.Unsat
+                                                                                                                             -> GHC.Types.True }) -}
+instance GHC.Classes.Eq [Prop.Prop] = Prop.$fEqProp
+instance Data.Hashable.Class.Hashable [Prop.Prop]
+  = Prop.$fHashableProp
+instance GHC.Classes.Ord [Prop.Prop] = Prop.$fOrdProp
+instance GHC.Show.Show [Prop.Prop] = Prop.$fShowProp
+trusted: none
+require own pkg trusted: False
+module header:
+  Nothing
+declaration docs:
+arg docs:
+

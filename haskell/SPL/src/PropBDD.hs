@@ -24,6 +24,7 @@ queryOrUpdate [] s = (u', p)
 --    else ((s',p'):u'', p'')
 --         where (u'',p'') = queryOrUpdate u' s
          
+{-# NOINLINE tt #-}
 tt = readOne manager
 ff = readLogicZero manager
 
