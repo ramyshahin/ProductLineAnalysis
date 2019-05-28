@@ -24,6 +24,12 @@ dependencies:
 
 library:
   source-dirs: src
+  dependencies:
+    - haskell-tools-refactor
+    - haskell-tools-prettyprint
+    - haskell-tools-rewrite
+    - references
+    - ghc
 
 executables:
   rewriter-exe:
