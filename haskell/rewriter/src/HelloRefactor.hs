@@ -8,11 +8,13 @@ import Debug.Trace (trace)
 import SrcLoc (RealSrcSpan)
 
 tryItOut :: String -> String -> IO ()
-tryItOut = tryRefactor (localRefactoring . helloRefactor)
+tryItOut = tryRefactor (localRefactoring . dollarApp)
 
-helloRefactor :: RealSrcSpan -> LocalRefactoring
-helloRefactor sp = return . (nodesContained sp .- helloExpr)
+dollarApp :: RealSrcSpan -> LocalRefactoring
+dollarApp sp = return . (nodesContained sp .- replaceExpr)
 
-helloExpr :: Expr -> Expr
-helloExpr e = trace ("\n### Hello: " ++ prettyPrint e) $ e
+replaceExpr :: Expr -> Expr
+replaceExpr (App fun (Paren arg)) = mkInfixApp fun (mkUnqualOp "$") arg
+replaceExpr e = e 
+
 
