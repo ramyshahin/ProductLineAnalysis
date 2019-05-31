@@ -11,7 +11,7 @@ run :: String -> String -> IO ()
 run = tryRefactor (localRefactoring . rewrite)
     
 rewrite :: RealSrcSpan -> LocalRefactoring
-rewrite sp = return . (nodesContained sp .- liftExpr) -- & annList .- liftDeclaration)
+rewrite sp = return . (nodesContained sp .- lift) -- & annList .- liftDeclaration)
 
 --liftDeclaration :: Decl -> Decl
 --liftDeclaration d = d
@@ -22,14 +22,20 @@ rewrite sp = return . (nodesContained sp .- liftExpr) -- & annList .- liftDeclar
 --liftOp :: Operator -> Expr
 --liftOp op = mkApp (mkUnqualOp' (mkName "mkVarT")) op
 
-appOp = (mkUnqualOp "<*>")
+appOp =  mkUnqualOp "<*>"
 
-liftExpr :: Expr -> Expr
+mkVarT = mkVar (mkName "mkVarT")
+apply  = mkVar (mkName "apply")
+apply2 = mkVar (mkName "apply2")
+
+liftOp (NormalOp o) = mkApp apply2 (mkParen (mkApp mkVarT (mkVar (mkParenName o))))
+
+lift :: Expr -> Expr
 --liftExpr (ModuleHead name pragmas exports) = mkModuleHead (name ++ "\'") pragmas exports
 
-liftExpr (App fun arg) = mkInfixApp fun appOp arg
---liftExpr (InfixApp arg1 op arg2) = 
---    return $ mkInfixApp (mkInfixApp (liftOp op) (mkUnqualOp "<*>") arg1) 
---                        (mkUnqualOp "<*>") arg2
+lift (App fun arg) = mkInfixApp fun appOp arg
 
-liftExpr e = e 
+lift (InfixApp arg1 op arg2) = 
+    mkApp (mkApp (liftOp op) arg1) arg2
+
+lift e = e 
