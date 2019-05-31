@@ -38,4 +38,6 @@ lift (App fun arg) = mkInfixApp fun appOp arg
 lift (InfixApp arg1 op arg2) = 
     mkApp (mkApp (liftOp op) arg1) arg2
 
+lift (Lit l) = mkParen $ mkApp mkVarT (mkLit l)
+
 lift e = e 
