@@ -1,5 +1,7 @@
 module Rewriter where
 
+-- AST types: https://github.com/haskell-tools/haskell-tools/tree/master/src/ast/Language/Haskell/Tools/AST/Representation
+-- AST functional constructors: 
 import Language.Haskell.Tools.PrettyPrint (prettyPrint)
 import Language.Haskell.Tools.Refactor
     
@@ -11,10 +13,17 @@ run :: String -> String -> IO ()
 run = tryRefactor (localRefactoring . rewrite)
     
 rewrite :: RealSrcSpan -> LocalRefactoring
-rewrite sp = return . (nodesContained sp .- lift) -- & annList .- liftDeclaration)
+rewrite sp = return . (nodesContained sp .- liftDecl)
+                       -- .- lift) -- & annList .- liftDeclaration)
 
---liftDeclaration :: Decl -> Decl
---liftDeclaration d = d
+--tyVar = mkNamedWildcardType $ mkName "Var"
+tyVar = mkVarType $ mkName "Var"
+
+liftType t = mkTypeApp tyVar t
+
+liftDecl :: Type -> Type
+liftDecl t@(FunctionType _ _) = t
+liftDecl t = liftType t
 
 --liftBind :: ValueBind -> ValueBind
 --liftBind (SimpleBind pat rhs locals) = mkSimpleBind pat rhs (locals ^. annMaybe)
