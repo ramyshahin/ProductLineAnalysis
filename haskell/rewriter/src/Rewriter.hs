@@ -1,29 +1,38 @@
 module Rewriter where
 
 -- AST types: https://github.com/haskell-tools/haskell-tools/tree/master/src/ast/Language/Haskell/Tools/AST/Representation
--- AST functional constructors: 
+
 import Language.Haskell.Tools.PrettyPrint (prettyPrint)
 import Language.Haskell.Tools.Refactor
     
-import Control.Reference ((^.), (!~), (.-), (&))
-import PrelNames (dollarName)
+import Control.Reference ((.-), (.=))
 import SrcLoc (RealSrcSpan)
 
 run :: String -> String -> IO ()
 run = tryRefactor (localRefactoring . rewrite)
     
 rewrite :: RealSrcSpan -> LocalRefactoring
-rewrite sp = return . (nodesContained sp .- liftDecl)
-                       -- .- lift) -- & annList .- liftDeclaration)
+rewrite sp = return . (nodesContained sp .- liftDecl) . 
+                      (nodesContained sp .- lift) .
+                      (nodesContained sp .- updateImports) .
+                      (nodesContained sp .- updateModName)
 
---tyVar = mkNamedWildcardType $ mkName "Var"
+updateModName :: ModuleHead -> ModuleHead
+updateModName (ModuleHead (ModuleName n) _ _) = 
+    mkModuleHead (mkModuleName (n ++ "Deep")) Nothing Nothing
+
+moduleNameSPL = mkModuleName "SPL"
+
+importSPL = mkImportDecl False False False Nothing moduleNameSPL Nothing Nothing
+
+imports xs = map snd (zipWithSeparators xs)
+
+updateImports :: ImportDeclList -> ImportDeclList
+updateImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs
+
 tyVar = mkVarType $ mkName "Var"
 
 liftType t = mkTypeApp tyVar t
-
-liftDecl :: Type -> Type
-liftDecl t@(FunctionType _ _) = t
-liftDecl t = liftType t
 
 --liftBind :: ValueBind -> ValueBind
 --liftBind (SimpleBind pat rhs locals) = mkSimpleBind pat rhs (locals ^. annMaybe)
@@ -39,8 +48,11 @@ apply2 = mkVar (mkName "apply2")
 
 liftOp (NormalOp o) = mkApp apply2 (mkParen (mkApp mkVarT (mkVar (mkParenName o))))
 
-lift :: Expr -> Expr
 --liftExpr (ModuleHead name pragmas exports) = mkModuleHead (name ++ "\'") pragmas exports
+
+liftDecl t@(TypeApp t1 t2) = mkTypeApp (liftType t1) t2 
+liftDecl t@(VarType _) = liftType t
+liftDecl d = d
 
 lift (App fun arg) = mkInfixApp fun appOp arg
 

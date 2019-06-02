@@ -1,4 +1,6 @@
 module Test where
+import Data.List
+import Data.Map
 
 x :: Int
 x = 3
@@ -22,3 +24,6 @@ f = baz
 g = baz
 
 x' = f (f (g 2))
+
+xs :: [Int]
+xs = [3]
