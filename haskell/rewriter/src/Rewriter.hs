@@ -43,8 +43,8 @@ liftType t = mkTypeApp tyVar t
 appOp =  mkUnqualOp "<*>"
 
 mkVarT = mkVar (mkName "mkVarT")
-apply  = mkVar (mkName "apply")
-apply2 = mkVar (mkName "apply2")
+apply  = mkVar (mkName "liftA")
+apply2 = mkVar (mkName "liftA2")
 
 liftOp (NormalOp o) = mkApp apply2 (mkParen (mkApp mkVarT (mkVar (mkParenName o))))
 

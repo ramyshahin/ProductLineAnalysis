@@ -1,0 +1,5 @@
+#!/bin/sh
+rm TestDeep.hs
+stack run "Test" >> TestDeep.hs
+stack ghc TestDeep.hs
+

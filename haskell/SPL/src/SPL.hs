@@ -10,7 +10,11 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE BangPatterns #-}
 
-module SPL where
+module SPL(
+    module Control.Applicative,
+    Var,
+    mkVarT
+) where
 
 import PropBDD
 --import Prop
