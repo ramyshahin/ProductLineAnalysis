@@ -13,18 +13,18 @@ z :: Var Int
 z = (mkVarT 9)
 
 foo :: Var Int -> Var Int -> Var Int -> Var Int
-foo x y z = liftA2 (mkVarT (+)) (bar <*> x <*> y) (baz <*> z)
+foo x y z = (mkVarT (+)) <*> (bar x y) <*> (baz z)
 
 bar :: Var Int -> Var Int -> Var Int
-bar x y = liftA2 (mkVarT (+)) x y
+bar x y = (mkVarT (+)) <*> x <*> y
 
 baz :: Var Int -> Var Int
-baz x = abs <*> (x)
+baz x = (mkVarT (\x -> -x)) <*> (x)
 
 f = baz
 g = baz
 
-x' = f <*> (f <*> (g <*> (mkVarT 2)))
+x' = f (f (g (mkVarT 2)))
 
 xs :: [Var Int]
 xs = [(mkVarT 3)]

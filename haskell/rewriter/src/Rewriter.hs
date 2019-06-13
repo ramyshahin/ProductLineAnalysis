@@ -46,7 +46,8 @@ mkVarT = mkVar (mkName "mkVarT")
 apply  = mkVar (mkName "liftA")
 apply2 = mkVar (mkName "liftA2")
 
-liftOp (NormalOp o) = mkApp apply2 (mkParen (mkApp mkVarT (mkVar (mkParenName o))))
+liftOp (NormalOp o) = mkParen (mkApp mkVarT (mkVar (mkParenName o)))
+liftExpr e = mkParen (mkApp mkVarT e)
 
 --liftExpr (ModuleHead name pragmas exports) = mkModuleHead (name ++ "\'") pragmas exports
 
@@ -54,10 +55,17 @@ liftDecl t@(TypeApp t1 t2) = mkTypeApp (liftType t1) t2
 liftDecl t@(VarType _) = liftType t
 liftDecl d = d
 
-lift (App fun arg) = mkInfixApp fun appOp arg
+externalFun fun = False
+
+lift a@(App fun arg) = if (externalFun fun)
+                       then mkInfixApp (liftExpr fun) appOp arg
+                       else a
 
 lift (InfixApp arg1 op arg2) = 
-    mkApp (mkApp (liftOp op) arg1) arg2
+    mkInfixApp (mkInfixApp (liftOp op) appOp arg1) appOp arg2
+
+lift (PrefixApp op arg) =
+        mkInfixApp (liftExpr (mkParen (mkLambda [(mkVarPat (mkName "x"))] (mkPrefixApp op (mkVar (mkName "x")))))) appOp arg
 
 lift (Lit l) = mkParen $ mkApp mkVarT (mkLit l)
 

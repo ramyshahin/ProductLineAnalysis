@@ -1,5 +1,8 @@
-#!/bin/sh
-rm TestDeep.hs
-stack run "Test" >> TestDeep.hs
-stack ghc TestDeep.hs
+#!/bin/bash
+MODULE=$1
+echo Lifting ${MODULE}.hs
+
+rm ${MODULE}deep.hs
+stack run "${MODULE}" >> ${MODULE}Deep.hs
+stack ghc ${MODULE}Deep.hs
 
