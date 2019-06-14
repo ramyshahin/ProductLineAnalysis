@@ -20,6 +20,9 @@
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 resolver: lts-13.23
 
+extra-include-dirs: [/usr/local/include]
+extra-lib-dirs: [/usr/local/lib]
+
 # User packages to be built.
 # Various formats can be used as shown in the example below.
 #

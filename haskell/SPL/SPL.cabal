@@ -15,9 +15,9 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Prop, PropBDD, SPL
+  exposed-modules:     PropBDD, SPL
  --, Shallow.VList, Deep.VList
-  build-depends:       base, z3, cudd, vector, parallel, containers, hashtables, hashable, generic-deriving
+  build-depends:       base, cudd, vector, parallel, containers, hashtables, hashable, generic-deriving
   ghc-options:         -O2
   default-language:    Haskell2010
 
