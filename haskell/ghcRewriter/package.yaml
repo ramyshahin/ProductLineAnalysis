@@ -24,8 +24,11 @@ dependencies:
 
 library:
   source-dirs: src
-  dependencies: ghc
-
+  dependencies: 
+  - ghc 
+  - ghc-boot
+  - ghc-paths
+  - lifted-base
 #executables:
 #  ghcRewriter-exe:
 #    main:                GhcRewriter

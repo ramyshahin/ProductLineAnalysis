@@ -1,1 +1,4 @@
-stack ghc -- $1 -fplugin=GhcRewriter
+rm $1Deep.*
+cp $1.hs $1.hs
+stack ghc -- $1.hs -fplugin=GhcRewriter
+#stack ghc Main $1.o

@@ -26,3 +26,7 @@ x' = f (f (g 2))
 
 xs :: [Int]
 xs = [3]
+
+type List a = [a]
+y'' :: List Int
+y'' = [5]

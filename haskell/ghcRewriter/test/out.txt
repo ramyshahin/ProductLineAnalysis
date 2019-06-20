@@ -1,0 +1,18 @@
+[1 of 1] Compiling Test             ( Test.hs, Test.o )
+Hello!
+/Users/ramy/.stack/programs/x86_64-osx/ghc-8.6.5/lib/ghc-8.6.5/package.conf.d
+/Users/ramy/.stack/snapshots/x86_64-osx/lts-13.25/8.6.5/pkgdb
+/Users/ramy/projects/ProductLineAnalysis/haskell/ghcRewriter/.stack-work/install/x86_64-osx/lts-13.25/8.6.5/pkgdb
+Nothing
+Non-recursive binding name x
+Non-recursive binding name y
+Non-recursive binding name z
+Non-recursive binding name xs
+Non-recursive binding name dummy
+Non-recursive binding name $trModule
+Non-recursive binding name baz
+Non-recursive binding name f
+Non-recursive binding name g
+Non-recursive binding name x'
+Non-recursive binding name bar
+Non-recursive binding name foo

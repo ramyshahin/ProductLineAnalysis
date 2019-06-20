@@ -13,7 +13,8 @@
 module SPL(
     module Control.Applicative,
     Var,
-    mkVarT
+    mkVarT,
+    mkVars
 ) where
 
 import PropBDD
