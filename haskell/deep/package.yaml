@@ -34,7 +34,7 @@ library:
 
 executables:
   deep-rewriter-exe:
-    main:                Main.hs
+    main:                DeepRewriter.hs
     source-dirs:         app
     ghc-options:
     - -threaded

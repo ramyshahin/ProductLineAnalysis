@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dc2ca3644e82fbc1e36d39f86621ec88dec032459ebe7dd95c4ea17318fb2678
+-- hash: 754739b2d7f7c4b5708d97f43207e3a3c997a67f9e0b6ae62b8bb70ae3411663
 
 name:           shallow
 version:        0.1.0.0
@@ -27,7 +27,6 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
       Shallow
   other-modules:
       Paths_shallow
@@ -45,7 +44,7 @@ library
   default-language: Haskell2010
 
 executable shallow-rewriter-exe
-  main-is: Main.hs
+  main-is: ShallowRewriter.hs
   other-modules:
       Paths_shallow
   hs-source-dirs:

@@ -34,7 +34,7 @@ library:
 
 executables:
   shallow-rewriter-exe:
-    main:                Main.hs
+    main:                ShallowRewriter.hs
     source-dirs:         app
     ghc-options:
     - -threaded

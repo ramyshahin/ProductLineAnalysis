@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Shallow
 import System.Environment
 
 main :: IO ()
