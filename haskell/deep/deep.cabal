@@ -1,0 +1,78 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 2c4fd8b4cbc4b4a2f164a92b3064b4f5c157b4b3d47ac670524a8eeb6893d624
+
+name:           deep
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/rewriter#readme>
+homepage:       https://github.com/githubuser/deep#readme
+bug-reports:    https://github.com/githubuser/deep/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2019 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/deep
+
+library
+  exposed-modules:
+      Deep
+      Lib
+  other-modules:
+      Paths_deep
+  hs-source-dirs:
+      src
+  build-depends:
+      SPL
+    , base >=4.7 && <5
+    , ghc
+    , haskell-tools-ast
+    , haskell-tools-prettyprint
+    , haskell-tools-refactor
+    , haskell-tools-rewrite
+    , references
+  default-language: Haskell2010
+
+executable deep-rewriter-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_deep
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      SPL
+    , base >=4.7 && <5
+    , deep
+  default-language: Haskell2010
+
+test-suite rewriter-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      C
+      List
+      ListDeep
+      Main
+      Test
+      TestDeep
+      Paths_deep
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      SPL
+    , base >=4.7 && <5
+    , deep
+  default-language: Haskell2010

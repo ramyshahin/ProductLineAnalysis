@@ -1,4 +1,4 @@
-name:                rewriter
+name:                shallow
 version:             0.1.0.0
 github:              "githubuser/rewriter"
 license:             BSD3
@@ -33,7 +33,7 @@ library:
     - ghc
 
 executables:
-  rewriter-exe:
+  shallow-rewriter-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -41,7 +41,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - rewriter
+    - shallow
 
 tests:
   rewriter-test:
@@ -52,4 +52,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - rewriter
+    - shallow

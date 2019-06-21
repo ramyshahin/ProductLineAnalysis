@@ -1,6 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
-
-module Rewriter where
+module Shallow where
 
 -- AST types: https://github.com/haskell-tools/haskell-tools/tree/master/src/ast/Language/Haskell/Tools/AST/Representation
 

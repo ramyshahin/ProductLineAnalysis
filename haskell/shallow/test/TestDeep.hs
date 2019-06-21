@@ -33,12 +33,17 @@ xs = [(mkVarT 3)]
 -- testing conditionals
 c a b = (liftedCond ((mkVarT (>)) <*> a <*> b) (bar a b) ((mkVarT (-)) <*> b <*> a))
 
--- testing Algebraic types
-data ListInt =
-    Nil
-  | Cons (Var Int) (Var ListInt)
+-- testing ADTs
+data MaybeInt =
+   None
+ | Some (Var Int)
+ 
+-- testing recursive Algebraic types
+--data ListInt =
+--    Nil
+--  | Cons Int ListInt
 
-head :: (Var ListInt) -> (Var Int)
-head xs = (liftedCase (\case 
-                            Nil -> (mkVarT 0)
-                            Cons x xs -> x) xs)
+--head :: ListInt -> Int
+--head xs = case xs of
+--     Nil -> 0
+--     Cons x xs -> x

@@ -1,0 +1,78 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: dc2ca3644e82fbc1e36d39f86621ec88dec032459ebe7dd95c4ea17318fb2678
+
+name:           shallow
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/rewriter#readme>
+homepage:       https://github.com/githubuser/rewriter#readme
+bug-reports:    https://github.com/githubuser/rewriter/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2019 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/rewriter
+
+library
+  exposed-modules:
+      Lib
+      Shallow
+  other-modules:
+      Paths_shallow
+  hs-source-dirs:
+      src
+  build-depends:
+      SPL
+    , base >=4.7 && <5
+    , ghc
+    , haskell-tools-ast
+    , haskell-tools-prettyprint
+    , haskell-tools-refactor
+    , haskell-tools-rewrite
+    , references
+  default-language: Haskell2010
+
+executable shallow-rewriter-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_shallow
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      SPL
+    , base >=4.7 && <5
+    , shallow
+  default-language: Haskell2010
+
+test-suite rewriter-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      C
+      List
+      ListDeep
+      Main
+      Test
+      TestDeep
+      Paths_shallow
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      SPL
+    , base >=4.7 && <5
+    , shallow
+  default-language: Haskell2010
