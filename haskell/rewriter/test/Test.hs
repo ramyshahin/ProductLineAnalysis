@@ -1,6 +1,7 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Test where
 import Data.List
-import Data.Map
 
 x :: Int
 x = 3
@@ -27,3 +28,21 @@ x' = f (f (g 2))
 
 xs :: [Int]
 xs = [3]
+
+-- testing conditionals
+c a b = if (a > b) then bar a b else b - a
+
+-- testing ADTs
+data MaybeInt =
+   None
+ | Some Int
+ 
+-- testing recursive Algebraic types
+--data ListInt =
+--    Nil
+--  | Cons Int ListInt
+
+--head :: ListInt -> Int
+--head xs = case xs of
+--     Nil -> 0
+--     Cons x xs -> x

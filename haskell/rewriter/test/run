@@ -4,5 +4,5 @@ echo Lifting ${MODULE}.hs
 
 rm ${MODULE}deep.hs
 stack run "${MODULE}" >> ${MODULE}Deep.hs
-stack ghc ${MODULE}Deep.hs
+stack ghc ${MODULE}Deep.hs Main.hs
 

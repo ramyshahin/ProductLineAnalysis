@@ -14,7 +14,10 @@ module SPL(
     module Control.Applicative,
     Var,
     mkVarT,
-    mkVars
+    mkVars,
+    liftedCond,
+    liftedNeg,
+    liftedCase
 ) where
 
 import PropBDD
@@ -202,14 +205,20 @@ apply (Var fn) x = --compact $
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
-cond' :: Show a => Var Bool -> Var a -> Var a -> Var a
+liftedCond :: Show a => Var Bool -> Var a -> Var a -> Var a
 --cond' = liftV3 cond
-cond' !(Var c) x y = compact agg
+liftedCond !(Var c) x y = compact agg
     where parts = map (\c' -> case c' of
                                 (True, pc) -> restrict pc x
                                 (False, pc) -> restrict pc y) c
           agg = foldr SPL.union (Var []) parts
          
+liftedNeg :: Num a => Var (a -> a)
+liftedNeg = mkVarT (\x -> -x)
+
+liftedCase :: (a -> b) -> Var a -> Var b
+liftedCase expr xs = (mkVarT expr) <*> xs  
+
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
 mapLifted = liftA2 map

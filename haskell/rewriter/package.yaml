@@ -28,6 +28,7 @@ library:
     - haskell-tools-refactor
     - haskell-tools-prettyprint
     - haskell-tools-rewrite
+    - haskell-tools-ast
     - references
     - ghc
 
