@@ -27,25 +27,34 @@ shallow mod = do
                     Nothing -> mkModuleName ""
                     Just h -> h ^. mhName
     let mod' = modImports .- (rewriteImports name) $ mod
-    
-    let head' = case head of
-                    Nothing -> head
-                    Just h  -> let name' = mkModuleName $ (name ^. moduleNameString) ++ "Shallow" 
-                               in  Just $ (mhName .- \_ -> name') $ h
-    let head'' = annMaybe .- (\_ -> head') $ (mod ^. modHead)
-    return $ modHead .- (\_ -> head'') $ mod'
+    return $ renameModule mod'
 
 -- | Rewriting imports
 --
 moduleNameSPL = mkModuleName "SPL"
-    
+origAlias = mkModuleName "O"
+
 importSPL = mkImportDecl False False False Nothing moduleNameSPL Nothing Nothing
-importOrig n = mkImportDecl False False False Nothing n Nothing Nothing
+importOrig n = mkImportDecl False True False Nothing n (Just origAlias) Nothing
 
 imports xs = map snd (zipWithSeparators xs)
 
 rewriteImports :: ModuleName -> ImportDeclList  -> ImportDeclList 
 rewriteImports n xs = (annListElems .= concat [[(importOrig n), importSPL], (imports xs)]) xs 
+
+-- | Rename module
+--
+appendName :: String -> ModuleName -> ModuleName
+appendName s mn = mkModuleName $ (mn ^. moduleNameString) ++ s
+
+updateHead :: Maybe ModuleHead -> Maybe ModuleHead
+updateHead mh =  
+    case mh of
+        Just mh' -> Just $ (mhName .- (appendName "Shallow")) $ mh'
+        _ -> mh
+
+renameModule :: Module -> Module
+renameModule mod = (modHead .- (annMaybe .- updateHead)) mod
 
 {-    
 rewrite :: RealSrcSpan -> LocalRefactoring
