@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 754739b2d7f7c4b5708d97f43207e3a3c997a67f9e0b6ae62b8bb70ae3411663
+-- hash: 4a55fb38bcfa4da173aea0fd019020f37850b4f9ffaae6ebdb2afff34d54de08
 
 name:           shallow
 version:        0.1.0.0
@@ -27,7 +27,7 @@ source-repository head
 
 library
   exposed-modules:
-      Shallow
+      Rewrite.Shallow
   other-modules:
       Paths_shallow
   hs-source-dirs:
@@ -35,6 +35,7 @@ library
   build-depends:
       SPL
     , base >=4.7 && <5
+    , common
     , ghc
     , haskell-tools-ast
     , haskell-tools-prettyprint
@@ -53,6 +54,7 @@ executable shallow-rewriter-exe
   build-depends:
       SPL
     , base >=4.7 && <5
+    , common
     , shallow
   default-language: Haskell2010
 
@@ -73,5 +75,6 @@ test-suite rewriter-test
   build-depends:
       SPL
     , base >=4.7 && <5
+    , common
     , shallow
   default-language: Haskell2010

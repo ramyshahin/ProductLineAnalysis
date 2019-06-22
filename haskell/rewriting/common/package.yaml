@@ -1,6 +1,6 @@
-name:                deep
+name:                common
 version:             0.1.0.0
-github:              "githubuser/deep"
+github:              "githubuser/common"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "example@example.com"
@@ -17,34 +17,17 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/rewriter#readme>
+description:         Please see the README on GitHub at <https://github.com/githubuser/common#readme>
 
 dependencies:
 - base >= 4.7 && < 5
-- SPL
+- haskell-tools-refactor
+- references
 library:
   source-dirs: src
-  dependencies:
-    - haskell-tools-refactor
-    - haskell-tools-prettyprint
-    - haskell-tools-rewrite
-    - haskell-tools-ast
-    - references
-    - ghc
-
-executables:
-  deep-rewriter-exe:
-    main:                DeepRewriter.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - deep
 
 tests:
-  rewriter-test:
+  common-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -52,4 +35,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - deep
+    - common

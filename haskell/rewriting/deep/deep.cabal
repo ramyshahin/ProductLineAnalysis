@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9b0633812aedc1b61c652c56b421308d2bfc0bc54d209cd8e12b8b32e571dc48
+-- hash: 1162e3e19078d470915c379c600f9e150b588a8614a857a767ee5c5562d64f15
 
 name:           deep
 version:        0.1.0.0
@@ -27,7 +27,7 @@ source-repository head
 
 library
   exposed-modules:
-      Deep
+      Rewrite.Deep
   other-modules:
       Paths_deep
   hs-source-dirs:
@@ -35,6 +35,7 @@ library
   build-depends:
       SPL
     , base >=4.7 && <5
+    , common
     , ghc
     , haskell-tools-ast
     , haskell-tools-prettyprint
@@ -53,6 +54,7 @@ executable deep-rewriter-exe
   build-depends:
       SPL
     , base >=4.7 && <5
+    , common
     , deep
   default-language: Haskell2010
 
@@ -73,5 +75,6 @@ test-suite rewriter-test
   build-depends:
       SPL
     , base >=4.7 && <5
+    , common
     , deep
   default-language: Haskell2010

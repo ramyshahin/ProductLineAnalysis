@@ -1,6 +1,6 @@
 module Main where
 
-import Shallow
+import Rewrite.Shallow
 import System.Environment
 
 main :: IO ()

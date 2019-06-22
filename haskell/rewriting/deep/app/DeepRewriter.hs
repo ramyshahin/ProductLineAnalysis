@@ -1,6 +1,6 @@
-module DeepRewriter where
+module Main where
 
-import Deep
+import Rewrite.Deep
 import System.Environment
 
 main :: IO ()

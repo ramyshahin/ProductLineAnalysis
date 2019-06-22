@@ -1,6 +1,8 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Deep where
+module Rewrite.Deep where
+
+import Rewrite.Common
 
 -- AST types: https://github.com/haskell-tools/haskell-tools/tree/master/src/ast/Language/Haskell/Tools/AST/Representation
 
