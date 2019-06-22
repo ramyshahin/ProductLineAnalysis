@@ -1,38 +1,37 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Test0Shallow where
-import Test0
+import qualified Test0 as O
 import SPL
 import Data.List
 
-x :: Int
-x = 3
+x :: Var Int
+x = mkVarT O.x
 
-y :: Int
-y = 7
+y :: Var Int
+y = mkVarT O.y
 
-z :: Int
-z = 9
+z :: Var Int
+z = mkVarT O.z
 
-foo :: Int -> Int -> Int -> Int
-foo x y z = (bar x y) + (baz z)
+foo :: Var Int -> Var Int -> Var Int -> Var Int
+foo x y z  = (mkVarT O.foo) <*> x <*> y <*> z
 
-bar :: Int -> Int -> Int
-bar x y = x + y
+bar :: Var Int -> Var Int -> Var Int
+bar x y  = (mkVarT O.bar) <*> x <*> y
 
-baz :: Int -> Int
-baz x = -(x)
+baz :: Var Int -> Var Int
+baz x  = (mkVarT O.baz) <*> x
 
-f = baz
-g = baz
+f = mkVarT O.f
+g = mkVarT O.g
 
-x' = f (f (g 2))
+x' = mkVarT O.x'
 
-xs :: [Int]
-xs = [3]
+xs :: Var [Int]
+xs = mkVarT O.xs
 
--- testing conditionals
-c a b = if (a > b) then bar a b else b - a
+c a b  = (mkVarT O.c) <*> a <*> b
 
 -- testing ADTs
 data MaybeInt =
