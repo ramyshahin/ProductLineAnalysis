@@ -3,6 +3,6 @@ MODULE=$1
 echo Deep Lifting ${MODULE}.hs
 
 rm -f ${MODULE}Deep.hs
-stack run deep-rewriter-exe "${MODULE}" >> ${MODULE}Deep.hs
+stack run deep-rewriter-exe "${MODULE}" > ${MODULE}Deep.hs
 stack ghc -- -DDEEP ${MODULE}Deep.hs ${MODULE}-drv.hs
 

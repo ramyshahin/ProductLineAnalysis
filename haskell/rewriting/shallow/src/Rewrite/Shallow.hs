@@ -10,11 +10,7 @@ import Language.Haskell.Tools.AST
 import Language.Haskell.Tools.AST.Ann 
 
 import Control.Reference ((.-), (.=), (^.))
---import SrcLoc (RealSrcSpan, realSrcLocSpan, mkRealSrcLoc)
 import FastString
-
---dummySpan :: RealSrcSpan
---dummySpan = realSrcLocSpan $ mkRealSrcLoc (fsLit "") 0 0 
 
 shallowRewrite :: RefactoringChoice
 shallowRewrite = ModuleRefactoring "ShallowRewrite" (localRefactoring shallow)
@@ -30,7 +26,7 @@ shallow mod = do
                     Nothing -> mkModuleName ""
                     Just h -> h ^. mhName
     let mod' = modImports .- (rewriteImports name) $ mod
-    let renamedMod = renameModule mod'
+    let renamedMod = renameModule "Shallow" mod'
     return $ (modDecl .- (annList .- rewriteDecl)) renamedMod
 
 -- | Rewriting imports
@@ -45,17 +41,6 @@ imports xs = map snd (zipWithSeparators xs)
 rewriteImports :: ModuleName -> ImportDeclList  -> ImportDeclList 
 rewriteImports n xs = (annListElems .= concat [[(importOrig n), importSPL], (imports xs)]) xs 
 
--- | Rename module
---
-updateHead :: Maybe ModuleHead -> Maybe ModuleHead
-updateHead mh =  
-    case mh of
-        Just mh' -> Just $ (mhName .- (appendModName "Shallow")) $ mh'
-        _ -> mh
-
-renameModule :: Module -> Module
-renameModule mod = (modHead .- (annMaybe .- updateHead)) mod
-
 -- | Rewrite declarations
 --
 origName :: Name -> Name
@@ -64,20 +49,6 @@ origName n =
     in  case sn of 
         Just sn' -> mkNormalName $ mkQualifiedName' [origAliasStr] sn'
         _ -> n
-
-rewriteType :: Type -> Type
-rewriteType t = case t of
-    FunctionType a b -> mkFunctionType (rewriteType a) (rewriteType b)
-    -- TODO: handle other cases
-    _ -> mkTypeApp tyVar t
-
--- TODO
--- mkTypeSignature takes only one name, so a signature might map
--- to multiple declarations
-rewriteTypeSig :: TypeSignature -> Decl
-rewriteTypeSig (TypeSignature ns t) = 
-    let n = head $ _annListElems ns
-    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType t)
 
 rewriteVar :: Name -> Expr
 rewriteVar vn = mkApp mkVarT (mkVar (origName vn))

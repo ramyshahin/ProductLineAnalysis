@@ -26,8 +26,8 @@ g = baz
 
 x' = f (f (g 2))
 
-xs :: [Int]
-xs = [3]
+--xs :: [Int]
+--xs = [3]
 
 -- testing conditionals
 c a b = if (a > b) then bar a b else b - a

@@ -3,6 +3,6 @@ MODULE=$1
 echo Shallow Lifting ${MODULE}.hs
 
 rm ${MODULE}Shallow.hs
-stack run shallow-rewriter-exe "${MODULE}" >> ${MODULE}Shallow.hs
+stack run shallow-rewriter-exe "${MODULE}" > ${MODULE}Shallow.hs
 stack ghc -- -DSHALLOW ${MODULE}Shallow.hs ${MODULE}-drv.hs
 
