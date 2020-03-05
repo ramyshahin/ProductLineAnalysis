@@ -39,3 +39,6 @@ setup.log
 target/
 .idea/
 project/
+
+# VS Code
+.vscode
