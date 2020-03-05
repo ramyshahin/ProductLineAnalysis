@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.1.
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1162e3e19078d470915c379c600f9e150b588a8614a857a767ee5c5562d64f15
+-- hash: 610aa095e2c551bc83abc4e37c56e189f8c479feb3c0e6f9e28d078f2921f6f5
 
 name:           deep
 version:        0.1.0.0
@@ -68,6 +68,8 @@ test-suite rewriter-test
       Main
       Test
       TestDeep
+      TestVal
+      TestValDeep
       Paths_deep
   hs-source-dirs:
       test
