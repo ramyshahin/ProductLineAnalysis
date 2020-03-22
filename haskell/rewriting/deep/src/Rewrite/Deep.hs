@@ -71,8 +71,8 @@ rewriteDecl decls d =
 rewriteValueBind :: [Name] -> ValueBind -> Decl
 rewriteValueBind decls vb = mkValueBinding $ case vb of
     SimpleBind p rhs bs -> mkSimpleBind p (rewriteRhs decls rhs) (_annMaybe bs)
+    FunctionBind ms -> mkFunctionBind (map (rewriteMatch decls) (_annListElems ms)) 
     _ -> trace ("Unhandled Value Bind " ++ prettyPrint vb) $ vb
-    --FunctionBind ms -> mkFunctionBind (map rewriteMatch (_annListElems ms)) 
 
 rewriteRhs :: [Name] -> Rhs -> Rhs
 rewriteRhs decls rhs = case rhs of
@@ -89,25 +89,38 @@ liftedCase = mkVar (mkName "liftedCase")
 
 liftOp (NormalOp o) = mkParen (mkApp mkVarT (mkVar (mkParenName o)))
 
-rewriteVar :: Name -> Expr
-rewriteVar vn = mkApp mkVarT (mkVar vn)
+rewriteVar :: [Name] -> Name -> Expr
+rewriteVar declarations vn = 
+    if   (externalVar declarations vn)
+    then mkApp mkVarT (mkVar vn)
+    else mkVar vn
 
 externalFun :: [Name] -> Expr -> Bool
 externalFun xs x = 
     case x of
-        Var n -> not $ any (== n) xs
-        _     -> True
+        Var n -> trace ("Internal " ++ prettyPrint x) $ not $ any (== n) xs
+        _     -> trace ("External " ++ prettyPrint x) $ True
 
 externalVar :: [Name] -> Name -> Bool
-externalVar xs x = not $ any (== x) xs
+externalVar xs x = 
+    let r = not $ any (== x) xs
+    in  trace ("Checking " ++ prettyPrint x ++ " : " ++ show r) $ r
 
 -- lifting expressions 
 rewriteExpr :: [Name] -> Expr -> Expr
 rewriteExpr declarations e = 
     case e of 
         Lit l -> mkParen $ mkApp mkVarT (mkLit l)
-        Var n -> if (externalVar declarations n) then rewriteVar n else e
-        InfixApp arg1 op arg2 -> mkInfixApp (mkInfixApp (liftOp op) appOp arg1) appOp arg2
+        Var n -> if (externalVar declarations n) 
+                 then rewriteVar declarations n 
+                 else e
+        InfixApp arg1 op arg2 -> 
+            mkInfixApp (mkInfixApp 
+                            (liftOp op) 
+                            appOp 
+                            (rewriteExpr declarations arg1)) 
+                        appOp 
+                        (rewriteExpr declarations arg2)
         PrefixApp op arg -> mkInfixApp liftedNeg appOp arg
         App fun arg -> if (externalFun declarations fun)
                        then mkInfixApp (rewriteExpr declarations fun) appOp arg
@@ -118,8 +131,12 @@ rewriteExpr declarations e =
                                     liftedCond (rewriteExpr declarations c))
                                                (mkParen (rewriteExpr declarations t)))
                                                (mkParen (rewriteExpr declarations e))
-        Case v alts -> mkParen $
-                        mkApp (mkApp liftedCase (mkParen (mkLambdaCase (_annListElems alts)))) v
+        Case v alts -> 
+            --let as   = _annListElems alts
+            --    ls   = map (\(Alt p (CaseRhs rhs) _) -> mkLambda [p] rhs) as
+            --    ls'  = mkVars $ map (\l -> (l,tt)) ls 
+            --in  mkParen $ mkInfixApp ls' appOp v 
+                    mkApp (mkApp liftedCase (mkParen (mkLambdaCase (_annListElems alts)))) v
         MultiIf alts -> trace "Unhandled MultiIf" e 
         Lambda b e -> trace "Unhandled Lambda" e
         Let b e -> trace "Unhandled Let" e

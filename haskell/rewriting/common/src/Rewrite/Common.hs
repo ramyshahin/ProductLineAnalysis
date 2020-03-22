@@ -12,6 +12,8 @@ appendModName s mn = mkModuleName $ (mn ^. moduleNameString) ++ s
 
 appOp  = mkUnqualOp "<*>"
 mkVarT = mkVar (mkName "mkVarT")
+mkVars = mkVar (mkName "mkVars")
+tt     = mkVar (mkName "tt")
 tyVar  = mkVarType $ mkName "Var"
 
 pat2expr (VarPat n) = mkVar n 

@@ -12,6 +12,7 @@
 
 module SPL(
     module Control.Applicative,
+    module PropBDD,
     Var,
     mkVarT,
     mkVars,
