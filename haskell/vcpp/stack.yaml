@@ -8,5 +8,9 @@ extra-deps:
 - var-0.2.0.0
 - z3-4.1.0
 - cudd-0.1.0.4
-- alex-3.2.1
+- alex-3.2.4
 resolver: lts-8.0
+ 
+# alex and happy need to be manually installed:
+#    $ cabal install alex happy
+# and add ~/.cabal/bin to PATH

@@ -1,6 +1,6 @@
 #ifdef _A
 int a = 0;
 #else
-int b = 1;
+float b = -1.3;
 #endif
 

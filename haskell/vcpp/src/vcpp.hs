@@ -2,6 +2,7 @@
 -- Variability-aware C PreProcessor
 -- Ramy Shahin
 -- Feb. 19th 2017
+{-
 module VCPP where
 import SPL
 import PropBDD
@@ -85,4 +86,4 @@ vcpp :: String -> IO (Var String)
 vcpp input = do
     ls <- lineByLine (lines (spliceLines input)) mkCPPEnv
     return (unlines' <*> ls) 
-
+-}

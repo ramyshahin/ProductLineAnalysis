@@ -2,6 +2,7 @@
 --  a module for processing C preprocessor macros
 --  Ramy Shahin
 --  March 2nd 2017
+{-
 module Macro where
 import SPL
 import Data.Map
@@ -23,7 +24,7 @@ addMacro :: PresenceCondition -> MacroTable -> Macro -> MacroTable
 removeMacro :: PresenceCondition -> MacroTable -> String -> MacroTable
 -- TODO: #undef
 
-
+-}
 
 
 
