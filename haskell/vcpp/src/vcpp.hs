@@ -2,17 +2,63 @@
 -- Variability-aware C PreProcessor
 -- Ramy Shahin
 -- Feb. 19th 2017
-{-
+
 module VCPP where
+import Lexer
 import SPL
 import PropBDD
 import Data.Stack
-import Data.String.Utils(strip, splitWs, replace)
+import Debug.Trace
+import Text.Parsec
+--import Data.String.Utils(strip, splitWs, replace)
 
-data CPPEnv = CPPEnv Universe (Stack Prop)
+type CPPEnv = Stack Prop
 
-mkCPPEnv = CPPEnv (mkUniverse []) stackNew
+mkCPPEnv = stackNew
 
+parsePC :: Prop -> [CToken] -> Prop
+parsePC cntxt [] = cntxt
+parsePC cntxt ((t,p) : ts) = 
+    case t of 
+        TID id -> if cntxt == tt then parsePC (Atom id) ts else trace "Invalid PC" cntxt
+        _ -> trace "Invalid PC" cntxt
+
+processPPCommand :: CPPEnv -> [CToken] -> CPPEnv
+processPPCommand env [] = trace "empty CPP command" env
+processPPCommand env ((t,p) : ts) = 
+    case t of -- TODO: process various CPP commands
+        TID "include" -> env
+        TID "define" -> env
+        TIf          -> trace ("#if " ++ show ts) env
+        TID "ifdef"  -> let pc = parsePC tt ts
+                        in  trace ("New PC " ++ show pc) (stackPush env pc)
+        TID "ifndef" -> let pc = Neg $ parsePC tt ts
+                        in  trace ("New PC " ++ show pc) (stackPush env pc)
+        TElse        -> case stackPop env of
+                            Nothing    -> trace "#else unmatching!" mkCPPEnv
+                            Just (e,p) -> stackPush e (Neg p)
+        TID "endif"  -> case stackPop env of
+                            Nothing    -> trace "#endif unmatching!" mkCPPEnv
+                            Just (e,_) -> e 
+        _ -> trace ("#" ++ (show t) ++ " unsupported!") mkCPPEnv
+
+vcpp :: CPPEnv -> [CToken] -> [Var CToken]
+vcpp _ [] = []
+vcpp env (t : ts) = 
+    case fst t of
+        TSharp -> let line = sourceLine $ snd t
+                      s    = span (\(t,p) -> sourceLine p == line) ts
+                      ppCommand = fst s
+                      rest = snd s
+                      env' = processPPCommand env ppCommand
+                  in trace "# here" (vcpp env' rest)
+        _      -> let pc' = stackPeek env 
+                      pc  = case pc' of 
+                                Nothing -> tt 
+                                Just p  -> p
+                  in (mkVar t pc) : vcpp env ts
+
+{-
 envToProp :: Stack Prop -> Prop
 envToProp env =
     let p = stackPop env

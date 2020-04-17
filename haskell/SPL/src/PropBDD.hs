@@ -34,12 +34,7 @@ instance Show Prop where
     show p = case p of 
         TT -> "True"
         FF -> "False"
-        Atom s -> s -- do 
-                    --let str = unsafePerformIO $ H.lookup prop2str p
-                    --let l = unsafePerformIO $ htSize prop2str
-                    --case str of
-                    --    Just s -> s
-                    --    _ -> trace ("Mismatch! size: " ++ (show l)) (show d)
+        Atom s -> s
         Neg p' -> "~" ++ (show p')
         And p1 p2 -> "(" ++ (show p1) ++ " /\\ " ++ (show p2) ++ ")"
         Or  p1 p2 -> "(" ++ (show p1) ++ " \\/ " ++ (show p2) ++ ")"
@@ -56,10 +51,26 @@ htSize :: (Eq k, Hashable k) => H.BasicHashTable k v -> IO Int
 htSize h = do
     xs <- H.toList h 
     return $ length xs 
-    
+
+var2index :: HashTable String Int
+index2var :: HashTable Int String
+
+lookupVar :: String -> Int
+lookupVar v = unsafePerformIO $ do
+    i <- H.lookup var2index v
+    case i of
+        Nothing -> do 
+            i' <- htSize var2index
+            !d0 <- H.insert var2index v i' 
+            !d1 <- H.insert index2var i' v
+            return i'
+        Just i' -> return i'
+
 manager = cuddInit
 prop2bdd = unsafePerformIO H.new 
 bdd2prop = unsafePerformIO H.new 
+var2index = unsafePerformIO H.new
+index2var = unsafePerformIO H.new
 
 newBDD :: Prop -> DDNode -> Prop
 newBDD p d = unsafePerformIO $ do
@@ -72,13 +83,14 @@ newBDD p d = unsafePerformIO $ do
                         return p
             Just p'' -> return p''   
 
-mkBDDVar :: String -> Int -> Prop
-mkBDDVar name index = 
-    let r = ithVar manager index
+mkBDDVar :: String -> Prop
+mkBDDVar name = 
+    let i = lookupVar name 
+        r = ithVar manager i 
     in newBDD (Atom name) r
 
 mkUniverse :: [String] -> Universe
-mkUniverse xs = map (\(s,r) -> mkBDDVar s r) (zip xs [0..])  
+mkUniverse = map mkBDDVar  
     
 {-# NOINLINE tt #-}
 tt = newBDD TT (readOne manager)

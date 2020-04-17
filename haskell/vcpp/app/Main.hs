@@ -4,6 +4,7 @@
 -- Feb. 19th 2017
 module Main where
 import Lexer
+import VCPP
 import SPL
 import System.Environment ( getArgs, getProgName)
 
@@ -14,6 +15,7 @@ main = do
     file <- readFile (args!!0)
     case lexer "" file of
         Left  e -> print e >> fail "parse error"
-        Right r -> putStrLn $ show r
+        Right r ->  let result = vcpp mkCPPEnv r
+                    in  putStrLn $ show result
     --Var v <- vcpp file
     --mapM_ (\(x,pc) -> putStrLn ("#" ++ (show pc) ++ "#\n" ++ x ++ "#---#")) v

@@ -24,16 +24,17 @@ cLangDef = emptyDef {
                                "signed", "sizeof", "static", "struct", 
                                "switch", "typedef", "union", "unsigned", 
                                "void", "volatile", "while",
-                               "#define", "#include", "#ifdef", "#else", "#endif"],
+                               "#define", "#include", "#if", "#ifdef", "#ifndef", "#else", "#endif"],
     Token.reservedOpNames   = ["++", "--", "&", "*", "+", "-", "~",
                                "!", "/", "%", "<<", ">>", "<", "<=", ">", ">=",
                                "==", "!=", "^", "|", "&&", "||", "?", ":", "=",
-                               "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", 
-                               "&=", "^=", "|=", ",", ";", ".", "->"],
+                               "*=", "/=", "%=", "+=", "-=", "<<=", ">>=",
+                               "&=", "^=", "|=", ",", ";", ".", "->",
+                               "#"],
     Token.caseSensitive     = True
 }
 
-data CToken =
+data CToken' =
     TID          String
   | TOperator    String
   | TReservedOp  String
@@ -80,6 +81,10 @@ data CToken =
   | TSemi
   | TDot
   | TArrow
+  | TParen [CToken]
+  | TBracket [CToken]
+  | TBrace [CToken]
+  | TSharp
   | TAuto
   | TBreak
   | TCase
@@ -114,10 +119,14 @@ data CToken =
   | TWhile
   | TCPPDefine
   | TCPPInclude
+  | TCPPIf
   | TCPPIfdef
+  | TCPPIfndef
   | TCPPElse
   | TCPPEndIf
   deriving Show
+
+type CToken = (CToken', SourcePos)
 
 cLexer = Token.makeTokenParser cLangDef
 
@@ -130,6 +139,9 @@ pStringLiteral  = Token.stringLiteral   cLexer
 pIntegerLit     = Token.integer         cLexer
 pNatFloatLit    = Token.naturalOrFloat  cLexer
 pWhiteSpace     = Token.whiteSpace      cLexer
+pParens         = Token.parens          cLexer
+pBrackets       = Token.brackets        cLexer
+pBraces         = Token.braces          cLexer
 
 pPlusPlus   = pReservedOp "++"
 pMinusMinus = pReservedOp "--"
@@ -170,6 +182,7 @@ pComma      = pReservedOp ","
 pSemi       = pReservedOp ";"
 pDot        = pReservedOp "."
 pArrow      = pReservedOp "->"
+pSharp      = pReservedOp "#"
 
 pAuto           = pReserved "auto"
 pBreak          = pReserved "break" 
@@ -203,17 +216,12 @@ pUnsigned       = pReserved "unsigned"
 pVoid           = pReserved "void"
 pVolatile       = pReserved "volatile"
 pWhile          = pReserved "while"
-pCPPDefine      = pReserved "#define"
-pCPPInclude     = pReserved "#include"
-pCPPIfdef       = pReserved "#ifdef"
-pCPPElse        = pReserved "#else"
-pCPPEndIf       = pReserved "#endif"
 
-genericP :: Parser CToken
-genericP =  (pPlusPlus    >> return TPlusPlus)   
-        <|> (pMinusMinus  >> return TMinusMinus)
-        <|> (pAmpr        >> return TAmpr)
-        <|> (pTimes       >> return TTimes)  
+genericP' :: Parser CToken'
+genericP' =  (pPlusPlus   >> return TPlusPlus)   
+        <|> (pMinusMinus >> return TMinusMinus)
+        <|> (pAmpr       >> return TAmpr)
+        <|> (pTimes      >> return TTimes)  
         <|> (pPlus       >> return TPlus)
         <|> (pMinus      >> return TMinus)
         <|> (pTilde      >> return TTilde)
@@ -249,6 +257,7 @@ genericP =  (pPlusPlus    >> return TPlusPlus)
         <|> (pSemi       >> return TSemi)
         <|> (pDot        >> return TDot)
         <|> (pArrow      >> return TArrow)
+        <|> (pSharp      >> return TSharp)
         <|> (pAuto >> return TAuto)
         <|> (pBreak >> return TBreak)
         <|> (pCase  >> return TCase)
@@ -281,11 +290,6 @@ genericP =  (pPlusPlus    >> return TPlusPlus)
         <|> (pVoid >> return TVoid) 
         <|> (pVolatile >> return TVolatile)
         <|> (pWhile >> return TWhile)
-        <|> (pCPPInclude >> return TCPPInclude)
-        <|> (pCPPDefine  >> return TCPPDefine)
-        <|> (pCPPIfdef   >> return TCPPIfdef)
-        <|> (pCPPElse    >> return TCPPElse)
-        <|> (pCPPEndIf   >> return TCPPEndIf)
         <|> (do id <- pId; return $ TID id) 
         <|> (do op <- pOperator; return $ TOperator op) 
         <|> (do c  <- pCharLiteral; return $ TCharLit c)
@@ -295,5 +299,14 @@ genericP =  (pPlusPlus    >> return TPlusPlus)
                             Left  i -> TIntegerLit i
                             Right f -> TFloatLit f)
         <|> (do i  <- pIntegerLit; return $ TIntegerLit i)  
+        <|> (do ts <- pParens   (many genericP); return $ TParen   ts)
+        <|> (do ts <- pBrackets (many genericP); return $ TBracket ts)
+        <|> (do ts <- pBraces   (many genericP); return $ TBrace   ts)
+
+genericP :: Parser CToken
+genericP = do
+  p <- getPosition
+  t <- genericP'
+  return (t,p)
 
 lexer = parse $ do { pWhiteSpace; ts <- many genericP; eof ; return ts }

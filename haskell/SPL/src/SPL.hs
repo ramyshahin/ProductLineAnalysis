@@ -16,6 +16,7 @@ module SPL(
     Var,
     mkVarT,
     mkVars,
+    mkVar,
     liftedCond,
     liftedNeg,
     liftedCase

@@ -4,3 +4,7 @@ int a = 0;
 float b = -1.3;
 #endif
 
+#if defined(X)
+void main() {}
+#endif
+
