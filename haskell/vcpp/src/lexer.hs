@@ -84,6 +84,12 @@ data CToken' =
   | TParen [CToken]
   | TBracket [CToken]
   | TBrace [CToken]
+  | TLParen
+  | TRParen
+  | TLBracket
+  | TRBracket
+  | TLBrace
+  | TRBrace
   | TSharp
   | TAuto
   | TBreak
@@ -117,13 +123,6 @@ data CToken' =
   | TVoid 
   | TVolatile
   | TWhile
-  | TCPPDefine
-  | TCPPInclude
-  | TCPPIf
-  | TCPPIfdef
-  | TCPPIfndef
-  | TCPPElse
-  | TCPPEndIf
   deriving Show
 
 type CToken = (CToken', SourcePos)

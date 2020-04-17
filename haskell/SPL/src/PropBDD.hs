@@ -55,6 +55,9 @@ htSize h = do
 var2index :: HashTable String Int
 index2var :: HashTable Int String
 
+getVars :: [(Int, String)]
+getVars = unsafePerformIO $ H.toList index2var
+
 lookupVar :: String -> Int
 lookupVar v = unsafePerformIO $ do
     i <- H.lookup var2index v

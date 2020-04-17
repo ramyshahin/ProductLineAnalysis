@@ -16,12 +16,24 @@ type CPPEnv = Stack Prop
 
 mkCPPEnv = stackNew
 
+parsePCAtom :: [CToken] -> (Prop, [CToken])
+parsePCAtom [] = (ff, [])
+parsePCAtom ((x,p) : xs) = 
+    case x of
+        TID id          -> if id == "defined" then parsePCAtom xs else (mkBDDVar id, xs)
+        TParen ys       -> let (p,_) = parsePCAtom ys in (p, xs)
+        TBang           -> let (p, cs) = parsePCAtom xs in (notBDD p, cs)
+        TIntegerLit i   -> if i == 0 then (ff, xs) else (tt, xs)
+        _               -> trace "*****invalid PC Atom" (ff,[])
+
 parsePC :: Prop -> [CToken] -> Prop
 parsePC cntxt [] = cntxt
-parsePC cntxt ((t,p) : ts) = 
+parsePC cntxt xs@((t,p) : ts) = 
     case t of 
-        TID id -> if cntxt == tt then parsePC (Atom id) ts else trace "Invalid PC" cntxt
-        _ -> trace "Invalid PC" cntxt
+        TAmprAmpr -> andBDD cntxt (parsePC tt ts)
+        TBarBar   -> orBDD  cntxt (parsePC tt ts) 
+        _ -> let (a, cs) = parsePCAtom xs 
+             in  parsePC a cs
 
 processPPCommand :: CPPEnv -> [CToken] -> CPPEnv
 processPPCommand env [] = trace "empty CPP command" env
@@ -29,11 +41,12 @@ processPPCommand env ((t,p) : ts) =
     case t of -- TODO: process various CPP commands
         TID "include" -> env
         TID "define" -> env
-        TIf          -> trace ("#if " ++ show ts) env
+        TIf          -> let pc = parsePC tt ts
+                        in  stackPush env pc
         TID "ifdef"  -> let pc = parsePC tt ts
-                        in  trace ("New PC " ++ show pc) (stackPush env pc)
+                        in  stackPush env pc
         TID "ifndef" -> let pc = Neg $ parsePC tt ts
-                        in  trace ("New PC " ++ show pc) (stackPush env pc)
+                        in  stackPush env pc
         TElse        -> case stackPop env of
                             Nothing    -> trace "#else unmatching!" mkCPPEnv
                             Just (e,p) -> stackPush e (Neg p)
@@ -51,7 +64,10 @@ vcpp env (t : ts) =
                       ppCommand = fst s
                       rest = snd s
                       env' = processPPCommand env ppCommand
-                  in trace "# here" (vcpp env' rest)
+                  in vcpp env' rest
+        TParen xs -> vcpp env $ ((TLParen, snd t) : xs) ++ ((TRParen, snd t) : ts) 
+        TBracket xs -> vcpp env $ ((TLBracket, snd t) : xs) ++ ((TRBracket, snd t) : ts)
+        TBrace xs -> vcpp env $ ((TLBrace, snd t) : xs) ++ ((TRBrace, snd t) : ts)
         _      -> let pc' = stackPeek env 
                       pc  = case pc' of 
                                 Nothing -> tt 

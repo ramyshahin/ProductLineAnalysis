@@ -16,6 +16,7 @@ main = do
     case lexer "" file of
         Left  e -> print e >> fail "parse error"
         Right r ->  let result = vcpp mkCPPEnv r
-                    in  putStrLn $ show result
+                    in  (putStrLn (show result)) >>
+                         putStrLn ("Vars: " ++ (show getVars))
     --Var v <- vcpp file
     --mapM_ (\(x,pc) -> putStrLn ("#" ++ (show pc) ++ "#\n" ++ x ++ "#---#")) v
