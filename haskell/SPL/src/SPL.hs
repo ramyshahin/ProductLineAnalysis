@@ -10,17 +10,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE BangPatterns #-}
 
-module SPL(
-    module Control.Applicative,
-    module PropBDD,
-    Var,
-    mkVarT,
-    mkVars,
-    mkVar,
-    liftedCond,
-    liftedNeg,
-    liftedCase
-) where
+module SPL where
 
 import PropBDD
 --import Prop

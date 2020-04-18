@@ -123,7 +123,8 @@ data CToken' =
   | TVoid 
   | TVolatile
   | TWhile
-  deriving Show
+  | TNil
+  deriving (Show, Eq)
 
 type CToken = (CToken', SourcePos)
 

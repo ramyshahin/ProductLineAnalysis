@@ -37,13 +37,14 @@ extra-lib-dirs: [/usr/local/lib]
 #  - auto-update
 #  - wai
 packages:
-- .
-- ../../SPL
-- ../common
+- '.'
+
 # Dependency packages to be pulled from upstream that are not in the resolver
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)
-extra-deps: 
+extra-deps:
+- ../../SPL
+- ../common 
 - Glob-0.9.3@sha256:d6f8d3000651a7d72fe468f3840f59fe785dc35cfc16dc76a62821cd798f34dc
 - fswatch-0.1.0.6@sha256:56fefeb2c72f6d147dacfc864dc30089b8ee3509064e092f69ad3d548197389b
 - haskell-tools-builtin-refactorings-1.1.1.0@sha256:a532a1bf5d94ae760f64626aea34e402df05bd763ba8038a035e9186e12eb21b

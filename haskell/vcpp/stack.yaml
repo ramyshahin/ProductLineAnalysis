@@ -1,15 +1,19 @@
 flags: {}
 extra-package-dbs: []
+extra-include-dirs: [/usr/local/include]
+extra-lib-dirs: [/usr/local/lib]
 packages:
 - '.'
-- ../SPL
+
 extra-deps:
+- ../SPL
 - Stack-0.3.2
 - var-0.2.0.0
 - z3-4.1.0
 - cudd-0.1.0.4
 - alex-3.2.4
-resolver: lts-8.0
+
+resolver: lts-13.23
  
 # alex and happy need to be manually installed:
 #    $ cabal install alex happy

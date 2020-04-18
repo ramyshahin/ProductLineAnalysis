@@ -2,6 +2,7 @@
 -- Variability-aware C PreProcessor
 -- Ramy Shahin
 -- Feb. 19th 2017
+{-# LANGUAGE BangPatterns #-}
 
 module VCPP where
 import Lexer
@@ -55,24 +56,31 @@ processPPCommand env ((t,p) : ts) =
                             Just (e,_) -> e 
         _ -> trace ("#" ++ (show t) ++ " unsupported!") mkCPPEnv
 
-vcpp :: CPPEnv -> [CToken] -> [Var CToken]
-vcpp _ [] = []
+liftToken :: CToken -> PresenceCondition -> Var CToken
+liftToken t pc = 
+    if pc == tt then 
+        mkVarT t
+    else let !pc' = notBDD pc
+         in  mkVars [(t,pc), ((TNil, snd t), pc')]
+
+vcpp :: CPPEnv -> [CToken] -> Var [CToken]
+vcpp _ [] = mkVarT []
 vcpp env (t : ts) = 
     case fst t of
-        TSharp -> let line = sourceLine $ snd t
-                      s    = span (\(t,p) -> sourceLine p == line) ts
-                      ppCommand = fst s
-                      rest = snd s
-                      env' = processPPCommand env ppCommand
-                  in vcpp env' rest
-        TParen xs -> vcpp env $ ((TLParen, snd t) : xs) ++ ((TRParen, snd t) : ts) 
+        TSharp      -> let  line = sourceLine $ snd t
+                            s    = span (\(t,p) -> sourceLine p == line) ts
+                            ppCommand = fst s
+                            rest = snd s
+                            env' = processPPCommand env ppCommand
+                       in vcpp env' rest
+        TParen xs   -> vcpp env $ ((TLParen, snd t) : xs) ++ ((TRParen, snd t) : ts) 
         TBracket xs -> vcpp env $ ((TLBracket, snd t) : xs) ++ ((TRBracket, snd t) : ts)
-        TBrace xs -> vcpp env $ ((TLBrace, snd t) : xs) ++ ((TRBrace, snd t) : ts)
-        _      -> let pc' = stackPeek env 
-                      pc  = case pc' of 
-                                Nothing -> tt 
-                                Just p  -> p
-                  in (mkVar t pc) : vcpp env ts
+        TBrace xs   -> vcpp env $ ((TLBrace, snd t) : xs) ++ ((TRBrace, snd t) : ts)
+        _           -> let pc' = stackPeek env 
+                           pc  = case pc' of 
+                                    Nothing -> tt 
+                                    Just p  -> p
+                       in (liftToken t pc) |:| vcpp env ts
 
 {-
 envToProp :: Stack Prop -> Prop

@@ -1,10 +1,10 @@
-name:                deep
+name:                TokenCount
 version:             0.1.0.0
-github:              "githubuser/deep"
+github:              "githubuser/TokenCount"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "example@example.com"
-copyright:           "2019 Author name here"
+copyright:           "2020 Author name here"
 
 extra-source-files:
 - README.md
@@ -17,35 +17,29 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/rewriter#readme>
+description:         Please see the README on GitHub at <https://github.com/githubuser/TokenCount#readme>
 
 dependencies:
 - base >= 4.7 && < 5
-- common
 
 library:
   source-dirs: src
-  dependencies:
-    - haskell-tools-refactor
-    - haskell-tools-prettyprint
-    - haskell-tools-rewrite
-    - haskell-tools-ast
-    - references
-    - ghc
+  dependencies: 
+  - vcpp
 
 executables:
-  deep-rewriter-exe:
-    main:                DeepRewriter.hs
+  TokenCount-exe:
+    main:                Main.hs
     source-dirs:         app
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - deep
+    - TokenCount
 
 tests:
-  rewriter-test:
+  TokenCount-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -53,4 +47,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - deep
+    - TokenCount

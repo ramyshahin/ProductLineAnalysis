@@ -6,6 +6,7 @@ module Main where
 import Lexer
 import VCPP
 import SPL
+import PropBDD
 import System.Environment ( getArgs, getProgName)
 
 

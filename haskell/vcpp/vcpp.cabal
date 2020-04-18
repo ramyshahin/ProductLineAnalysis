@@ -10,7 +10,7 @@ Build-type: Simple
 
 Library
     hs-source-dirs: src
-    Build-Depends: base>3&&<6, Stack, MissingH, SPL, parsec, array
+    Build-Depends: base>3&&<6, SPL, Stack, parsec, array
     Exposed-Modules:
         Lexer VCPP
     --Other-Modules: Lexer
@@ -18,6 +18,6 @@ Library
 
 Executable vcpp
     hs-source-dirs: app
-    Build-Depends: base>3&&<6, Stack, MissingH, SPL, vcpp
+    Build-Depends: base>3&&<6, SPL, Stack, vcpp
     Main-Is: Main.hs
     Other-Modules:
