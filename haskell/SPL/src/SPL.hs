@@ -197,8 +197,7 @@ apply (Var fn) x = --compact $
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
-liftedCond :: Show a => Var Bool -> Var a -> Var a -> Var a
---cond' = liftV3 cond
+liftedCond :: Var Bool -> Var a -> Var a -> Var a
 liftedCond !(Var c) x y = compact agg
     where parts = map (\c' -> case c' of
                                 (True, pc) -> restrict pc x

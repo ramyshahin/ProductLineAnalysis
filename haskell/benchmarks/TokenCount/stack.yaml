@@ -44,10 +44,16 @@ packages:
 #
 extra-deps:
 - ../../rewriting/deep
+- ../../rewriting/common
 - ../../vcpp
 - ../../SPL
 - Stack-0.4.0@sha256:ada69a23ed9bbaf97260397f6b39b7a1f4e22a11bcac3fe2e8f23f1513f59fd8,1092
 - cudd-0.1.0.4@sha256:4f673472192d8cd7dd1f8036fca3dc07d3c378ed2031700ab6525c8a59cccb67,2627
+- haskell-tools-ast-1.1.1.0@sha256:b1b761c02423ef83b538ca4fab7273ce2ee46221da3192b5cca5461e9e6ce812,3928
+- haskell-tools-prettyprint-1.1.1.0@sha256:4178e14d94152e689fd468cd76d9bdca224277f923f2f5b958f7a2fcfc6974db,2110
+- haskell-tools-refactor-1.1.1.0@sha256:e67268831014311576777cef548fddc16082180c8cba3640d3651cf9a195e864,5776
+- haskell-tools-rewrite-1.1.1.0@sha256:d43239b8a64af429bfebdcb1e4f58dcb32e3326b9933cdd20702431534506543,3901
+- haskell-tools-backend-ghc-1.1.1.0@sha256:4fd177adcfc07f324b09008a572ace1c5340672294dece21edd420b754088ded,3165
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
