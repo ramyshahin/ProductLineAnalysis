@@ -9,6 +9,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 module SPL where
 
@@ -18,6 +19,7 @@ import Control.Applicative
 import Control.Monad
 import Data.List 
 import Data.Maybe
+import qualified Data.Vector as V 
 import qualified Data.Set as S  
 import Control.Exception
 import Control.Parallel.Strategies
@@ -208,8 +210,23 @@ liftedCond !(Var c) x y = compact agg
 liftedNeg :: Num a => Var (a -> a)
 liftedNeg = mkVarT (\x -> -x)
 
-liftedCase :: (a -> b) -> Var a -> Var b
-liftedCase expr xs = (mkVarT expr) <*> xs  
+caseSplitter :: Var a -> (a -> Int) -> Int -> [Var a]
+caseSplitter (Var input) splitter range = 
+    let initV = V.replicate range (Var [])
+        xs = foldl 
+                (\vec (v,pc) -> let index = splitter v 
+                                    (Var item)  = vec V.! index
+                                    item' = Var $ (v, pc) : item
+                                in  vec V.// [(index, item')]) 
+                initV input 
+    in  V.toList xs
+
+liftedCase :: Var a -> (a -> Int) -> [Var a -> Var b] -> Var b
+liftedCase input splitter alts =
+    compact agg
+    where   split = caseSplitter input splitter (length alts) 
+            parts  = map (\(l,r) -> l r) (zip alts split) 
+            agg    = foldr SPL.union (Var []) parts 
 
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
@@ -239,37 +256,46 @@ liftV4 = liftA4
 liftV5 :: (a -> b -> c -> d -> e -> f) -> Var a -> Var b -> Var c -> Var d -> Var e -> Var f
 liftV5 = liftA5
 
+-- lifted list
+data List' a = 
+    Nil'
+   | Cons' (Var a) (List' a)
+
+pattern (:^) :: Var a -> List' a -> List' a 
+pattern x :^ xs <- Cons' x xs
+infixr :^
+
 (|:|) :: Var a -> Var [a] -> Var [a]
 (|:|) = liftV2 (:)
-infixr |:|
+
 
 -- lifted primitive operators
-(|+|) :: Num a => Var a -> Var a -> Var a
-(|+|) = liftV2 (+)
-infixl 6 |+|
+(+^) :: Num a => Var a -> Var a -> Var a
+(+^) = liftV2 (+)
+infixl 6 +^
 
-(|-|) :: Num a => Var a -> Var a -> Var a
-(|-|) = liftV2 (-)
-infixl 6 |-|
+(-^) :: Num a => Var a -> Var a -> Var a
+(-^) = liftV2 (-)
+infixl 6 -^
 
-(|*|) :: Num a => Var a -> Var a -> Var a
-(|*|) = liftV2 (*)
-infixl 7 |*|
+(*^) :: Num a => Var a -> Var a -> Var a
+(*^) = liftV2 (*)
+infixl 7 *^
 
-(|/|) :: Fractional a => Var a -> Var a -> Var a
-(|/|) = liftV2 (/)
-infixl 7 |/|
+(/^) :: Fractional a => Var a -> Var a -> Var a
+(/^) = liftV2 (/)
+infixl 7 /^
 
-(|==|) :: Eq a => Var a -> Var a -> Var Bool
-(|==|) = liftV2 (==)
-infix 3 |==|
+(==^) :: Eq a => Var a -> Var a -> Var Bool
+(==^) = liftV2 (==)
+infix 3 ==^
 
-(|/=|) :: Eq a => Var a -> Var a -> Var Bool
-(|/=|) = liftV2 (/=)
-infix 3 |/=|
+(/=^) :: Eq a => Var a -> Var a -> Var Bool
+(/=^) = liftV2 (/=)
+infix 3 /=^
 
 primitiveOpNames :: S.Set String
-primitiveOpNames = S.fromList ["+", "-", "*", "/", "==", "/="]
+primitiveOpNames = S.fromList [":", "+", "-", "*", "/", "==", "/="]
 
 -- lifted primitive functions
 head' :: Var [a] -> Var a

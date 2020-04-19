@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 56c7339518e87d5a233f1655e297f740c57a970e6d19739558007c9e6108527a
+-- hash: 4e34c0de8a2487e2872daef253e18b5a5d2740a3bc0748789c3ee6fd7efbf060
 
 name:           TokenCount
 version:        0.1.0.0
@@ -28,7 +28,6 @@ source-repository head
 library
   exposed-modules:
       TokenCount
-      TokenCountDeep
   other-modules:
       Paths_TokenCount
   hs-source-dirs:

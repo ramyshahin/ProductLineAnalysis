@@ -84,24 +84,25 @@ rewriteDecl decls d =
         -- TODO: other cases
         _ -> trace ("Unhandled Decl " ++ prettyPrint d) $ d
 
-getPatternVars :: Pattern -> [String]
-getPatternVars p = 
+getPatternVars :: Pattern -> S.Set String
+getPatternVars p =  
     case p of
-        VarPat v                -> [prettyPrint v]
-        InfixAppPat lhs _ rhs   -> (getPatternVars lhs) ++ (getPatternVars rhs)
-        AppPat _ ps             -> foldl (++) [] $ map getPatternVars (_annListElems ps)
-        TuplePat ps             -> foldl (++) [] $ map getPatternVars (_annListElems ps)
-        ListPat ps              -> foldl (++) [] $ map getPatternVars (_annListElems ps)
+        VarPat v                -> S.singleton $ prettyPrint v
+        InfixAppPat lhs _ rhs   -> S.union (getPatternVars lhs) (getPatternVars rhs)
+        AppPat _ ps             -> unionPatterns ps
+        TuplePat ps             -> unionPatterns ps
+        ListPat ps              -> unionPatterns ps
         ParenPat p              -> getPatternVars p
         TypeSigPat p _          -> getPatternVars p
-        _annListElems           -> trace ("Unhandled Pattern " ++ prettyPrint p) $ []
+        _annListElems           -> trace ("Unhandled Pattern " ++ prettyPrint p) $ S.empty
+    where unionPatterns ps = foldl S.union S.empty $ map getPatternVars (_annListElems ps)
 
-getMatchVars :: Match -> [String]
+getMatchVars :: Match -> S.Set String
 getMatchVars (Match lhs _ _) =
     case lhs of 
-        MatchLhs _ args -> foldl (++) [] $ map getPatternVars (_annListElems args)
+        MatchLhs _ args -> foldl S.union S.empty $ map getPatternVars (_annListElems args)
         InfixLhs lhs _ rhs args -> 
-            foldl (++) ((getPatternVars lhs) ++ (getPatternVars rhs)) $ map getPatternVars (_annListElems args)
+            foldl S.union (S.union (getPatternVars lhs) (getPatternVars rhs)) $ map getPatternVars (_annListElems args)
 {-
 getValBindVars :: ValueBind -> [String]
 getValBindVars vb =
@@ -119,11 +120,11 @@ getLocalsVars bs = foldl (++) [] $ map getLocalVars (_annListElems bs)
 rewriteValueBind :: Declarations -> ValueBind -> Decl
 rewriteValueBind globals vb = mkValueBinding $ case vb of
     SimpleBind p rhs bs -> 
-        let locals = S.fromList $ getPatternVars p -- ++ (getLocalsVars bs) 
+        let locals = getPatternVars p
         in  mkSimpleBind p (rewriteRhs globals locals rhs) (_annMaybe bs)
     FunctionBind ms -> 
         mkFunctionBind (
-            map (\m -> rewriteMatch globals (S.fromList $ getMatchVars m) m) (_annListElems ms)) 
+            map (\m -> rewriteMatch globals (getMatchVars m) m) (_annListElems ms)) 
     _ -> trace ("Unhandled Value Bind " ++ prettyPrint vb) $ vb
 
 rewriteRhs :: Declarations -> Declarations -> Rhs -> Rhs
@@ -156,6 +157,9 @@ externalDecl globals locals x =
         r = not $ S.member (prettyPrint x) allDecls
     in  trace (debugDecls allDecls ++ " External " ++ prettyPrint x ++ " ? " ++ show r) $ r
 
+getLiftedPrimitiveOp :: String -> Operator
+getLiftedPrimitiveOp o = mkUnqualOp (o ++ "^")
+
 rewriteInfixApp :: Declarations -> Declarations -> Expr -> Operator -> Expr -> Expr
 rewriteInfixApp globals locals lhs op rhs =
     let lhs' = rewriteExpr globals locals lhs
@@ -166,9 +170,30 @@ rewriteInfixApp globals locals lhs op rhs =
     in  case op of
             NormalOp n  -> 
                 if      S.member (prettyPrint n) L.primitiveOpNames
-                then    mkInfixApp lhs' (mkUnqualOp ("|" ++ (prettyPrint n) ++ "|")) rhs'
+                then    mkInfixApp lhs' (getLiftedPrimitiveOp (prettyPrint n)) rhs'
                 else    rewriteIt
             _           -> rewriteIt
+
+rewritePattern :: Pattern -> Pattern
+rewritePattern p = 
+    case p of
+        InfixAppPat lhs o@(NormalOp op) rhs -> 
+            let lhs' = rewritePattern lhs
+                rhs' = rewritePattern rhs
+                op'  = if S.member (prettyPrint op) L.primitiveOpNames
+                       then getLiftedPrimitiveOp (prettyPrint op)
+                       else o
+            in mkInfixAppPat lhs' op' rhs'
+        ParenPat p' -> mkParenPat $ rewritePattern p'
+        _ -> p
+
+rewriteAlt :: Declarations -> Declarations -> Alt -> Expr
+rewriteAlt globals locals (Alt p rhs _) =
+    let pVars = getPatternVars p
+        locals' = S.union locals pVars
+    in  case rhs of
+            CaseRhs e -> mkApp mkVarT $ mkParen (mkLambda [rewritePattern p] (rewriteExpr globals locals' e))
+            _         -> trace "Unsupported Alt type" $ mkHole
 
 -- lifting expressions 
 rewriteExpr :: Declarations -> Declarations -> Expr -> Expr
@@ -192,11 +217,11 @@ rewriteExpr globals locals e =
                                     (mkParen (rewriteExpr globals locals t)))
                             (mkParen (rewriteExpr globals locals e))
         Case v alts -> 
-            --let as   = _annListElems alts
+            let as   = map (rewriteAlt globals locals) $ _annListElems alts
             --    ls   = map (\(Alt p (CaseRhs rhs) _) -> mkLambda [p] rhs) as
             --    ls'  = mkVars $ map (\l -> (l,tt)) ls 
             --in  mkParen $ mkInfixApp ls' appOp v 
-                    mkApp (mkApp liftedCase (mkParen (mkLambdaCase (_annListElems alts)))) v
+            in  mkList as
         MultiIf alts -> trace "Unhandled MultiIf" e 
         Lambda b e -> trace "Unhandled Lambda" e
         Let b e -> trace "Unhandled Let" e

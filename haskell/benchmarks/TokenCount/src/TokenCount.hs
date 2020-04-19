@@ -4,9 +4,8 @@ import Lexer
 
 tokenCount :: [CToken] -> Int
 tokenCount xs = 
-    if null xs then
-        0
-    else if fst (head xs) == TNil then 
-        tokenCount (tail xs)
-    else
-        1 + tokenCount (tail xs)
+    case xs of 
+        [] -> 0
+        (y : ys) -> if fst y == TNil 
+                    then tokenCount ys
+                    else 1 + tokenCount ys
