@@ -16,6 +16,7 @@ import Control.Reference -- ((.-), (.=), (^.) (&))
 import FastString
 import Debug.Trace 
 import qualified Data.Set as S 
+import qualified SPL as L
 
 type Declarations = S.Set String
 
@@ -155,25 +156,37 @@ externalDecl globals locals x =
         r = not $ S.member (prettyPrint x) allDecls
     in  trace (debugDecls allDecls ++ " External " ++ prettyPrint x ++ " ? " ++ show r) $ r
 
+rewriteInfixApp :: Declarations -> Declarations -> Expr -> Operator -> Expr -> Expr
+rewriteInfixApp globals locals lhs op rhs =
+    let lhs' = rewriteExpr globals locals lhs
+        rhs' = rewriteExpr globals locals rhs
+        rewriteIt = mkInfixApp    (mkInfixApp (liftOp op) appOp (mkParen lhs')) 
+                                        appOp 
+                                        (mkParen $ rhs')
+    in  case op of
+            NormalOp n  -> 
+                if      S.member (prettyPrint n) L.primitiveOpNames
+                then    mkInfixApp lhs' (mkUnqualOp ("|" ++ (prettyPrint n) ++ "|")) rhs'
+                else    rewriteIt
+            _           -> rewriteIt
+
 -- lifting expressions 
 rewriteExpr :: Declarations -> Declarations -> Expr -> Expr
 rewriteExpr globals locals e = 
     case e of 
         Lit l -> mkParen $ mkApp mkVarT (mkLit l)
         Var n -> rewriteVar globals locals n 
-        InfixApp arg1 op arg2 -> 
-            mkInfixApp (mkInfixApp 
-                            (liftOp op) 
-                            appOp 
-                            (mkParen $ rewriteExpr globals locals arg1)) 
-                        appOp 
-                        (mkParen $ rewriteExpr globals locals arg2)
+        InfixApp arg1 op arg2 -> rewriteInfixApp globals locals arg1 op arg2
         PrefixApp op arg -> mkInfixApp liftedNeg appOp arg
-        App fun arg ->  case fun of 
-                            Var n -> if (externalDecl globals locals n)
-                                     then mkInfixApp (rewriteExpr globals locals fun) appOp (rewriteExpr globals locals arg)
-                                     else mkApp fun (rewriteExpr globals locals arg)
-                            _     -> mkInfixApp (rewriteExpr globals locals fun) appOp (rewriteExpr globals locals arg)
+        App fun arg ->  let fun' = rewriteExpr globals locals fun
+                            arg' = rewriteExpr globals locals arg
+                        in  case fun of 
+                                Var n -> if (externalDecl globals locals n)
+                                         then   if S.member (prettyPrint n) L.primitiveFuncNames
+                                                then mkApp (mkVar $ mkName ((prettyPrint n) ++ "\'")) arg'
+                                                else mkInfixApp fun appOp arg'
+                                         else mkApp fun arg'
+                                _     -> mkInfixApp fun' appOp arg'
         If c t e -> mkApp   (mkApp  (mkApp  liftedCond  
                                             (mkParen (rewriteExpr globals locals c)))
                                     (mkParen (rewriteExpr globals locals t)))

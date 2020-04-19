@@ -24,6 +24,9 @@ dependencies:
 - haskell-tools-refactor
 - haskell-tools-ast
 - references
+- SPL
+- containers
+
 library:
   source-dirs: src
 

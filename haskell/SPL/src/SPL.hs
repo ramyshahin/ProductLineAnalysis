@@ -18,6 +18,7 @@ import Control.Applicative
 import Control.Monad
 import Data.List 
 import Data.Maybe
+import qualified Data.Set as S  
 import Control.Exception
 import Control.Parallel.Strategies
 import System.Mem.StableName
@@ -238,14 +239,53 @@ liftV4 = liftA4
 liftV5 :: (a -> b -> c -> d -> e -> f) -> Var a -> Var b -> Var c -> Var d -> Var e -> Var f
 liftV5 = liftA5
 
--- list cons
 (|:|) :: Var a -> Var [a] -> Var [a]
 (|:|) = liftV2 (:)
+infixr |:|
 
--- Bool operation lifting
-(|==|) :: (Eq a) => Var a -> Var a -> Var Bool
-(|==|) = liftV2 (==)
-
+-- lifted primitive operators
 (|+|) :: Num a => Var a -> Var a -> Var a
 (|+|) = liftV2 (+)
+infixl 6 |+|
 
+(|-|) :: Num a => Var a -> Var a -> Var a
+(|-|) = liftV2 (-)
+infixl 6 |-|
+
+(|*|) :: Num a => Var a -> Var a -> Var a
+(|*|) = liftV2 (*)
+infixl 7 |*|
+
+(|/|) :: Fractional a => Var a -> Var a -> Var a
+(|/|) = liftV2 (/)
+infixl 7 |/|
+
+(|==|) :: Eq a => Var a -> Var a -> Var Bool
+(|==|) = liftV2 (==)
+infix 3 |==|
+
+(|/=|) :: Eq a => Var a -> Var a -> Var Bool
+(|/=|) = liftV2 (/=)
+infix 3 |/=|
+
+primitiveOpNames :: S.Set String
+primitiveOpNames = S.fromList ["+", "-", "*", "/", "==", "/="]
+
+-- lifted primitive functions
+head' :: Var [a] -> Var a
+head' = liftV head
+
+tail' :: Var [a] -> Var [a]
+tail' = liftV tail
+
+null' :: Foldable t => Var (t a) -> Var Bool
+null' = liftV null
+
+fst' :: Var (a, b) -> Var a
+fst' = liftV fst
+
+snd' :: Var (a, b) -> Var b
+snd' = liftV snd
+
+primitiveFuncNames :: S.Set String
+primitiveFuncNames = S.fromList ["head", "tail", "null", "fst", "snd"]

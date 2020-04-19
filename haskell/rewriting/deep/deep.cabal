@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0ada7c8e2eac4e873538a3bb662621e8beb006e055cf17399d5bdeeaf4e940ac
+-- hash: 6a6ee8369c8ecdec47ed5a13f8c2a0ed19992b279a53d6f16e9832ee2997d29c
 
 name:           deep
 version:        0.1.0.0
@@ -33,7 +33,8 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      SPL
+    , base >=4.7 && <5
     , common
     , containers
     , ghc
@@ -52,7 +53,8 @@ executable deep-rewriter-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      SPL
+    , base >=4.7 && <5
     , common
     , deep
   default-language: Haskell2010
@@ -78,7 +80,8 @@ test-suite rewriter-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      SPL
+    , base >=4.7 && <5
     , common
     , deep
   default-language: Haskell2010

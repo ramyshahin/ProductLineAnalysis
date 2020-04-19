@@ -3,6 +3,8 @@ module Rewrite.Common where
 import Language.Haskell.Tools.Refactor
 import Language.Haskell.Tools.AST.Ann
 import Control.Reference ((^.), (.-))
+import qualified SPL as L 
+import qualified Data.Set as S 
 
 moduleNameSPL = mkModuleName "SPL"
 importSPL = mkImportDecl False False False Nothing moduleNameSPL Nothing Nothing
@@ -42,5 +44,3 @@ rewriteTypeSig :: TypeSignature -> Decl
 rewriteTypeSig (TypeSignature ns t) = 
     let n = head $ _annListElems ns
     in  mkTypeSigDecl $ mkTypeSignature n (rewriteType t)
-
-    
