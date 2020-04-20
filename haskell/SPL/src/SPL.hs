@@ -53,7 +53,7 @@ type Val a = (a, PresenceCondition)
 -- to the same set of products). This does not affect correctness, but severely
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
-newtype Var t = Var [(Val t)]
+data Var t = Var [(Val t)]
 
 exists :: Eq t => Val t -> Var t -> Bool
 exists (x, xpc) ys' =
@@ -257,13 +257,13 @@ liftV5 :: (a -> b -> c -> d -> e -> f) -> Var a -> Var b -> Var c -> Var d -> Va
 liftV5 = liftA5
 
 -- lifted list
-data List' a = 
-    Nil'
-   | Cons' (Var a) (List' a)
+--data [a]^ = 
+--    [^]
+--   | (Var a) :^ (List' a)
 
-pattern (:^) :: Var a -> List' a -> List' a 
-pattern x :^ xs <- Cons' x xs
-infixr :^
+--pattern (:^) :: Var a -> List' a -> List' a 
+--pattern x :^ xs <- Cons' x xs
+--infixr :^
 
 (|:|) :: Var a -> Var [a] -> Var [a]
 (|:|) = liftV2 (:)
@@ -315,3 +315,40 @@ snd' = liftV snd
 
 primitiveFuncNames :: S.Set String
 primitiveFuncNames = S.fromList ["head", "tail", "null", "fst", "snd"]
+
+----- tuple access
+oneOfOne :: (a) -> a
+oneOfOne (x) = x
+oneOfOne' = liftV oneOfOne
+
+oneOfTwo :: (a,b) -> a
+oneOfTwo = fst
+oneOfTwo' = fst'
+
+twoOfTwo :: (a,b) -> b
+twoOfTwo = snd
+twoOfTwo' = snd'
+
+oneOfThree :: (a,b,c) -> a
+oneOfThree (x,y,z) = x
+oneOfThree' = liftV oneOfThree
+
+twoOfThree :: (a,b,c) -> b
+twoOfThree (x,y,z) = y
+twoOfThree' = liftV twoOfThree
+
+threeOfThree :: (a,b,c) -> c
+threeOfThree (x,y,z) = z
+threeOfThree' = liftV threeOfThree
+
+uncurry0 :: Var a -> Var () -> Var a
+uncurry0 x _ = x
+
+uncurry1 :: (Var a -> Var b) -> Var (a) -> Var b
+uncurry1 f x = f (oneOfOne' x)
+
+uncurry2 :: (Var a -> Var b -> Var c) -> Var (a,b) -> Var c
+uncurry2 f x = f (oneOfTwo' x) (twoOfTwo' x)
+
+uncurry3 :: (Var a -> Var b -> Var c -> Var d) -> Var (a, b, c) -> Var d
+uncurry3 f x = f (oneOfThree' x) (twoOfThree' x) (threeOfThree' x)

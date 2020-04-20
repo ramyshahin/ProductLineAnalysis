@@ -59,31 +59,6 @@ getModuleDeclarations mod = do
         s     = S.fromList names
     trace (debugDecls s) $ s
 
--- | Rewriting imports
---
-imports xs = map snd (zipWithSeparators xs)
-    
-rewritePragma = id
-
-rewriteHeader :: Maybe ModuleHead -> Maybe ModuleHead 
-rewriteHeader header =
-    case header of
-        Nothing -> Nothing
-        Just h  -> Just $ mhName .- (appendModName "Deep") $ h
-
-rewriteImports :: ImportDeclList  -> ImportDeclList 
-rewriteImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs 
-    
--- | Rewrite declarations
---
-rewriteDecl :: Declarations -> Decl -> Decl
-rewriteDecl decls d = 
-     case d of
-        TypeSigDecl sig -> rewriteTypeSig sig
-        ValueBinding vb -> rewriteValueBind decls vb
-        -- TODO: other cases
-        _ -> trace ("Unhandled Decl " ++ prettyPrint d) $ d
-
 getPatternVars :: Pattern -> S.Set String
 getPatternVars p =  
     case p of
@@ -117,6 +92,35 @@ getLocalVars b =
 getLocalsVars :: LocalBinds -> [String]
 getLocalsVars bs = foldl (++) [] $ map getLocalVars (_annListElems bs)
 -}
+
+-- | Rewriting imports
+--
+imports xs = map snd (zipWithSeparators xs)
+    
+rewritePragma = id
+
+rewriteHeader :: Maybe ModuleHead -> Maybe ModuleHead 
+rewriteHeader header =
+    case header of
+        Nothing -> Nothing
+        Just h  -> Just $ mhName .- (appendModName "Deep") $ h
+
+moduleNameDeepTypes = mkModuleName "DeepTypes"
+importDeepTypes = mkImportDecl False False False Nothing moduleNameDeepTypes Nothing Nothing
+
+rewriteImports :: ImportDeclList  -> ImportDeclList 
+rewriteImports xs = (annListElems .= concat [[importSPL, importDeepTypes], (imports xs)]) xs 
+    
+-- | Rewrite declarations
+--
+rewriteDecl :: Declarations -> Decl -> Decl
+rewriteDecl decls d = 
+     case d of
+        TypeSigDecl sig -> rewriteTypeSig sig
+        ValueBinding vb -> rewriteValueBind decls vb
+        -- TODO: other cases
+        _ -> trace ("Unhandled Decl " ++ prettyPrint d) $ d
+
 rewriteValueBind :: Declarations -> ValueBind -> Decl
 rewriteValueBind globals vb = mkValueBinding $ case vb of
     SimpleBind p rhs bs -> 
@@ -185,15 +189,51 @@ rewritePattern p =
                        else o
             in mkInfixAppPat lhs' op' rhs'
         ParenPat p' -> mkParenPat $ rewritePattern p'
-        _ -> p
+        {- ListPat ps  ->  let ps' = _annListElems ps
+                            op  = getLiftedPrimitiveOp ":"
+                        in  mkParenPat (foldr (\l r -> mkInfixAppPat l op r) nil' ps')
+        VarPat n    -> trace ("Var pattern: " ++ (prettyPrint p)) p
+        LitPat l    -> trace ("Literal pattern: " ++ (prettyPrint p)) p
+        AppPat c args -> if (prettyPrint c) == "[]"
+                         then mkAppPat nilName (_annListElems args)
+                         else p
+        TuplePat _  -> trace ("Tuple pattern: " ++ (prettyPrint p)) p -}
+        _ -> trace ("Unknown pattern: " ++ (prettyPrint p)) p
 
-rewriteAlt :: Declarations -> Declarations -> Alt -> Expr
-rewriteAlt globals locals (Alt p rhs _) =
-    let pVars = getPatternVars p
-        locals' = S.union locals pVars
-    in  case rhs of
-            CaseRhs e -> mkApp mkVarT $ mkParen (mkLambda [rewritePattern p] (rewriteExpr globals locals' e))
-            _         -> trace "Unsupported Alt type" $ mkHole
+rewriteAlt :: Declarations -> Declarations -> (Integer, Alt) -> Expr
+rewriteAlt globals locals (index, Alt p (CaseRhs e) _) =
+    let vCase   = mkVar $ mkName ("case" ++ show index)
+        vSplit  = mkVar $ mkName ("split" ++ show index)
+        vLiftV  = mkVar $ mkName ("liftV")
+        pVars   = getPatternVars p
+        vUncurry = mkVar $ mkName ("uncurry" ++ show (length pVars))
+        dotOp   = mkUnqualOp "."
+    in  --if (length pVars) > 0 
+        {- then -} mkInfixApp (mkParen (mkApp vUncurry vCase)) dotOp (mkParen (mkApp vLiftV vSplit))
+        --else vCase
+
+splitAlts :: Integer -> [Alt] -> [Alt]
+splitAlts index as =
+    case as of
+        []                  -> []
+        ((Alt p _ _) : as') -> 
+            let rhs = mkCaseRhs $ mkLit (mkIntLit index)
+            in  (mkAlt p rhs Nothing) : (splitAlts (index + 1) as')
+
+dummyVar = "__dummy__"
+
+mkAltBinding :: Declarations -> Declarations -> Integer -> Alt -> LocalBind
+mkAltBinding globals locals index (Alt p (CaseRhs rhs) _) = 
+    let lhsName = mkName $ "case" ++ (show index)
+        splitName = mkName $ "split" ++ (show index)
+        params' = getPatternVars p
+        params = S.toList $ params'
+        lhs = mkMatchLhs lhsName (map (mkVarPat . mkName) params)
+        dummy = mkName dummyVar
+        splitLhs = mkMatchLhs splitName [mkVarPat dummy]
+        splitAlt = mkAlt p (mkCaseRhs (mkTuple (map (mkVar . mkName) params))) Nothing
+    in  mkLocalValBind $ mkFunctionBind [mkMatch lhs (mkUnguardedRhs (rewriteExpr globals (S.union locals params') rhs)) Nothing,
+                                         mkMatch splitLhs (mkUnguardedRhs (mkCase (mkVar dummy) [splitAlt])) Nothing]
 
 -- lifting expressions 
 rewriteExpr :: Declarations -> Declarations -> Expr -> Expr
@@ -217,11 +257,12 @@ rewriteExpr globals locals e =
                                     (mkParen (rewriteExpr globals locals t)))
                             (mkParen (rewriteExpr globals locals e))
         Case v alts -> 
-            let as   = map (rewriteAlt globals locals) $ _annListElems alts
-            --    ls   = map (\(Alt p (CaseRhs rhs) _) -> mkLambda [p] rhs) as
-            --    ls'  = mkVars $ map (\l -> (l,tt)) ls 
-            --in  mkParen $ mkInfixApp ls' appOp v 
-            in  mkList as
+            let dummy    = mkName dummyVar
+                arg      = mkVarPat $ dummy
+                splitter = mkParen $ mkLambda [arg] (mkCase (mkVar dummy) (splitAlts 0 $ _annListElems alts))
+                as       = map (rewriteAlt globals locals) $ (zip [0..] $ _annListElems alts)
+            in  mkLet (map (\(a,i) -> mkAltBinding globals locals a i) (zip [0..] (_annListElems alts)))
+                      (mkApp (mkApp (mkApp liftedCase v) splitter) (mkList as))
         MultiIf alts -> trace "Unhandled MultiIf" e 
         Lambda b e -> trace "Unhandled Lambda" e
         Let b e -> trace "Unhandled Let" e
