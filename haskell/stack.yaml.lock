@@ -102,6 +102,20 @@ packages:
       sha256: 4a0e8d5c268b9d19cb472ac94f0e2291afbb899ce4f5878bbbe86effeba36c6f
   original:
     hackage: Stack-0.4.0@sha256:ada69a23ed9bbaf97260397f6b39b7a1f4e22a11bcac3fe2e8f23f1513f59fd8,1092
+- completed:
+    hackage: binary-orphans-1.0.1@sha256:82eaf63df8fb7ba8da12352de03a14269e9c11bdcc3e052310d959789bf55c1e,2116
+    pantry-tree:
+      size: 285
+      sha256: e8c7b2aabec8f32c03f58df9a6069998e0ab74acef5d63430f8bff3b33146729
+  original:
+    hackage: binary-orphans-1.0.1@sha256:82eaf63df8fb7ba8da12352de03a14269e9c11bdcc3e052310d959789bf55c1e,2116
+- completed:
+    hackage: criterion-1.5.6.2@sha256:da86b8c918ed41d6acd7772142aa62ab293453058ef72cb46e02d93b5cbe270f,5128
+    pantry-tree:
+      size: 2336
+      sha256: ecb6f96c9d526913faaf0bfda557db421a88492b79a2917adcd6e4277fe596a5
+  original:
+    hackage: criterion-1.5.6.2
 snapshots:
 - completed:
     size: 498398

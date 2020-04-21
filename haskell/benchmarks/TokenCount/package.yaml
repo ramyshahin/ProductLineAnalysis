@@ -26,6 +26,7 @@ library:
   source-dirs: src
   dependencies: 
   - vcpp
+  - SPL
 
 executables:
   TokenCount-exe:
@@ -35,8 +36,12 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -fno-ignore-asserts
     dependencies:
     - TokenCount
+    - vcpp
+    - criterion
+    - SPL
 
 tests:
   TokenCount-test:

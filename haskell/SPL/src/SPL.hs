@@ -25,6 +25,7 @@ import Control.Exception
 import Control.Parallel.Strategies
 import System.Mem.StableName
 import System.IO.Unsafe
+import Debug.Trace
 
 (===) :: a -> a -> Bool
 (!x) === (!y) = unsafePerformIO $ do 
@@ -167,22 +168,31 @@ restrict :: PresenceCondition -> Var t -> Var t
 restrict pc (Var v) =
     Var $ filter (\(x,pc') -> sat pc') (map (\(x,pc') -> (x, conj[pc',pc])) v)
                                     
+--disjointnessInv :: Show t => Var t -> Var t -> Bool
+--disjointnessInv x@(Var a) y@(Var b) = 
+--    let conjunctions = [andBDD pc1 pc2 | (_,pc1) <- a, (_,pc2) <- b]
+--    in  trace ((show x) ++ " U " ++ show y) $ all (== ff) conjunctions
+
+tracePCs :: Var t -> String
+tracePCs (Var xs) = foldl (\s (_,r) -> s ++ " " ++ (show r)) "" xs
+
 union :: Var t -> Var t -> Var t
-union (Var a) (Var b) =
-    Var (a ++ b)
+union x@(Var a) y@(Var b) =
+    let result = Var (a ++ b)
+    in {-trace (tracePCs x) $ trace (tracePCs y) $ assert (inv result)-} result
 
 unions :: [Var t] -> Var t 
-unions xs = Var (foldr (++) [] (map (\(Var v) -> v) xs))
+unions xs = foldr SPL.union (Var []) xs
 
-union2 :: Var (Var t) -> Var t 
-union2 (Var xs') = unions (map (\(x,pc) -> (restrict pc x)) xs')
+--union2 :: Var (Var t) -> Var t 
+--union2 (Var xs') = unions (map (\(x,pc) -> (restrict pc x)) xs')
 
 pairs :: [t] -> [(t,t)]
 pairs [] = []
 pairs xs = zip xs (tail xs)
 
-inv :: Show t => Var t -> Bool
-inv (Var v) = {-trace ("inv: " ++ (show (Var v))) $-} 
+inv :: Var t -> Bool
+inv (Var v) = {- trace ("inv: " ++ (show (Var v))) $ -} 
     all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
 
 apply_ :: Val (a -> b) -> Var a -> Var b
@@ -201,17 +211,22 @@ cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
 liftedCond :: Var Bool -> Var a -> Var a -> Var a
-liftedCond !(Var c) x y = compact agg
+liftedCond !c'@(Var c) x y = --assert (inv c' && inv x && inv y) $ 
+    compact agg
     where parts = map (\c' -> case c' of
                                 (True, pc) -> restrict pc x
                                 (False, pc) -> restrict pc y) c
-          agg = foldr SPL.union (Var []) parts
+          agg = unions parts
          
 liftedNeg :: Num a => Var (a -> a)
 liftedNeg = mkVarT (\x -> -x)
 
+partitionInv :: Var a -> [Var a] -> Bool
+partitionInv (Var x) xs = length x == sum xs
+    where sum xs = foldl (\c (Var x) -> c + length x) 0 xs
+
 caseSplitter :: Var a -> (a -> Int) -> Int -> [Var a]
-caseSplitter (Var input) splitter range = 
+caseSplitter i@(Var input) splitter range = 
     let initV = V.replicate range (Var [])
         xs = foldl 
                 (\vec (v,pc) -> let index = splitter v 
@@ -219,14 +234,18 @@ caseSplitter (Var input) splitter range =
                                     item' = Var $ (v, pc) : item
                                 in  vec V.// [(index, item')]) 
                 initV input 
-    in  V.toList xs
+        ret = V.toList xs
+    in  assert (partitionInv i ret) ret
+
+isNilVar :: Var a -> Bool
+isNilVar (Var xs) = null xs 
 
 liftedCase :: Var a -> (a -> Int) -> [Var a -> Var b] -> Var b
 liftedCase input splitter alts =
     compact agg
     where   split = caseSplitter input splitter (length alts) 
-            parts  = map (\(l,r) -> l r) (zip alts split) 
-            agg    = foldr SPL.union (Var []) parts 
+            parts  = map (\(l,r) -> if isNilVar r then (Var []) else l r) (zip alts split) 
+            agg    = unions parts 
 
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]

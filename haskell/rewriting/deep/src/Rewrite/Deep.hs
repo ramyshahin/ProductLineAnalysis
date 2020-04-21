@@ -109,7 +109,7 @@ moduleNameDeepTypes = mkModuleName "DeepTypes"
 importDeepTypes = mkImportDecl False False False Nothing moduleNameDeepTypes Nothing Nothing
 
 rewriteImports :: ImportDeclList  -> ImportDeclList 
-rewriteImports xs = (annListElems .= concat [[importSPL, importDeepTypes], (imports xs)]) xs 
+rewriteImports xs = (annListElems .= concat [[importSPL{-, importDeepTypes-}], (imports xs)]) xs 
     
 -- | Rewrite declarations
 --
