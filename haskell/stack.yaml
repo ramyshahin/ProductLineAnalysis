@@ -43,6 +43,7 @@ packages:
 - rewriting/deep
 - vcpp
 - benchmarks/TokenCount
+- benchmarks/ControlFlow
 # Dependency packages to be pulled from upstream that are not in the resolver
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)
@@ -63,6 +64,9 @@ extra-deps:
 - Stack-0.4.0@sha256:ada69a23ed9bbaf97260397f6b39b7a1f4e22a11bcac3fe2e8f23f1513f59fd8,1092
 - binary-orphans-1.0.1@sha256:82eaf63df8fb7ba8da12352de03a14269e9c11bdcc3e052310d959789bf55c1e,2116
 - criterion-1.5.6.2
+- graphviz-2999.20.0.4
+- language-c-0.8.3
+- text-1.2.3.1
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

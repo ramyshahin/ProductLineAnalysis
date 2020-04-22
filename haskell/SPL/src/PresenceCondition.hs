@@ -25,8 +25,8 @@ languageDef =
         Token.commentLine  = "//",
         Token.identStart   = letter,
         Token.identLetter  = alphaNum,
-        Token.reservedNames = ["tt", "ff"],
-        Token.reservedOpNames = ["/\\", "\\/", "!"]
+        Token.reservedNames = ["tt", "ff", "True", "False"],
+        Token.reservedOpNames = ["/\\", "&&", "\\/", "||", "!"]
     }
 
 lexer = Token.makeTokenParser languageDef
@@ -42,21 +42,25 @@ parens     = Token.parens     lexer -- parses surrounding parenthesis:
 --semi       = Token.semi       lexer -- parses a semicolon
 whiteSpace = Token.whiteSpace lexer -- parses whitespace
 
-pcParser :: Parser PCExpr
-pcParser = whiteSpace >> pc 
+--pcParser :: Parser PCExpr
+--pcParser = whiteSpace >> pc 
 
-pc :: Parser PCExpr
-pc = parens pc
+--pc :: Parser PCExpr
+--pc = parens pc
 
 -- parsing subexpressions
 bOperators = [ [ Prefix (reservedOp "!"   >> return Not) ],
                [ Infix  (reservedOp "/\\" >> return And) AssocLeft],
-               [ Infix  (reservedOp "\\/" >> return Or)  AssocLeft ]
+               [ Infix  (reservedOp "\\/" >> return Or)  AssocLeft],
+               [ Infix  (reservedOp "&&" >> return And) AssocLeft],
+               [ Infix  (reservedOp "||" >> return Or)  AssocLeft]
              ]
 
 bTerm =  parens pcExpr 
      <|> (reserved "tt" >> return TT)
+     <|> (reserved "True" >> return TT)
      <|> (reserved "ff" >> return FF)
+     <|> (reserved "False" >> return FF)
      <|> liftM Feat identifier
 
 pcExpr :: Parser PCExpr 
@@ -64,6 +68,6 @@ pcExpr = buildExpressionParser bOperators bTerm
 
 parsePC :: String -> PCExpr
 parsePC str =
-  case parse pcParser "" str of
+  case parse pcExpr "" str of
     Left e  -> error $ show e
     Right r -> r
