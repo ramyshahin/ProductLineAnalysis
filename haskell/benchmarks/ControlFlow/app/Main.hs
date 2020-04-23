@@ -5,4 +5,5 @@ import ControlFlow
 main :: IO ()
 main = do
     input <- inputGraph
-    debugGraph input 
+    nodes <- debugGraph input 
+    return ()
