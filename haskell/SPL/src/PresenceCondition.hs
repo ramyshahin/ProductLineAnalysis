@@ -8,18 +8,6 @@ import Text.ParserCombinators.Parsec.Expr
 import Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token as Token 
 
-{-
-data PCExpr =
-              TT
-            | FF
-            | Feat   String 
-            | Not    PCExpr 
-            | And    PCExpr PCExpr
-            | Or     PCExpr PCExpr
-            deriving (Show) 
--}
---data Bin = And | Or deriving (Show)
-
 type PCExpr = Prop
 
 (/\) = andBDD
@@ -35,8 +23,8 @@ languageDef =
         Token.commentLine  = "//",
         Token.identStart   = letter <|> char '_',
         Token.identLetter  = alphaNum <|> char '_',
-        Token.reservedNames = ["tt", "ff", "True", "False", "def"],
-        Token.reservedOpNames = ["/\\", "&", "\\/", "|", "!"]
+        Token.reservedNames = ["tt", "ff", "True", "False", "def", "definedEx"],
+        Token.reservedOpNames = ["/\\", "&", "&&", "\\/", "|", "||", "!"]
     }
 
 lexer = Token.makeTokenParser languageDef
@@ -48,7 +36,7 @@ parens     = Token.parens     lexer -- parses surrounding parenthesis:
                                     --   parens p
                                     -- takes care of the parenthesis and
                                     -- uses p to parse what's inside them
---integer    = Token.integer    lexer -- parses an integer
+integer    = Token.integer    lexer -- parses an integer
 --semi       = Token.semi       lexer -- parses a semicolon
 whiteSpace = Token.whiteSpace lexer -- parses whitespace
 
@@ -62,6 +50,8 @@ whiteSpace = Token.whiteSpace lexer -- parses whitespace
 bOperators = [ [ Prefix (reservedOp "!"   >> return neg) ],
                [ Infix  (reservedOp "/\\" >> return (/\)) AssocLeft],
                [ Infix  (reservedOp "\\/" >> return (\/))  AssocLeft],
+               [ Infix  (reservedOp "&&" >> return (/\)) AssocLeft],
+               [ Infix  (reservedOp "||" >> return (\/))  AssocLeft],
                [ Infix  (reservedOp "&" >> return (/\)) AssocLeft],
                [ Infix  (reservedOp "|" >> return (\/))  AssocLeft]
              ]
@@ -71,7 +61,9 @@ bTerm =  parens pcExpr
      <|> (reserved "True" >> return TT)
      <|> (reserved "ff" >> return FF)
      <|> (reserved "False" >> return FF)
+     <|> (reserved "definedEx" >> parens (liftM mkBDDVar identifier))
      <|> (reserved "def" >> parens (liftM mkBDDVar identifier))
+     <|> (integer >>= \i -> if i == 0 then return FF else return TT)
      <|> liftM mkBDDVar identifier
 
 pcExpr :: Parser PCExpr 
