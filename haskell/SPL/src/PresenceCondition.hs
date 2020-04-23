@@ -1,5 +1,6 @@
 module PresenceCondition where
 
+import PropBDD
 import System.IO 
 import Control.Monad
 import Text.ParserCombinators.Parsec 
@@ -7,6 +8,7 @@ import Text.ParserCombinators.Parsec.Expr
 import Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token as Token 
 
+{-
 data PCExpr =
               TT
             | FF
@@ -15,18 +17,26 @@ data PCExpr =
             | And    PCExpr PCExpr
             | Or     PCExpr PCExpr
             deriving (Show) 
-    
+-}
 --data Bin = And | Or deriving (Show)
+
+type PCExpr = Prop
+
+(/\) = andBDD
+(\/) = orBDD
+negPC = notBDD
+ttPC = tt
+ffPC = ff
 
 languageDef = 
     emptyDef {
         Token.commentStart = "/*",
         Token.commentEnd   = "*/", 
         Token.commentLine  = "//",
-        Token.identStart   = letter,
-        Token.identLetter  = alphaNum,
-        Token.reservedNames = ["tt", "ff", "True", "False"],
-        Token.reservedOpNames = ["/\\", "&&", "\\/", "||", "!"]
+        Token.identStart   = letter <|> char '_',
+        Token.identLetter  = alphaNum <|> char '_',
+        Token.reservedNames = ["tt", "ff", "True", "False", "def"],
+        Token.reservedOpNames = ["/\\", "&", "\\/", "|", "!"]
     }
 
 lexer = Token.makeTokenParser languageDef
@@ -49,11 +59,11 @@ whiteSpace = Token.whiteSpace lexer -- parses whitespace
 --pc = parens pc
 
 -- parsing subexpressions
-bOperators = [ [ Prefix (reservedOp "!"   >> return Not) ],
-               [ Infix  (reservedOp "/\\" >> return And) AssocLeft],
-               [ Infix  (reservedOp "\\/" >> return Or)  AssocLeft],
-               [ Infix  (reservedOp "&&" >> return And) AssocLeft],
-               [ Infix  (reservedOp "||" >> return Or)  AssocLeft]
+bOperators = [ [ Prefix (reservedOp "!"   >> return neg) ],
+               [ Infix  (reservedOp "/\\" >> return (/\)) AssocLeft],
+               [ Infix  (reservedOp "\\/" >> return (\/))  AssocLeft],
+               [ Infix  (reservedOp "&" >> return (/\)) AssocLeft],
+               [ Infix  (reservedOp "|" >> return (\/))  AssocLeft]
              ]
 
 bTerm =  parens pcExpr 
@@ -61,7 +71,8 @@ bTerm =  parens pcExpr
      <|> (reserved "True" >> return TT)
      <|> (reserved "ff" >> return FF)
      <|> (reserved "False" >> return FF)
-     <|> liftM Feat identifier
+     <|> (reserved "def" >> parens (liftM mkBDDVar identifier))
+     <|> liftM mkBDDVar identifier
 
 pcExpr :: Parser PCExpr 
 pcExpr = buildExpressionParser bOperators bTerm 
