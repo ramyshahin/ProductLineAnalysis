@@ -137,6 +137,13 @@ packages:
       sha256: c9b38b60593401bb378b694a42b085d46f74f97d86d39edeb01a616965f2b581
   original:
     hackage: text-1.2.3.1
+- completed:
+    hackage: hashable-1.2.7.0@sha256:03b6836ca9cd3ad0e5a2f3cce989b001dd0e05f306a873db3196037adb30e0a4,5215
+    pantry-tree:
+      size: 1514
+      sha256: 901c4f10bcf6bda842b849950a2767c918f4ed59fa8885f7c945dd6c7e763332
+  original:
+    hackage: hashable-1.2.7.0
 snapshots:
 - completed:
     size: 498398

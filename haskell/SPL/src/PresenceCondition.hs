@@ -7,6 +7,7 @@ import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Expr 
 import Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token as Token 
+import qualified Data.Set as S
 
 type PCExpr = Prop
 
@@ -74,3 +75,13 @@ parsePC str =
   case parse pcExpr "" str of
     Left e  -> error $ show e
     Right r -> r
+
+getPCFeatures :: PCExpr -> S.Set String
+getPCFeatures pc =
+  case pc of
+    TT        -> S.empty
+    FF        -> S.empty
+    Atom s    -> S.singleton s 
+    Neg p     -> getPCFeatures p
+    And l r   -> S.union (getPCFeatures l) (getPCFeatures r)
+    Or  l r   -> S.union (getPCFeatures l) (getPCFeatures r) 

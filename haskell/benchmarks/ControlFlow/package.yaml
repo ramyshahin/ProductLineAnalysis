@@ -27,6 +27,7 @@ dependencies:
 - text
 - SPL
 - hashtables
+- hashable
 
 library:
   source-dirs: src

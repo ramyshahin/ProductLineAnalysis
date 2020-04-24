@@ -14,7 +14,7 @@
 module SPL where
 
 import PropBDD
---import Prop
+import PresenceCondition
 import Control.Applicative
 import Control.Monad
 import Data.List 
@@ -175,6 +175,10 @@ restrict pc (Var v) =
 
 tracePCs :: Var t -> String
 tracePCs (Var xs) = foldl (\s (_,r) -> s ++ " " ++ (show r)) "" xs
+
+getFeatures :: Var t -> S.Set String
+getFeatures (Var vs) =
+    foldr S.union S.empty (map (getPCFeatures . snd) vs)
 
 union :: Var t -> Var t -> Var t
 union x@(Var a) y@(Var b) =

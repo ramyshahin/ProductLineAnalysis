@@ -1,6 +1,9 @@
 module Main where
 
 import CFGParser
+import CaseTermination
+import SPL
+import PresenceCondition 
 
 inputFileName = "/mnt/f/code/busybox-1.18.5/coreutils/head.cfg.dot"
 
@@ -16,8 +19,14 @@ getCntxtContents txt2node txt2cntxt c = do
     return (n, pc)
 -}
 
+analyze' = liftV analyze
+
 main :: IO ()
 main = do
     nodes <- readGraph inputFileName 
-    putStrLn $ show nodes 
+    --putStrLn $ show nodes 
+    let result = analyze' nodes
+    let features = getFeatures result
+    putStrLn $ "Features: " ++ (show features)
+    putStrLn $ show result
     return ()

@@ -6,6 +6,7 @@ module CaseTermination where
 import CFG
 import Language.C.Syntax.AST
 import Data.Maybe
+import Debug.Trace
 
 find :: Int -> [Int] -> Bool
 find n ns =
@@ -18,7 +19,7 @@ traverseNodes caseOnPath visited ns =
     concat (map (traverseFuncCFG caseOnPath visited) ns)
 
 traverseFuncCFG :: Maybe CFGNode -> [Int] -> CFGNode -> [CFGNode]
-traverseFuncCFG caseOnPath visited n =
+traverseFuncCFG caseOnPath visited n = --trace ((show n) ++ "\n\t" ++ (show caseOnPath)) $
     case n of
         (CFGNode i _ nt _ succ) -> 
             if      find i visited
