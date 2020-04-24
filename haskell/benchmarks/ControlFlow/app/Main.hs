@@ -1,9 +1,11 @@
 module Main where
 
-import ControlFlow
+import CFGParser
+
+inputFileName = "/mnt/f/code/busybox-1.18.5/coreutils/head.cfg.dot"
 
 main :: IO ()
 main = do
-    input <- inputGraph
+    input <- inputGraph inputFileName
     nodes <- debugGraph input 
     return ()

@@ -1,5 +1,6 @@
-module ControlFlow where
+module CFGParser where
 
+import CFG
 import Data.GraphViz.Types.Graph
 import Data.GraphViz.Commands.IO
 import Data.GraphViz.Parsing
@@ -13,43 +14,24 @@ import qualified Data.Text.Lazy     as T
 import qualified Data.List          as L
 import qualified Data.Maybe         as M
 import qualified Data.HashTable.IO  as H
+import SPL
 import PresenceCondition 
 
-inputFileName = "/mnt/f/code/busybox-1.18.5/coreutils/head.cfg.dot"
+--type VNode = Var Node
+
+--dummyNode = Node 0 T.empty (CFGDummy T.empty) [] []
+
+--mkVNode :: Node -> PCExpr -> VNode
+--mkVNode n pc = 
+--    mkVars [(n, pc), (dummyNode, negPC pc)]
 
 type HashTable k v = H.CuckooHashTable k v
 
 type Text2Node      = HashTable T.Text Node
 type Text2Cntxt     = HashTable T.Text (Context T.Text)
 
-data NodeType =
-    CFGExpr     CExpr
-  | CFGStat     CStat
-  | CFGVarDecl  CExtDecl
-  | CFGDecl     T.Text
-  | CFGFunc     T.Text
-  | CFGDummy    T.Text
-  deriving Show
-
-data Node = Node T.Text NodeType [(Node, PCExpr)] [(Node, PCExpr)] PCExpr
-    deriving Show
-
---instance Eq Node where
---    (Node t0 _ _) == (Node t1 _ _) = (t0 == t1)
-
---instance Ord Node where 
---    (Node t0 _ _) <= (Node t1 _ _) = (t0 <= t1)
-
---instance ParseDot Node where
---    parse = do t <- (parse :: Parse T.Text); 
---               let (nt, pc) = parseContext t
---               return $ Node t nt pc
---    parseUnqt = parse
---    parseUnqtList = many parseUnqt 
---    parseList = many parse
-
-inputGraph :: IO (DotGraph T.Text)
-inputGraph = readDotFile inputFileName 
+inputGraph :: String -> IO (DotGraph T.Text)
+inputGraph inputFileName = readDotFile inputFileName 
 
 getCodeFromField :: RecordField -> T.Text
 getCodeFromField (FieldLabel l) = T.cons '@' l
@@ -71,7 +53,8 @@ findNode txt2node txt2cntxt t = do
         Nothing -> do cntxt' <- H.lookup txt2cntxt t
                       case cntxt' of
                           Nothing -> fail $ "Context not found for node " ++ (show t)
-                          Just c  -> getCntxtContents txt2node txt2cntxt c
+                          Just c  -> do (n,pc) <- getCntxtContents txt2node txt2cntxt c;
+                                        return n
         Just n  -> return n
 
 processEdge :: Text2Node -> Text2Cntxt -> (T.Text, Attributes) -> IO (Node, PCExpr)
@@ -81,7 +64,7 @@ processEdge txt2node txt2cntxt (t, as) = do
     n <- findNode txt2node txt2cntxt t
     return (n, pc)
 
-getCntxtContents :: Text2Node -> Text2Cntxt -> Context T.Text -> IO Node
+getCntxtContents :: Text2Node -> Text2Cntxt -> Context T.Text -> IO (Node, PCExpr)
 getCntxtContents txt2node txt2cntxt (Cntxt n _ as ps ss) = do
     let xs'         = foldl T.append T.empty (map getCodeFromAttribute as)
     let ys          = filter (not . T.null) $ T.splitOn (T.pack "@") xs'
@@ -92,18 +75,19 @@ getCntxtContents txt2node txt2cntxt (Cntxt n _ as ps ss) = do
                                            in (n', pc' /\ (parsePC $ T.unpack y))
     ps'             <- mapM (processEdge txt2node txt2cntxt) ps
     ss'             <- mapM (processEdge txt2node txt2cntxt) ss
-    let n'          = Node xs' nt ps' ss' pc
-    H.insert txt2node n n'
+    let n'          = (Node (read (T.unpack n)) xs' nt ps' ss', pc)
+    H.insert txt2node n (fst n')
     return n'
 
-debugCntxtContents :: Text2Node -> Text2Cntxt -> Context T.Text -> IO Node
+debugCntxtContents :: Text2Node -> Text2Cntxt -> Context T.Text -> IO (Node, PCExpr)
 debugCntxtContents txt2node txt2cntxt c = do
-    n@(Node t nt ps ss pc) <- getCntxtContents txt2node txt2cntxt c
+    (n@(Node i t nt ps ss), pc) <- getCntxtContents txt2node txt2cntxt c
     putStrLn $ "Node: " ++ show t
+    putStrLn $ "\tID: " ++ show i
     putStrLn $ "\tin-edges: " ++ show ps
     putStrLn $ "\tout-edges: " ++ show ss
     putStrLn $ "\tPC: " ++ show pc
-    return n
+    return (n, pc)
 
 createTxt2Cntxt :: [Context T.Text] -> IO Text2Cntxt
 createTxt2Cntxt cs = do
@@ -111,7 +95,7 @@ createTxt2Cntxt cs = do
     mapM (\c@(Cntxt n _ _ _ _) -> H.insert txt2cntxt n c) cs 
     return txt2cntxt 
 
-debugGraph :: DotGraph T.Text -> IO [Node]
+debugGraph :: DotGraph T.Text -> IO [(Node, PCExpr)]
 debugGraph g = do
     let ds = decomposeList g
     txt2node <- H.new
