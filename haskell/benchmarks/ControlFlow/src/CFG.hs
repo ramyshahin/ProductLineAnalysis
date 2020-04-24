@@ -13,7 +13,5 @@ data NodeType =
   | CFGDummy    Text
   deriving Show
 
-data Node = Node Int Text NodeType [(Node, PCExpr)] [(Node, PCExpr)]
-    deriving Show
-
 data CFGNode = CFGNode Int Text NodeType [CFGNode] [CFGNode]
+    deriving Show
