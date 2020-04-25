@@ -56,6 +56,17 @@ type Val a = (a, PresenceCondition)
 -- across all possible products.
 data Var t = Var [(Val t)]
 
+disjInv :: Var t -> Bool
+disjInv (Var v) =
+    all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
+
+compInv :: Var t -> Bool
+compInv (Var v) =
+    (foldr (\(_,pc) pc' -> pc \/ pc') ffPC v) == ttPC
+
+inv :: Var t -> Bool
+inv v = (disjInv v) && (compInv v)
+
 exists :: Eq t => Val t -> Var t -> Bool
 exists (x, xpc) ys' =
     or [(x == y) && (implies xpc ypc) | (y,ypc) <- ys]
@@ -191,10 +202,6 @@ pairs :: [t] -> [(t,t)]
 pairs [] = []
 pairs xs = zip xs (tail xs)
 
-inv :: Var t -> Bool
-inv (Var v) = {- trace ("inv: " ++ (show (Var v))) $ -} 
-    all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
-
 apply_ :: Val (a -> b) -> Var a -> Var b
 {-# NOINLINE apply_ #-}
 apply_ (fn, fnpc) x'  = --localCtxt fnpc $
@@ -203,7 +210,7 @@ apply_ (fn, fnpc) x'  = --localCtxt fnpc $
 
 {-# INLINE apply #-}
 apply :: Var (a -> b) -> Var a -> Var b
-apply (Var fn) x = --compact $
+apply f@(Var fn) x = assert (inv f && inv x) $ --compact $
      unions [apply_ f x | f <- fn] 
 
 -- lifting conditional expression

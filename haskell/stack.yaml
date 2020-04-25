@@ -67,7 +67,7 @@ extra-deps:
 - graphviz-2999.20.0.4
 - language-c-0.8.3
 - text-1.2.3.1
-- hashable-1.2.7.0
+- hashmap-1.3.3
 # Override default flag values for local packages and extra-deps
 # flags: {}
 

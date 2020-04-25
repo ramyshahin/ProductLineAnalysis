@@ -6,6 +6,7 @@ import CaseTermination
 import SPL
 import PresenceCondition 
 import Debug.Trace
+import Control.Exception
 
 inputFileName = "/mnt/f/code/busybox-1.18.5/coreutils/head.cfg.dot"
 
@@ -29,21 +30,24 @@ getFunctionNodes = filter (\n -> case n of
                                     _                               -> False)
 getFunctionNodes' = liftV getFunctionNodes
 
-runBruteForce :: Var [CFGNode] -> Var [CFGNode]
+runBruteForce :: Var CFG -> Var [CFGNode]
 runBruteForce ns = 
     let features = getFeatures ns
         configs  = getAllConfigs features
         inVecs   = zip (map (configIndex ns) configs) configs
-    in  mkVars $ map (\(input, pc) -> (analyze input, pc)) inVecs
+    in  mkVars $ map (\(input, pc) -> 
+                            --trace (show pc) 
+                            (analyze input, pc)) 
+                     inVecs
 
-runShadowLifted :: Var [CFGNode] -> Var [CFGNode]
+runShadowLifted :: Var CFG -> Var [CFGNode]
 runShadowLifted ns = analyze' ns
 
 main :: IO ()
 main = do
-    nodes <- readGraph inputFileName
-    let features = getFeatures nodes
-    let result = runBruteForce nodes
+    cfg <- readGraph inputFileName
+    let features = getFeatures cfg
+    let result = runBruteForce cfg
     putStrLn $ "Features: " ++ (show features)
     putStrLn $ show result
     return ()

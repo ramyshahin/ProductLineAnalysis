@@ -3,7 +3,7 @@ module CFG where
 import qualified Data.Text.Lazy as T 
 import Language.C.Syntax.AST
 import PresenceCondition
-import Data.Hashable
+import qualified Data.Map as M
 
 data NodeType =
     CFGExpr     CExpr
@@ -15,23 +15,38 @@ data NodeType =
   deriving Show
 
 data CFGNode = CFGNode {
-    nodeID  :: Int,
+    nID     :: Int,
     text    :: T.Text,
     ast     :: NodeType,
-    preds   :: [CFGNode],
-    succs   :: [CFGNode]
+    _preds  :: [Int],
+    _succs  :: [Int]
     }
 
 getID (CFGNode i _ _ _ _) = i
 
+data CFG = CFG {
+    _nodes :: M.Map Int CFGNode
+} 
+
+nodes :: CFG -> [CFGNode]
+nodes cfg = M.elems $ _nodes cfg
+
+preds :: CFG -> CFGNode -> [CFGNode]
+preds cfg n = map ((_nodes cfg) M.!) (_preds n)
+
+succs :: CFG -> CFGNode -> [CFGNode]
+succs cfg n = map ((_nodes cfg) M.!) (_succs n)
+
 instance Show CFGNode where
     show (CFGNode i t nt ps ss) =
         "Node: " ++ (show i) ++ "\t" ++ (show t) 
-        ++ "\n\tpredecessors: " ++ (foldr (\l r -> l ++ ", " ++ r) "" (map (show . getID) ps))
-        ++ "\n\tsuccessors  : " ++ (foldr (\l r -> l ++ ", " ++ r) "" (map (show . getID) ss))
+        ++ "\n\tAST: " ++ (show nt)
+        ++ "\n\tpredecessors: " ++ (foldr (\l r -> l ++ ", " ++ r) "" (map show ps))
+        ++ "\n\tsuccessors  : " ++ (foldr (\l r -> l ++ ", " ++ r) "" (map show ss))
 
+{-
 instance Eq CFGNode where
-    (==) n0 n1 = (getID n0 == getID n1)
-
-instance Hashable CFGNode where
-    hashWithSalt s n = hashWithSalt s (getID n)
+    (==) n0 n1 = (nID n0 == nID n1)
+              && (preds n0 == preds n1)
+              && (succs n0 == succs n1)
+-}

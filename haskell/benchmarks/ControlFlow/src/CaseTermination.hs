@@ -60,24 +60,25 @@ traverseFuncCFG caseOnPath visited n = trace ((show n) ++ "\n\tCaseOnPath:" ++ (
                                     _           -> traverseNodes caseOnPath (i : visited) succ
                     _         -> traverseNodes caseOnPath (i : visited) succ
 -}
-followSuccessor :: [Int] -> CFGNode -> Bool
-followSuccessor visited n =
-    if      (find (nodeID n) visited) || (isBreak n) || (isFuncCall n)
+followSuccessor :: CFG -> [Int] -> CFGNode -> Bool
+followSuccessor cfg visited n = --trace (show n) $
+    if      (find (nID n) visited) || (isBreak n) || (isFuncCall n)
     then    True
     else    if      (isCase n) || (isDefault n)
             then    False
-            else    followSuccessors ((nodeID n) : visited) (succs n)
+            else    followSuccessors cfg ((nID n) : visited) (succs cfg n)
  
-followSuccessors :: [Int] -> [CFGNode] -> Bool
-followSuccessors visited ns =
-    foldr (&&) True $ map (followSuccessor visited) ns
+followSuccessors :: CFG -> [Int] -> [CFGNode] -> Bool
+followSuccessors cfg visited ns =  
+    foldr (&&) True $ map (followSuccessor cfg visited) ns
 
-terminatedCase :: CFGNode -> Bool
-terminatedCase n = 
-    let ss = filter (not . isCase) $ succs n
-    in  followSuccessors [] ss
+terminatedCase :: CFG -> CFGNode -> Bool
+terminatedCase cfg n = --trace (show n) $
+    let ss = filter (not . isCase) $ (succs cfg n)
+    in  followSuccessors cfg [] ss
 
-analyze :: [CFGNode] -> [CFGNode]
-analyze ns = 
-    let cases = filter isCase ns 
-    in  filter (not . terminatedCase) cases
+analyze :: CFG -> [CFGNode]
+analyze cfg = --trace (show ns) $
+    let ns = nodes cfg 
+        cases = filter isCase ns 
+    in  filter (not . (terminatedCase cfg)) cases
