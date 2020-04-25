@@ -14,15 +14,21 @@ data NodeType =
   | CFGDummy    T.Text
   deriving Show
 
-data CFGNode = CFGNode Int T.Text NodeType [CFGNode] [CFGNode]
+data CFGNode = CFGNode {
+    nodeID  :: Int,
+    text    :: T.Text,
+    ast     :: NodeType,
+    preds   :: [CFGNode],
+    succs   :: [CFGNode]
+    }
 
 getID (CFGNode i _ _ _ _) = i
 
 instance Show CFGNode where
     show (CFGNode i t nt ps ss) =
-        "Node: " ++ (show i) ++ "\t" ++ (show nt) ++ 
-        "\n\tpredecessors: " ++ (foldr (\l r -> l ++ ", " ++ r) "" (map (show . getID) ps)) ++
-        "\n\tsuccessors  : " ++ (foldr (\l r -> l ++ ", " ++ r) "" (map (show . getID) ss))
+        "Node: " ++ (show i) ++ "\t" ++ (show t) 
+        ++ "\n\tpredecessors: " ++ (foldr (\l r -> l ++ ", " ++ r) "" (map (show . getID) ps))
+        ++ "\n\tsuccessors  : " ++ (foldr (\l r -> l ++ ", " ++ r) "" (map (show . getID) ss))
 
 instance Eq CFGNode where
     (==) n0 n1 = (getID n0 == getID n1)

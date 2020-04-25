@@ -96,14 +96,16 @@ getCntxtContents txt2node txt2cntxt edges (Cntxt n _ as ps ss) = do
                                            in (n', pc' /\ (parsePC $ T.unpack y))
     ps'             <- mapM (processEdge txt2node txt2cntxt edges) ps
     ss'             <- mapM (processEdge txt2node txt2cntxt edges) ss
-    let n''         = _mkVNode' (mkVar (read (T.unpack n)) pc) (mkVarT xs') (mkVarT nt) (mkVarT []) (mkVarT []) --(lv2vl ps') (lv2vl ss')
+    let n''         = _mkVNode' (mkVar (read (T.unpack n)) pc) (mkVarT xs') (mkVarT nt) (mkVarT []) (mkVarT [])
     let n'@(Var _n) = fixCompleteness n'' dummyNode
     let _n'         = assert (length _n == 1) $ (fst (head _n))
     H.insert txt2node n _n'
     mapM_ (\(p, pc') -> addEdge p _n' pc') ps'
     mapM_ (\(s, pc') -> addEdge _n' s pc') ss'
     return n'
-    where addEdge v0 v1 pc = H.insert edges ((v0, v1), pc) True
+    where addEdge v0 v1 pc = do
+            --putStrLn $ showEdge ((v0, v1), pc) 
+            H.insert edges ((v0, v1), pc) True
                 
 createTxt2Cntxt :: [Context T.Text] -> IO Text2Cntxt
 createTxt2Cntxt cs = do
@@ -114,17 +116,22 @@ createTxt2Cntxt cs = do
 inputGraph :: String -> IO (DotGraph T.Text)
 inputGraph inputFileName = readDotFile inputFileName 
 
+showEdge ((CFGNode i0 _ _ _ _, CFGNode i1 _ _ _ _), pc) =
+    (show i0) ++ " -> " ++ (show i1) ++ " @ " ++ (show pc)
+
 adjustEdges :: Edges -> Var CFGNode -> IO (Var CFGNode)
 adjustEdges edges (Var vs') = do
     es <- H.toList edges
-    let getPreds n = let es' = filter (\(((_,v1), _), _) -> v1 == n) es
-                         ps  = map (\(((v0, _), pc), _) -> mkVNode v0 pc) es'
+    let getPreds n = let es' = filter   (\(((_, v1),  _), _) -> v1 == n) es
+                         ps  = map      (\(((v0, _), pc), _) -> mkVNode v0 pc) es'
                      in  lv2vl ps
-    let getSuccs n = let es' = filter (\(((v0,_), _), _) -> v0 == n) es
-                         ss  = map (\(((_, v1), pc), _) -> mkVNode v1 pc) es'
+    let getSuccs n = let es' = filter   (\(((v0, _),  _), _) -> v0 == n) es
+                         ss  = map      (\(((_, v1), pc), _) -> mkVNode v1 pc) es'
                      in  lv2vl ss
     let vs = map (\(n@(CFGNode i t nt _ _), pc) -> 
-                    _mkVNode' (mkVar i pc) (mkVarT t) (mkVarT nt) (getPreds n) (getSuccs n)) vs'
+                    let ps = getPreds n 
+                        ss = getSuccs n
+                    in  _mkVNode' (mkVar i pc) (mkVarT t) (mkVarT nt) ps ss) vs'
     return $ foldr SPL.union (Var []) vs
 
 readGraph :: String -> IO (Var [CFGNode])
@@ -135,8 +142,9 @@ readGraph fn = do
     txt2cntxt <- createTxt2Cntxt ds
     edges <- H.new
     vs  <- mapM (getCntxtContents txt2node txt2cntxt edges) ds
-    vs' <- mapM (adjustEdges edges) vs 
+    vs' <- mapM (adjustEdges edges) vs
     let vs'' = lv2vl vs'
+    --putStrLn (show vs'')
     return $ vs''
 
 -- parsing node expression/statement

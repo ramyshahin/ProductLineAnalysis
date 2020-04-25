@@ -1,9 +1,11 @@
 module Main where
 
+import CFG
 import CFGParser
 import CaseTermination
 import SPL
 import PresenceCondition 
+import Debug.Trace
 
 inputFileName = "/mnt/f/code/busybox-1.18.5/coreutils/head.cfg.dot"
 
@@ -21,12 +23,27 @@ getCntxtContents txt2node txt2cntxt c = do
 
 analyze' = liftV analyze
 
+getFunctionNodes :: [CFGNode] -> [CFGNode]
+getFunctionNodes = filter (\n -> case n of 
+                                    (CFGNode _ _ (CFGFunc _) _ _)   -> True
+                                    _                               -> False)
+getFunctionNodes' = liftV getFunctionNodes
+
+runBruteForce :: Var [CFGNode] -> Var [CFGNode]
+runBruteForce ns = 
+    let features = getFeatures ns
+        configs  = getAllConfigs features
+        inVecs   = zip (map (configIndex ns) configs) configs
+    in  mkVars $ map (\(input, pc) -> (analyze input, pc)) inVecs
+
+runShadowLifted :: Var [CFGNode] -> Var [CFGNode]
+runShadowLifted ns = analyze' ns
+
 main :: IO ()
 main = do
-    nodes <- readGraph inputFileName 
-    --putStrLn $ show nodes 
-    let result = analyze' nodes
-    let features = getFeatures result
+    nodes <- readGraph inputFileName
+    let features = getFeatures nodes
+    let result = runBruteForce nodes
     putStrLn $ "Features: " ++ (show features)
     putStrLn $ show result
     return ()

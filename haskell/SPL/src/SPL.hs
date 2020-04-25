@@ -141,17 +141,10 @@ index :: Var t -> PresenceCondition -> [t]
 index (Var v) pc = fst $ unzip v' 
     where   v' = filter (\(x',pc') -> sat (conj[pc,pc'])) v
 
-getAllConfigs :: [Prop] -> [Prop]
-getAllConfigs [] = []
-getAllConfigs (f:[]) = [f, (neg f)]
-getAllConfigs (f:fs) = fPos ++ fNeg 
-    where   rest = getAllConfigs fs
-            fPos = map (\r -> conj[f,r]) rest
-            fNeg = map (\r -> conj[(neg f), r]) rest
-
-getValidConfigs :: [Prop] -> PresenceCondition -> [Prop]
-getValidConfigs univ featModel = filter (\c -> sat (conj[c,featModel])) cs 
-    where cs = getAllConfigs univ
+configIndex :: Var t -> PresenceCondition -> t
+configIndex v pc = 
+    let r = index v pc
+    in  assert (length r == 1) $ head r
 
 subst :: Var t -> PresenceCondition -> Var t
 subst (Var v) pc =
@@ -176,9 +169,12 @@ restrict pc (Var v) =
 tracePCs :: Var t -> String
 tracePCs (Var xs) = foldl (\s (_,r) -> s ++ " " ++ (show r)) "" xs
 
-getFeatures :: Var t -> S.Set String
-getFeatures (Var vs) =
-    foldr S.union S.empty (map (getPCFeatures . snd) vs)
+getFeatures' :: Var t -> S.Set String
+getFeatures' (Var vs) =
+    foldr S.union S.empty (map (getPCFeatures' . snd) vs)
+
+getFeatures :: Var t -> [String]
+getFeatures = S.toList . getFeatures'
 
 union :: Var t -> Var t -> Var t
 union x@(Var a) y@(Var b) =

@@ -76,12 +76,43 @@ parsePC str =
     Left e  -> error $ show e
     Right r -> r
 
-getPCFeatures :: PCExpr -> S.Set String
-getPCFeatures pc =
+mkFeature :: String -> PCExpr
+mkFeature f = mkBDDVar f
+
+getPCFeatures' :: PCExpr -> S.Set String
+getPCFeatures' pc = 
   case pc of
     TT        -> S.empty
     FF        -> S.empty
     Atom s    -> S.singleton s 
-    Neg p     -> getPCFeatures p
-    And l r   -> S.union (getPCFeatures l) (getPCFeatures r)
-    Or  l r   -> S.union (getPCFeatures l) (getPCFeatures r) 
+    Neg p     -> getPCFeatures' p
+    And l r   -> S.union (getPCFeatures' l) (getPCFeatures' r)
+    Or  l r   -> S.union (getPCFeatures' l) (getPCFeatures' r) 
+
+getPCFeatures :: PCExpr -> [String]
+getPCFeatures = S.toList . getPCFeatures'
+
+getAllConfigs :: [String] -> [PCExpr]
+getAllConfigs [] = []
+getAllConfigs (f : fs) = 
+    let p   = mkFeature f
+        n   = negPC p
+        fs' = getAllConfigs fs
+    in  if   null fs 
+        then [p, n]
+        else (map (/\ p) fs') ++ (map (/\ n) fs')
+
+{-
+getAllConfigs :: [Prop] -> [Prop]
+getAllConfigs [] = []
+getAllConfigs (f:[]) = [f, (neg f)]
+getAllConfigs (f:fs) = fPos ++ fNeg 
+    where   rest = getAllConfigs fs
+            fPos = map (\r -> conj[f,r]) rest
+            fNeg = map (\r -> conj[(neg f), r]) rest
+-}
+
+
+getValidConfigs :: [String] -> PCExpr -> [PCExpr]
+getValidConfigs univ featModel = filter (\c -> sat (conj[c,featModel])) cs 
+    where cs = getAllConfigs univ
