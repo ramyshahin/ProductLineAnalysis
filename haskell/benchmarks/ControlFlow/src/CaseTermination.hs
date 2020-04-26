@@ -37,29 +37,7 @@ isFuncCall n =
     case ast n of
         CFGDecl _   -> True
         _           -> False
-{-
-traverseNodes :: Maybe CFGNode -> [Int] -> [CFGNode] -> [CFGNode]
-traverseNodes caseOnPath visited ns =
-    concat (map (traverseFuncCFG caseOnPath visited) ns)
 
-traverseFuncCFG :: Maybe CFGNode -> [Int] -> CFGNode -> [CFGNode]
-traverseFuncCFG caseOnPath visited n = trace ((show n) ++ "\n\tCaseOnPath:" ++ (show caseOnPath)) $
-    case n of
-        (CFGNode i _ nt _ succ) -> 
-            if      find i visited
-            then    []
-            else case nt of
-                    CFGStat s -> case s of
-                                    CCase _ _ _ -> if isJust caseOnPath
-                                                   then (fromJust caseOnPath) : (traverseNodes (Just n) (i : visited) succ)
-                                                   else traverseNodes (Just n) (i : visited) succ
-                                    CDefault _ _-> if isJust caseOnPath
-                                                   then (fromJust caseOnPath) : (traverseNodes Nothing (i : visited) succ)
-                                                   else traverseNodes Nothing (i : visited) succ
-                                    CBreak _    -> traverseNodes Nothing (i : visited) succ
-                                    _           -> traverseNodes caseOnPath (i : visited) succ
-                    _         -> traverseNodes caseOnPath (i : visited) succ
--}
 followSuccessor :: CFG -> [Int] -> CFGNode -> Bool
 followSuccessor cfg visited n = --trace (show n) $
     if      (find (nID n) visited) || (isBreak n) || (isFuncCall n)

@@ -69,6 +69,7 @@ getPatternVars p =
         ListPat ps              -> unionPatterns ps
         ParenPat p              -> getPatternVars p
         TypeSigPat p _          -> getPatternVars p
+        WildPat                 -> S.empty
         _annListElems           -> trace ("Unhandled Pattern " ++ prettyPrint p) $ S.empty
     where unionPatterns ps = foldl S.union S.empty $ map getPatternVars (_annListElems ps)
 
@@ -249,9 +250,10 @@ rewriteExpr globals locals e =
                                 Var n -> if (externalDecl globals locals n)
                                          then   if S.member (prettyPrint n) L.primitiveFuncNames
                                                 then mkApp (mkVar $ mkName ((prettyPrint n) ++ "\'")) arg'
-                                                else mkInfixApp fun appOp arg'
+                                                else mkInfixApp fun' appOp arg'
                                          else mkApp fun arg'
-                                _     -> mkInfixApp fun' appOp arg'
+                                App _ _ -> mkApp fun arg'
+                                _       -> mkInfixApp fun' appOp arg'
         If c t e -> mkApp   (mkApp  (mkApp  liftedCond  
                                             (mkParen (rewriteExpr globals locals c)))
                                     (mkParen (rewriteExpr globals locals t)))
