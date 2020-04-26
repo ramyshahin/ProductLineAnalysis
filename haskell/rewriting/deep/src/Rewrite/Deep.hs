@@ -79,20 +79,22 @@ getMatchVars (Match lhs _ _) =
         MatchLhs _ args -> foldl S.union S.empty $ map getPatternVars (_annListElems args)
         InfixLhs lhs _ rhs args -> 
             foldl S.union (S.union (getPatternVars lhs) (getPatternVars rhs)) $ map getPatternVars (_annListElems args)
-{-
-getValBindVars :: ValueBind -> [String]
+
+getValBindVars :: ValueBind -> S.Set String
 getValBindVars vb =
     case vb of
+        SimpleBind pat rhs _ -> getPatternVars pat
+        _                    -> trace ("Unhandled FunBind " ++ prettyPrint vb) $ S.empty
 
-getLocalVars :: LocalBind -> [String]
+getLocalVars :: LocalBind -> S.Set String
 getLocalVars b =
     case b of
         LocalValBind vb -> getValBindVars vb
-        _               -> trace ("Unhandled LocalBind " ++ prettyPrint b) $ []
+        _               -> trace ("Unhandled LocalBind " ++ prettyPrint b) $ S.empty
 
-getLocalsVars :: LocalBinds -> [String]
-getLocalsVars bs = foldl (++) [] $ map getLocalVars (_annListElems bs)
--}
+--getLocalsVars :: LocalBinds -> [String]
+--getLocalsVars bs = foldl (++) [] $ map getLocalVars (_annListElems bs)
+
 
 -- | Rewriting imports
 --
@@ -236,6 +238,14 @@ mkAltBinding globals locals index (Alt p (CaseRhs rhs) _) =
     in  mkLocalValBind $ mkFunctionBind [mkMatch lhs (mkUnguardedRhs (rewriteExpr globals (S.union locals params') rhs)) Nothing,
                                          mkMatch splitLhs (mkUnguardedRhs (mkCase (mkVar dummy) [splitAlt])) Nothing]
 
+rewriteLocalBind :: Declarations -> Declarations -> LocalBind -> (LocalBind, S.Set String)
+rewriteLocalBind globals locals lb =
+    let vbs = S.union locals $ getLocalVars lb
+    in  case lb of 
+            LocalValBind (SimpleBind p (UnguardedRhs rhs) xs) -> 
+                (mkLocalValBind (mkSimpleBind p (mkUnguardedRhs (rewriteExpr globals locals rhs)) (_annMaybe xs)), vbs)
+            _ -> trace ("Unsupported Local Bind: " ++ prettyPrint lb) $ (lb, S.empty)
+
 -- lifting expressions 
 rewriteExpr :: Declarations -> Declarations -> Expr -> Expr
 rewriteExpr globals locals e = 
@@ -267,7 +277,16 @@ rewriteExpr globals locals e =
                       (mkApp (mkApp (mkApp liftedCase v) splitter) (mkList as))
         MultiIf alts -> trace "Unhandled MultiIf" e 
         Lambda b e -> trace "Unhandled Lambda" e
-        Let b e -> trace "Unhandled Let" e
+        Let bs e -> 
+            let bs' = foldr (\b xs -> 
+                                let   ls =  if null xs 
+                                            then locals 
+                                            else S.union locals (snd (head xs))
+                                in    (rewriteLocalBind globals ls b) : xs) 
+                            [] $ _annListElems bs
+                ls  = snd (head bs')
+                e'  = trace (show ls) $ rewriteExpr globals ls e
+            in  mkLet (fst (unzip bs')) e'
         Do ss -> trace "Unhandled Do" e
         Tuple es -> trace "Unhandled Tuple" e 
         UnboxedTuple es -> trace "Unhandled UnboxedTuple" e 

@@ -51,8 +51,9 @@ followSuccessors :: Var CFG -> Var [Int] -> Var [CFGNode] -> Var Bool
 followSuccessors cfg visited ns  = (mkVarT ($)) <*> (foldr (&&) (mkVarT True)) <*> (map (followSuccessor cfg visited) ns)
 
 terminatedCase :: Var CFG -> Var CFGNode -> Var Bool
-terminatedCase cfg n  = followSuccessors cfg [] ss
+terminatedCase cfg n  = let ss = (mkVarT ($)) <*> ((mkVarT filter) <*> ((mkVarT (.)) <*> ((mkVarT not)) <*> (isCase))) <*> ((succs cfg n)) in followSuccessors cfg [] ss
 
 analyze :: Var CFG -> Var [CFGNode]
-analyze cfg  = filter (not . (terminatedCase cfg)) cases
+analyze cfg  = let ns = (mkVarT nodes) <*> cfg
+                   cases = filter isCase (mkVarT ns) in filter (not . (terminatedCase cfg)) cases
 
