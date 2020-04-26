@@ -92,8 +92,8 @@ getLocalVars b =
         LocalValBind vb -> getValBindVars vb
         _               -> trace ("Unhandled LocalBind " ++ prettyPrint b) $ S.empty
 
---getLocalsVars :: LocalBinds -> [String]
---getLocalsVars bs = foldl (++) [] $ map getLocalVars (_annListElems bs)
+getLocalsVars :: LocalBinds -> S.Set String
+getLocalsVars (LocalBinds bs) = foldl S.union S.empty $ map getLocalVars (_annListElems bs)
 
 
 -- | Rewriting imports
@@ -108,14 +108,31 @@ rewriteHeader header =
         Nothing -> Nothing
         Just h  -> Just $ mhName .- (appendModName "Deep") $ h
 
-moduleNameDeepTypes = mkModuleName "DeepTypes"
-importDeepTypes = mkImportDecl False False False Nothing moduleNameDeepTypes Nothing Nothing
+moduleNameDeepPrelude = mkModuleName "VPreludeDeep"
+importDeepPrelude = mkImportDecl False False False Nothing moduleNameDeepPrelude Nothing Nothing
 
 rewriteImports :: ImportDeclList  -> ImportDeclList 
-rewriteImports xs = (annListElems .= concat [[importSPL{-, importDeepTypes-}], (imports xs)]) xs 
+rewriteImports xs = (annListElems .= concat [[importSPL, importDeepPrelude], (imports xs)]) xs 
+--rewriteImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs 
     
 -- | Rewrite declarations
 --
+rewriteType :: Type -> Type
+rewriteType t = case t of
+    FunctionType a b    -> mkFunctionType (rewriteType a) (rewriteType b)
+    --InfixTypeApp l op r -> mkInfixTypeApp (rewriteType l) op (rewriteType r)
+    ParenType t         -> mkParenType (rewriteType t)
+    -- TODO: handle other cases
+    _ -> mkTypeApp tyVar t
+
+-- TODO
+-- mkTypeSignature takes only one name, so a signature might map
+-- to multiple declarations
+rewriteTypeSig :: TypeSignature -> Decl
+rewriteTypeSig (TypeSignature ns t) = 
+    let n = head $ _annListElems ns
+    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType t)
+
 rewriteDecl :: Declarations -> Decl -> Decl
 rewriteDecl decls d = 
      case d of
@@ -147,13 +164,19 @@ liftedCond = mkVar (mkName "liftedCond")
 liftedNeg = mkVar (mkName "liftedNeg")
 liftedCase = mkVar (mkName "liftedCase")
 
-liftOp (NormalOp o) = mkParen (mkApp mkVarT (mkVar (mkParenName o)))
+liftOp (NormalOp o) = trace ("liftOp: " ++ (prettyPrint o))
+    mkParen (mkApp mkVarT (mkVar (mkParenName o)))
+
+rewritePrimitiveFuncName :: String -> Expr
+rewritePrimitiveFuncName s = mkVar $ mkName (s ++ "\'")
 
 rewriteVar :: Declarations -> Declarations -> Name -> Expr
 rewriteVar globals locals vn = 
-    if   (externalDecl globals locals vn)
-    then mkParen $ mkApp mkVarT (mkVar vn)
-    else mkVar vn
+    if      isPrimitiveFunc (prettyPrint vn)
+    then    rewritePrimitiveFuncName (prettyPrint vn)
+    else    if      externalDecl globals locals vn
+            then    mkParen $ mkApp mkVarT (mkVar vn)
+            else mkVar vn
 
 debugDecls :: Declarations -> String
 debugDecls ns = foldl (\r s -> r ++ " " ++ s) "Declarations: " $ ns
@@ -165,7 +188,16 @@ externalDecl globals locals x =
     in  trace (debugDecls allDecls ++ " External " ++ prettyPrint x ++ " ? " ++ show r) $ r
 
 getLiftedPrimitiveOp :: String -> Operator
-getLiftedPrimitiveOp o = mkUnqualOp (o ++ "^")
+getLiftedPrimitiveOp o = mkUnqualOp ("^" ++ o)
+
+isPrimitiveOp :: String -> Bool
+isPrimitiveOp n = S.member n L.primitiveOpNames
+
+isPrimitiveFunc :: String -> Bool
+isPrimitiveFunc f =  S.member f L.primitiveFuncNames
+
+isPrimitive :: String -> Bool
+isPrimitive s = isPrimitiveOp s || isPrimitiveFunc s
 
 rewriteInfixApp :: Declarations -> Declarations -> Expr -> Operator -> Expr -> Expr
 rewriteInfixApp globals locals lhs op rhs =
@@ -176,7 +208,7 @@ rewriteInfixApp globals locals lhs op rhs =
                                         (mkParen $ rhs')
     in  case op of
             NormalOp n  -> 
-                if      S.member (prettyPrint n) L.primitiveOpNames
+                if      isPrimitiveOp (prettyPrint n)
                 then    mkInfixApp lhs' (getLiftedPrimitiveOp (prettyPrint n)) rhs'
                 else    rewriteIt
             _           -> rewriteIt
@@ -187,7 +219,7 @@ rewritePattern p =
         InfixAppPat lhs o@(NormalOp op) rhs -> 
             let lhs' = rewritePattern lhs
                 rhs' = rewritePattern rhs
-                op'  = if S.member (prettyPrint op) L.primitiveOpNames
+                op'  = if isPrimitiveOp (prettyPrint op)
                        then getLiftedPrimitiveOp (prettyPrint op)
                        else o
             in mkInfixAppPat lhs' op' rhs'
@@ -258,12 +290,14 @@ rewriteExpr globals locals e =
                             arg' = rewriteExpr globals locals arg
                         in  case fun of 
                                 Var n -> if (externalDecl globals locals n)
-                                         then   if S.member (prettyPrint n) L.primitiveFuncNames
-                                                then mkApp (mkVar $ mkName ((prettyPrint n) ++ "\'")) arg'
+                                         then   if isPrimitiveFunc (prettyPrint n)
+                                                then mkApp (rewritePrimitiveFuncName (prettyPrint n)) arg'
                                                 else mkInfixApp fun' appOp arg'
-                                         else mkApp fun arg'
-                                App _ _ -> mkApp fun arg'
-                                _       -> mkInfixApp fun' appOp arg'
+                                         else mkApp fun' arg'
+                                _ -> case fun' of 
+                                            App _ _ -> mkApp fun' arg'
+                                            InfixApp _ op _ -> mkInfixApp fun' appOp arg' 
+                                            _       -> mkInfixApp fun' appOp arg'
         If c t e -> mkApp   (mkApp  (mkApp  liftedCond  
                                             (mkParen (rewriteExpr globals locals c)))
                                     (mkParen (rewriteExpr globals locals t)))
@@ -273,19 +307,22 @@ rewriteExpr globals locals e =
                 arg      = mkVarPat $ dummy
                 splitter = mkParen $ mkLambda [arg] (mkCase (mkVar dummy) (splitAlts 0 $ _annListElems alts))
                 as       = map (rewriteAlt globals locals) $ (zip [0..] $ _annListElems alts)
+                v'       = mkParen (rewriteExpr globals locals v)
             in  mkLet (map (\(a,i) -> mkAltBinding globals locals a i) (zip [0..] (_annListElems alts)))
-                      (mkApp (mkApp (mkApp liftedCase v) splitter) (mkList as))
+                      (mkApp (mkApp (mkApp liftedCase v') splitter) (mkList as))
         MultiIf alts -> trace "Unhandled MultiIf" e 
-        Lambda b e -> trace "Unhandled Lambda" e
+        Lambda b e -> let vbs = foldr S.union S.empty (map getPatternVars (_annListElems b))
+                          locals' = S.union locals vbs 
+                      in mkLambda (_annListElems b) (rewriteExpr globals locals' e)
         Let bs e -> 
-            let bs' = foldr (\b xs -> 
+            let bs' = foldl (\xs b -> 
                                 let   ls =  if null xs 
                                             then locals 
                                             else S.union locals (snd (head xs))
                                 in    (rewriteLocalBind globals ls b) : xs) 
                             [] $ _annListElems bs
                 ls  = snd (head bs')
-                e'  = trace (show ls) $ rewriteExpr globals ls e
+                e'  = rewriteExpr globals ls e
             in  mkLet (fst (unzip bs')) e'
         Do ss -> trace "Unhandled Do" e
         Tuple es -> trace "Unhandled Tuple" e 
@@ -293,7 +330,7 @@ rewriteExpr globals locals e =
         TupleSection es -> trace "Unhandled TupleSelection" e 
         UnboxedTupleSection es -> trace "Unhandled UnboxedTupSec" e 
         --List es -> mkApp mkVarT (mkList $ map (rewriteExpr globals locals) (_annListElems es))
-        List es -> mkApp mkVarT e
+        List es -> mkParen (mkApp mkVarT e)
         ParArray es -> trace "Unhandled ParArray" e
         Paren ex -> mkParen (rewriteExpr globals locals ex)
         LeftSection lhs o -> trace "Unhandled LeftSection" e

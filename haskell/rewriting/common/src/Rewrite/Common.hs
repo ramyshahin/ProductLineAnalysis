@@ -31,16 +31,3 @@ updateHead suffix mh =
 renameModule :: String -> Module -> Module
 renameModule suffix mod = (modHead .- (annMaybe .- (updateHead suffix))) mod
 
-rewriteType :: Type -> Type
-rewriteType t = case t of
-    FunctionType a b -> mkFunctionType (rewriteType a) (rewriteType b)
-    -- TODO: handle other cases
-    _ -> mkTypeApp tyVar t
-
--- TODO
--- mkTypeSignature takes only one name, so a signature might map
--- to multiple declarations
-rewriteTypeSig :: TypeSignature -> Decl
-rewriteTypeSig (TypeSignature ns t) = 
-    let n = head $ _annListElems ns
-    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType t)

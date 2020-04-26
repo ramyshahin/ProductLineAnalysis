@@ -10,6 +10,7 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE CPP #-}
 
 module SPL where
 
@@ -293,37 +294,55 @@ liftV5 = liftA5
 
 (|:|) :: Var a -> Var [a] -> Var [a]
 (|:|) = liftV2 (:)
-
+infixr 5 |:|
 
 -- lifted primitive operators
-(+^) :: Num a => Var a -> Var a -> Var a
-(+^) = liftV2 (+)
-infixl 6 +^
+--(:^) :: Var a -> Var [a] -> Var [a]
+(^:) = (|:|) --liftV2 (:)
+infixr 5 ^:
 
-(-^) :: Num a => Var a -> Var a -> Var a
-(-^) = liftV2 (-)
-infixl 6 -^
+(^+) :: Num a => Var a -> Var a -> Var a
+(^+) = liftV2 (+)
+infixl 6 ^+
 
-(*^) :: Num a => Var a -> Var a -> Var a
-(*^) = liftV2 (*)
-infixl 7 *^
+(^-) :: Num a => Var a -> Var a -> Var a
+(^-) = liftV2 (-)
+infixl 6 ^-
 
-(/^) :: Fractional a => Var a -> Var a -> Var a
-(/^) = liftV2 (/)
-infixl 7 /^
+(^*) :: Num a => Var a -> Var a -> Var a
+(^*) = liftV2 (*)
+infixl 7 ^*
 
-(==^) :: Eq a => Var a -> Var a -> Var Bool
-(==^) = liftV2 (==)
-infix 3 ==^
+(^/) :: Fractional a => Var a -> Var a -> Var a
+(^/) = liftV2 (/)
+infixl 7 ^/
 
-(/=^) :: Eq a => Var a -> Var a -> Var Bool
-(/=^) = liftV2 (/=)
-infix 3 /=^
+(^==) :: Eq a => Var a -> Var a -> Var Bool
+(^==) = liftV2 (==)
+infix 3 ^==
+
+(^/=) :: Eq a => Var a -> Var a -> Var Bool
+(^/=) = liftV2 (/=)
+infix 3 ^/=
+
+(^&&) :: Var Bool -> Var Bool -> Var Bool
+(^&&) = liftV2 (&&)
+infixr 3 ^&&
+
+(^||) :: Var Bool -> Var Bool -> Var Bool
+(^||) = liftV2 (||)
+infixr 2 ^||
 
 primitiveOpNames :: S.Set String
-primitiveOpNames = S.fromList [":", "+", "-", "*", "/", "==", "/="]
+primitiveOpNames = S.fromList [":", "+", "-", "*", "/", "==", "/=", "&&", "||", "."]
+
+primitiveFuncNames :: S.Set String
+primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "map", "filter", "foldr", "foldl"]
 
 -- lifted primitive functions
+not' :: Var Bool -> Var Bool
+not' = liftV not
+
 head' :: Var [a] -> Var a
 head' = liftV head
 
@@ -339,8 +358,25 @@ fst' = liftV fst
 snd' :: Var (a, b) -> Var b
 snd' = liftV snd
 
-primitiveFuncNames :: S.Set String
-primitiveFuncNames = S.fromList ["head", "tail", "null", "fst", "snd"]
+#ifdef SHALLOW
+
+(^.) :: Var (b -> c) -> Var (a -> b) -> Var a -> Var c
+(^.) = liftV3 (.)
+infixr 9 ^.
+
+map' :: Var (a -> b) -> Var [a] -> Var [b]
+map' = liftV2 map
+
+filter' :: Var (a -> Bool) -> Var [a] -> Var [a]
+filter' = liftV2 filter
+
+foldr' :: Var (a -> b -> b) -> Var b -> Var [a] -> Var b
+foldr' = liftV3 foldr
+
+foldl' :: Var (b -> a -> b) -> Var b -> Var [a] -> Var b
+foldl' = liftV3 foldl
+
+#endif
 
 ----- tuple access
 oneOfOne :: (a) -> a
@@ -378,3 +414,4 @@ uncurry2 f x = f (oneOfTwo' x) (twoOfTwo' x)
 
 uncurry3 :: (Var a -> Var b -> Var c -> Var d) -> Var (a, b, c) -> Var d
 uncurry3 f x = f (oneOfThree' x) (twoOfThree' x) (threeOfThree' x)
+

@@ -48,11 +48,11 @@ followSuccessor cfg visited n = --trace (show n) $
  
 followSuccessors :: CFG -> [Int] -> [CFGNode] -> Bool
 followSuccessors cfg visited ns =  
-    foldr (&&) True $ map (followSuccessor cfg visited) ns
+    foldr (\a b -> a && b) True (map (followSuccessor cfg visited) ns)
 
 terminatedCase :: CFG -> CFGNode -> Bool
 terminatedCase cfg n = --trace (show n) $
-    let ss = filter (not . isCase) $ (succs cfg n)
+    let ss = filter (not . isCase) (succs cfg n)
     in  followSuccessors cfg [] ss
 
 analyze :: CFG -> [CFGNode]

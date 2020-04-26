@@ -43,10 +43,3 @@ instance Show CFGNode where
         ++ "\n\tAST: " ++ (show nt)
         ++ "\n\tpredecessors: " ++ (foldr (\l r -> l ++ ", " ++ r) "" (map show ps))
         ++ "\n\tsuccessors  : " ++ (foldr (\l r -> l ++ ", " ++ r) "" (map show ss))
-
-{-
-instance Eq CFGNode where
-    (==) n0 n1 = (nID n0 == nID n1)
-              && (preds n0 == preds n1)
-              && (succs n0 == succs n1)
--}
