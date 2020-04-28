@@ -3,7 +3,7 @@ module CFG where
 import qualified Data.Text.Lazy as T 
 import Language.C.Syntax.AST
 import PresenceCondition
-import qualified Data.Map as M
+import qualified Data.MultiMap as M
 
 data NodeType =
     CFGExpr     CExpr
@@ -25,17 +25,17 @@ data CFGNode = CFGNode {
 getID (CFGNode i _ _ _ _) = i
 
 data CFG = CFG {
-    _nodes :: M.Map Int CFGNode
+    _nodes :: M.MultiMap Int CFGNode
 } 
 
 nodes :: CFG -> [CFGNode]
-nodes cfg = M.elems $ _nodes cfg
+nodes cfg = (snd . unzip . M.toList) $ _nodes cfg
 
 preds :: CFG -> CFGNode -> [CFGNode]
-preds cfg n = map ((_nodes cfg) M.!) (_preds n)
+preds cfg n = map (head . ((_nodes cfg) M.!)) (_preds n)
 
 succs :: CFG -> CFGNode -> [CFGNode]
-succs cfg n = map ((_nodes cfg) M.!) (_succs n)
+succs cfg n = map (head . ((_nodes cfg) M.!)) (_succs n)
 
 instance Show CFGNode where
     show (CFGNode i t nt ps ss) =

@@ -26,7 +26,7 @@ test-suite spl-test
   main-is:             SPL_test.hs
   other-modules:       SPL_prop
   build-depends:       base, QuickCheck, SPL
-  ghc-options:         -O2 -threaded -rtsopts -with-rtsopts=-N
+  ghc-options:         -O2 
   default-language:    Haskell2010
 
 benchmark bench0

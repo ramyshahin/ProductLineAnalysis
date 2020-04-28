@@ -5,8 +5,8 @@ module SPL_prop where
 import Test.QuickCheck.All
 import SPL
 import PropBDD
-import Shallow.VList as S
-import Deep.VList as D
+--import Shallow.VList as S
+--import Deep.VList as D
 import Control.Applicative
 
 p, q, r, s :: Prop
@@ -68,11 +68,11 @@ prop_index2 = index x pq == [7]
 prop_index3 = index z _p == []
 
 -- getAllConfigs
-prop_getAllConfigs1 = length (getAllConfigs univ) == 16
+--prop_getAllConfigs1 = length (getAllConfigs univ) == 16
 
 -- getValidConfigs
-prop_getValidConfigs1 = length (getValidConfigs univ p) == 8
-prop_getValidConfigs2 = length (getValidConfigs univ pq) == 4
+--prop_getValidConfigs1 = length (getValidConfigs univ p) == 8
+--prop_getValidConfigs2 = length (getValidConfigs univ pq) == 4
 
 -- Ord
 prop_lt1 = y0 < y
@@ -88,21 +88,22 @@ prop_eq1 = x0 == x
 prop_eq2 = x /= y
 prop_eq3 = y0 /= y
 
--- Shallow VList
-sl1 = S.mkVList [w, x, y, z]
-sl2 = S.mkVList [z, y, x, w]
+list0 = mkVarT []
+list1 = x ^: list0
 
--- Deep VList
-dl1 = D.mkVList [w, x, y, z]
-dl2 = D.mkVList [z, y, x, w]
+--null' = liftV null
+--tail' = liftV tail
 
--- vhead
-prop_vhead0 = (S.vhead) sl1 == mkVars [(12,pq), (2,p_q), (3,_p_q), (-8, _pq)]
-prop_vhead1 = (S.vhead) sl2 == mkVars [(6,p), (-11, _p)]
+length' :: Var [a] -> Var Int
+length' xs = liftedCond (null' xs) 
+                        (mkVarT 0)
+                        (mkVarT 1) ^+ (length' (tail' xs))
 
--- vlength
-prop_vlength0 = S.vlength sl1 == mkVars[(3,neg _pq), (2,_pq)]
-prop_vlength1 = S.vlength sl2 == S.vlength sl1
+prop_list0 = (length' list0) == (mkVarT 0)
+prop_list1 = (length' list1) == (mkVarT 1)
+
+xs' = mkVars [([1,2,3,4], p), ([3,2], _p)]
+prop_list2 = (length' xs') == mkVars [(4, p), (2, _p)]
 
 -- unary function: abs
 abs' = pure abs
@@ -116,7 +117,7 @@ prop_yabs = yAbs == mkVars [(11, _p)]
 -- binary function (|+|)
 x_plus_y0 = apply (apply (pure (+)) x) y
 x_plus_y1 = (pure (+)) <*> x <*> y
-x_plus_y2 = x |+| y
+x_plus_y2 = x ^+ y
 
 prop_plus0 = x_plus_y0 == mkVars [(-19,_pq), (-11,_p_q)]
 prop_plus1 = x_plus_y0 == x_plus_y1
@@ -131,7 +132,7 @@ zero = (mkVarT 0)
 one = (mkVarT 1)
  
 safeDiv' :: Var Int -> Var Int -> Var Int
-safeDiv' a b = cond' (b |==| zero) zero (div' a b)
+safeDiv' a b = liftedCond (b ^== zero) zero (div' a b)
 divResult = safeDiv' w x
 
 prop_safeDiv = divResult == mkVars [(1,pq), (-1, p_q), (0,_p_q)]

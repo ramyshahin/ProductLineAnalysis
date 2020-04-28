@@ -58,8 +58,9 @@ type Val a = (a, PresenceCondition)
 data Var t = Var [(Val t)]
 
 disjInv :: Var t -> Bool
-disjInv (Var v) =
-    all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
+disjInv v'@(Var v) =
+    let ret = all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
+    in  if (not ret) then trace (showPCs v') ret else ret
 
 compInv :: Var t -> Bool
 compInv (Var v) =
@@ -76,10 +77,13 @@ exists (x, xpc) ys' =
 isSubsetOf :: Eq t => Var t -> Var t -> Bool
 isSubsetOf (Var x) y' = and (map (`exists` y') x)
 
+showPCs :: Var a -> String
+showPCs (Var v) = "{" ++ (foldr (++) "" (map (\(x,pc) -> (show pc) ++ ", ") v)) ++ "}"
+
 instance Show a => Show (Var a) where
     show v' = 
         let (Var v) = compact v' 
-        in "{\n" ++ (foldr (++) "" (map (\x -> (show x) ++ "\n") v)) ++ "}" 
+        in "{" ++ (foldr (++) "" (map (\x -> (show x) ++ ", ") v)) ++ "}" 
 
 -- a < b means that a is a subset of b in terms of products
 instance Eq a => Ord (Var a) where
@@ -158,8 +162,8 @@ configIndex v pc =
     let r = index v pc
     in  assert (length r == 1) $ head r
 
-subst :: Var t -> PresenceCondition -> Var t
-subst (Var v) pc =
+subst :: PresenceCondition -> Var t -> Var t
+subst pc (Var v) =
     Var (filter (\(_,pc') -> sat (conj [pc,pc'])) v)
 
 definedAt :: Var t -> PresenceCondition
@@ -171,7 +175,7 @@ undefinedAt = neg . definedAt
 
 restrict :: PresenceCondition -> Var t -> Var t
 restrict pc (Var v) =
-    Var $ filter (\(x,pc') -> sat pc') (map (\(x,pc') -> (x, conj[pc',pc])) v)
+    Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, conj[pc',pc])) v)
                                     
 --disjointnessInv :: Show t => Var t -> Var t -> Bool
 --disjointnessInv x@(Var a) y@(Var b) = 
@@ -204,28 +208,43 @@ pairs [] = []
 pairs xs = zip xs (tail xs)
 
 apply_ :: Val (a -> b) -> Var a -> Var b
-{-# NOINLINE apply_ #-}
-apply_ (fn, fnpc) x'  = --localCtxt fnpc $
-    let (Var x) = compact x'
-    in mkVars [(fn x'', pc) | (x'',xpc) <- x, let pc = conj[fnpc,xpc], sat(pc)]
+--{-# INLINE apply_ #-}
+apply_ (fn, fnpc) x'@(Var x)  = --localCtxt fnpc $
+    let xs = filter (\(_, pc) -> sat (fnpc /\ pc)) x in 
+    mkVars $ map (\(v, pc) -> (fn v, fnpc /\ pc)) xs
 
-{-# INLINE apply #-}
+--{-# INLINE apply #-}
 apply :: Var (a -> b) -> Var a -> Var b
-apply f@(Var fn) x = assert (inv f && inv x) $ --compact $
+apply f@(Var fn) x = --assert (disjInv f && disjInv x) $ --compact $
      unions [apply_ f x | f <- fn] 
 
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
+evalCond :: Var Bool -> (PresenceCondition, PresenceCondition)
+evalCond (Var c) = 
+    let t = filter (\(v,pc) -> v == True) c
+        f = filter (\(v,pc) -> v == False) c
+        tPC = foldr (\(_, pc) x -> x \/ pc) ffPC t
+        fPC = foldr (\(_, pc) x -> x \/ pc) ffPC f
+    in (tPC, fPC)
+
 liftedCond :: Var Bool -> Var a -> Var a -> Var a
-liftedCond !c'@(Var c) x y = --assert (inv c' && inv x && inv y) $ 
+liftedCond c x y = 
+    let (t,f) = evalCond c
+    in SPL.union ((mkVar id t) <*> x) ((mkVar id f) <*> y)
+
+{-
+liftedCond c'@(Var c) x y = --assert (disjInv c' && disjInv x && disjInv y) $ 
+    --liftV3 cond
     compact agg
     where parts = map (\c' -> case c' of
-                                (True, pc) -> restrict pc x
-                                (False, pc) -> restrict pc y) c
+                                    (True, pc)  -> (mkVar id pc) <*> (subst pc x)
+                                    (False, pc) -> (mkVar id pc) <*> (subst pc y))
+                      c
           agg = unions parts
-         
+-}
 liftedNeg :: Num a => Var (a -> a)
 liftedNeg = mkVarT (\x -> -x)
 
@@ -234,7 +253,7 @@ partitionInv (Var x) xs = length x == sum xs
     where sum xs = foldl (\c (Var x) -> c + length x) 0 xs
 
 caseSplitter :: Var a -> (a -> Int) -> Int -> [Var a]
-caseSplitter i@(Var input) splitter range = 
+caseSplitter i@(Var input) splitter range = --assert (compInv i) $
     let initV = V.replicate range (Var [])
         xs = foldl 
                 (\vec (v,pc) -> let index = splitter v 
@@ -243,17 +262,21 @@ caseSplitter i@(Var input) splitter range =
                                 in  vec V.// [(index, item')]) 
                 initV input 
         ret = V.toList xs
-    in  assert (partitionInv i ret) ret
+    in  --trace (foldl (++) "splits:\t" (map showPCs ret)) $ 
+        assert (partitionInv i ret) ret
 
 isNilVar :: Var a -> Bool
 isNilVar (Var xs) = null xs 
 
 liftedCase :: Var a -> (a -> Int) -> [Var a -> Var b] -> Var b
-liftedCase input splitter alts =
-    compact agg
+liftedCase input splitter alts = --trace ("In: " ++ showPCs input) $ assert (compInv input) $ 
+    --trace (foldl (++) "parts:\t" (map showPCs parts)) $ 
+    --trace ("Out: " ++ showPCs agg) $
+    assert (disjInv agg) agg
     where   split = caseSplitter input splitter (length alts) 
-            parts  = map (\(l,r) -> if isNilVar r then (Var []) else l r) (zip alts split) 
-            agg    = unions parts 
+            parts  = map (\(l,r) -> let ret = if isNilVar r then (Var []) else (restrict (definedAt r) (l r))
+                                    in  {-trace ("\t\t\tBlabla:" ++ (showPCs r) ++ "\t" ++ (showPCs ret))-} ret) (zip alts split) 
+            agg    = unions parts  
 
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
@@ -415,3 +438,19 @@ uncurry2 f x = f (oneOfTwo' x) (twoOfTwo' x)
 uncurry3 :: (Var a -> Var b -> Var c -> Var d) -> Var (a, b, c) -> Var d
 uncurry3 f x = f (oneOfThree' x) (twoOfThree' x) (threeOfThree' x)
 
+-- testing only
+{-
+_length xs = liftedCond (null' xs) (mkVarT 0) ((mkVarT 1) ^+ (_length (tail' xs)))
+univ@[p, q, r, s] = mkUniverse ["P", "Q", "R", "S"]
+pq = conj[p,q]
+p_q = conj[p, neg q]
+_pq = conj[neg p, q]
+_p_q = conj[neg p, neg q]
+_p = neg p
+_q = neg q
+x = mkVars [(7, pq), (-3, p_q), (-8, _pq), (0, _p_q)]
+xs = mkVars [([1,2,3,4], p), ([3,2], _p)]
+
+list0 = mkVarT []
+list1 = x ^: list0
+-}

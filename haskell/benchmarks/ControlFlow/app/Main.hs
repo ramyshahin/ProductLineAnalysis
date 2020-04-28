@@ -1,8 +1,12 @@
+{-# LANGUAGE CPP #-}
+#define DEEP
+
 module Main where
 
 import CFG
 import CFGParser
 import CaseTermination
+import qualified CaseTerminationDeep as Deep
 import SPL
 import PresenceCondition 
 import Debug.Trace
@@ -22,7 +26,11 @@ getCntxtContents txt2node txt2cntxt c = do
     return (n, pc)
 -}
 
-analyze' = liftV analyze
+run :: Var CFG -> Var [CFGNode]
+
+#ifdef SHALLOW
+run = liftV analyze
+#endif
 
 getFunctionNodes :: [CFGNode] -> [CFGNode]
 getFunctionNodes = filter (\n -> case n of 
@@ -30,24 +38,27 @@ getFunctionNodes = filter (\n -> case n of
                                     _                               -> False)
 getFunctionNodes' = liftV getFunctionNodes
 
-runBruteForce :: Var CFG -> Var [CFGNode]
-runBruteForce ns = 
+#ifdef BRUTE_FORCE
+run ns = 
     let features = getFeatures ns
         configs  = getAllConfigs features
         inVecs   = zip (map (configIndex ns) configs) configs
     in  mkVars $ map (\(input, pc) -> 
-                            --trace (show pc) 
                             (analyze input, pc)) 
                      inVecs
+#endif
 
-runShadowLifted :: Var CFG -> Var [CFGNode]
-runShadowLifted ns = analyze' ns
+#ifdef DEEP
+run = Deep.analyze
+#endif
+
+nodes' = liftV nodes
 
 main :: IO ()
 main = do
     cfg <- readGraph inputFileName
-    let features = getFeatures cfg
-    let result = runBruteForce cfg
+    let features = trace ("Main: node counts: " ++ (show (length' (nodes' cfg)))) $ getFeatures cfg
+    let result = run cfg
     putStrLn $ "Features: " ++ (show features)
     putStrLn $ show result
     return ()

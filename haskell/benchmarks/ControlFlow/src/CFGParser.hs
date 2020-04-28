@@ -14,7 +14,7 @@ import Control.Exception
 import qualified Data.Text.Lazy     as T
 import qualified Data.List          as L
 import qualified Data.Maybe         as M
-import qualified Data.Map           as MM
+import qualified Data.MultiMap           as MM
 import SPL
 import PresenceCondition 
 
@@ -98,14 +98,16 @@ mkCFG :: [CFGNode] -> CFG
 mkCFG  ns = CFG $ foldr (\n m -> MM.insert (nID n) n m) MM.empty ns
 mkCFG' = liftV mkCFG
 
+length' = liftV length
+
 readGraph :: String -> IO (Var CFG)
 readGraph fn = do
     g <- inputGraph fn
     let ds = decomposeList g
     vs  <- mapM getCntxtContents ds
     let vs' = lv2vl vs
-    let vs'' = (liftV adjustEdges) vs'
-    return $ mkCFG' vs''
+    let vs'' = trace ("readGraph: length(vs'): " ++ (show (length' vs'))) $ (liftV adjustEdges) vs'
+    return $ trace ("readGraph: length(vs''): " ++ (show (length' vs''))) $ mkCFG' vs''
 
 -- parsing node expression/statement
 parseDeclaration :: Int -> String -> Bool -> NodeType

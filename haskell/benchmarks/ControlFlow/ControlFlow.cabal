@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3b835cbd62cb9bbe930104f51bf6ebbd45b9951ec549b89cbeb164c2947fb029
+-- hash: 3e5c64a372c5755fd0bc93c0b32861af862b5c261bcad1b1e1a95de3df8d7f76
 
 name:           ControlFlow
 version:        0.1.0.0
@@ -40,9 +40,9 @@ library
     , base >=4.7 && <5
     , containers
     , graphviz
-    , hashmap
     , hashtables
     , language-c
+    , multimap
     , text
   default-language: Haskell2010
 
@@ -59,9 +59,9 @@ executable ControlFlow-exe
     , base >=4.7 && <5
     , containers
     , graphviz
-    , hashmap
     , hashtables
     , language-c
+    , multimap
     , text
   default-language: Haskell2010
 
@@ -79,8 +79,8 @@ test-suite ControlFlow-test
     , base >=4.7 && <5
     , containers
     , graphviz
-    , hashmap
     , hashtables
     , language-c
+    , multimap
     , text
   default-language: Haskell2010

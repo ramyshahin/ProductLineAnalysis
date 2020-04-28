@@ -323,7 +323,7 @@ rewriteExpr globals locals e =
                             [] $ _annListElems bs
                 ls  = snd (head bs')
                 e'  = rewriteExpr globals ls e
-            in  mkLet (fst (unzip bs')) e'
+            in  mkLet ((reverse . fst . unzip) bs') e'
         Do ss -> trace "Unhandled Do" e
         Tuple es -> trace "Unhandled Tuple" e 
         UnboxedTuple es -> trace "Unhandled UnboxedTuple" e 

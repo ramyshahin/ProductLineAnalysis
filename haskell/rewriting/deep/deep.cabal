@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6a6ee8369c8ecdec47ed5a13f8c2a0ed19992b279a53d6f16e9832ee2997d29c
+-- hash: 13664e20c831990c0834e641588e117da6e5b11604f5062ccd252740b2abf6e1
 
 name:           deep
 version:        0.1.0.0
@@ -63,7 +63,6 @@ test-suite rewriter-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      C
       List
       ListDeep
       Main

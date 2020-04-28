@@ -27,7 +27,7 @@ dependencies:
 - text
 - SPL
 - hashtables
-- hashmap
+- multimap
 
 library:
   source-dirs: src
