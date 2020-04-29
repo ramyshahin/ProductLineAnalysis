@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     PropBDD, SPL, PresenceCondition, VPreludeDeep
+  exposed-modules:     PropBDD, SPL, PresenceCondition
   build-depends:       base, cudd, parsec, vector, parallel, containers, hashtables, hashable, generic-deriving
   ghc-options:         -O2
   default-language:    Haskell2010

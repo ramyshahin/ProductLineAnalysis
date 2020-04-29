@@ -5,9 +5,12 @@ module SPL_prop where
 import Test.QuickCheck.All
 import SPL
 import PropBDD
+import PresenceCondition
 --import Shallow.VList as S
 --import Deep.VList as D
 import Control.Applicative
+
+import Debug.Trace
 
 p, q, r, s :: Prop
 univ@[p, q, r, s] = mkUniverse ["P", "Q", "R", "S"]
@@ -88,22 +91,24 @@ prop_eq1 = x0 == x
 prop_eq2 = x /= y
 prop_eq3 = y0 /= y
 
-list0 = mkVarT []
+list0 = mkVar ttPC []
 list1 = x ^: list0
 
 --null' = liftV null
 --tail' = liftV tail
 
-length' :: Var [a] -> Var Int
-length' xs = liftedCond (null' xs) 
-                        (mkVarT 0)
-                        (mkVarT 1) ^+ (length' (tail' xs))
+length' :: Context -> Var [a] -> Var Int
+length' cntxt xs = 
+    liftedCond cntxt
+               (null' xs) 
+               (\__cntxt__ -> 0 ^| __cntxt__)
+               (\__cntxt__ -> ((+) ^| __cntxt__) <*> (1 ^| __cntxt__) <*> (length' __cntxt__ ((tail ^| __cntxt__) <*> xs)))
 
-prop_list0 = (length' list0) == (mkVarT 0)
-prop_list1 = (length' list1) == (mkVarT 1)
+prop_list0 = (length' ttPC list0) == (0 ^| ttPC)
+prop_list1 = (length' ttPC list1) == (1 ^| ttPC)
 
 xs' = mkVars [([1,2,3,4], p), ([3,2], _p)]
-prop_list2 = (length' xs') == mkVars [(4, p), (2, _p)]
+prop_list2 = (length' ttPC xs') == mkVars [(4, p), (2, _p)]
 
 -- unary function: abs
 abs' = pure abs
@@ -126,14 +131,15 @@ prop_plus2 = x_plus_y0 == x_plus_y2
 -- safe division and lifted conditionals
 safeDiv :: Int -> Int -> Int
 safeDiv a b = if b == 0 then 0 else (div a b)
-div' = liftV2 div
 
-zero = (mkVarT 0)
-one = (mkVarT 1)
+div' c = div ^| c
+
+zero c = (0 ^| c)
+one = (1 ^|)
  
-safeDiv' :: Var Int -> Var Int -> Var Int
-safeDiv' a b = liftedCond (b ^== zero) zero (div' a b)
-divResult = safeDiv' w x
+safeDiv' :: Context -> Var Int -> Var Int -> Var Int
+safeDiv' cntxt a b = liftedCond ttPC (b ^== (zero cntxt)) (\c -> zero c) (\c -> (div' c) <*> a <*> b)
+divResult = safeDiv' ttPC w x
 
 prop_safeDiv = divResult == mkVars [(1,pq), (-1, p_q), (0,_p_q)]
 

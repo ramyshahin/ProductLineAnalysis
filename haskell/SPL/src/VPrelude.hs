@@ -4,9 +4,9 @@ module VPrelude where
 
 import Prelude
 
-(^.) :: (b -> c) -> (a -> b) -> a -> c
-(^.) f0 f1 x = f0 (f1 x) 
-infixr 9 ^.
+--(^.) :: (b -> c) -> (a -> b) -> a -> c
+--(^.) f0 f1 x = f0 (f1 x) 
+--infixr 9 ^.
 
 map' :: (a -> b) -> [a] -> [b]
 map' f xs = 

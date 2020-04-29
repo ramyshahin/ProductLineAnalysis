@@ -112,16 +112,19 @@ moduleNameDeepPrelude = mkModuleName "VPreludeDeep"
 importDeepPrelude = mkImportDecl False False False Nothing moduleNameDeepPrelude Nothing Nothing
 
 rewriteImports :: ImportDeclList  -> ImportDeclList 
-rewriteImports xs = (annListElems .= concat [[importSPL, importDeepPrelude], (imports xs)]) xs 
---rewriteImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs 
+--rewriteImports xs = (annListElems .= concat [[importSPL, importDeepPrelude], (imports xs)]) xs 
+rewriteImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs 
     
 -- | Rewrite declarations
 --
-rewriteType :: Type -> Type
-rewriteType t = case t of
-    FunctionType a b    -> mkFunctionType (rewriteType a) (rewriteType b)
+rewriteType :: Bool -> Type -> Type
+rewriteType init t = case t of
+    FunctionType a b    -> 
+        if      init
+        then    mkFunctionType (mkVarType (mkName "Context")) (rewriteType False t)
+        else    mkFunctionType (rewriteType False a) (rewriteType False b)
     --InfixTypeApp l op r -> mkInfixTypeApp (rewriteType l) op (rewriteType r)
-    ParenType t         -> mkParenType (rewriteType t)
+    ParenType t         -> mkParenType (rewriteType True t)
     -- TODO: handle other cases
     _ -> mkTypeApp tyVar t
 
@@ -131,7 +134,7 @@ rewriteType t = case t of
 rewriteTypeSig :: TypeSignature -> Decl
 rewriteTypeSig (TypeSignature ns t) = 
     let n = head $ _annListElems ns
-    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType t)
+    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType True t)
 
 rewriteDecl :: Declarations -> Decl -> Decl
 rewriteDecl decls d = 
@@ -148,7 +151,7 @@ rewriteValueBind globals vb = mkValueBinding $ case vb of
         in  mkSimpleBind p (rewriteRhs globals locals rhs) (_annMaybe bs)
     FunctionBind ms -> 
         mkFunctionBind (
-            map (\m -> rewriteMatch globals (getMatchVars m) m) (_annListElems ms)) 
+            map (\m -> rewriteMatch globals (getMatchVars m) m) (_annListElems ms))
     _ -> trace ("Unhandled Value Bind " ++ prettyPrint vb) $ vb
 
 rewriteRhs :: Declarations -> Declarations -> Rhs -> Rhs
@@ -156,16 +159,22 @@ rewriteRhs globals locals rhs = case rhs of
     UnguardedRhs e -> mkUnguardedRhs $ rewriteExpr globals locals e
     _              -> trace ("Unhandled RHS " ++ prettyPrint rhs) $ rhs
 
+rewriteMatchLHS :: MatchLhs -> MatchLhs
+rewriteMatchLHS lhs =
+    case lhs of
+        MatchLhs n args -> mkMatchLhs n $ cntxtPat : (_annListElems args)
+        _ -> trace ("Unhandled match LHS: " ++ (prettyPrint lhs)) lhs
+
 rewriteMatch :: Declarations -> Declarations -> Match -> Match
 rewriteMatch globals locals (Match lhs rhs binds) = 
-    mkMatch lhs (rewriteRhs globals locals rhs) (_annMaybe binds)
+    mkMatch (rewriteMatchLHS lhs) (rewriteRhs globals locals rhs) (_annMaybe binds)
 
 liftedCond = mkVar (mkName "liftedCond")
-liftedNeg = mkVar (mkName "liftedNeg")
+liftedNeg = mkVar (mkName "neg\'")
 liftedCase = mkVar (mkName "liftedCase")
 
 liftOp (NormalOp o) = trace ("liftOp: " ++ (prettyPrint o))
-    mkParen (mkApp mkVarT (mkVar (mkParenName o)))
+    mkV (mkVar (mkParenName o))
 
 rewritePrimitiveFuncName :: String -> Expr
 rewritePrimitiveFuncName s = mkVar $ mkName (s ++ "\'")
@@ -175,8 +184,8 @@ rewriteVar globals locals vn =
     if      isPrimitiveFunc (prettyPrint vn)
     then    rewritePrimitiveFuncName (prettyPrint vn)
     else    if      externalDecl globals locals vn
-            then    mkParen $ mkApp mkVarT (mkVar vn)
-            else mkVar vn
+            then    mkV (mkVar vn)
+            else    mkVar vn
 
 debugDecls :: Declarations -> String
 debugDecls ns = foldl (\r s -> r ++ " " ++ s) "Declarations: " $ ns
@@ -189,6 +198,9 @@ externalDecl globals locals x =
 
 getLiftedPrimitiveOp :: String -> Operator
 getLiftedPrimitiveOp o = mkUnqualOp ("^" ++ o)
+
+upOp :: Operator
+upOp = mkUnqualOp ("^|")
 
 isPrimitiveOp :: String -> Bool
 isPrimitiveOp n = S.member n L.primitiveOpNames
@@ -278,30 +290,46 @@ rewriteLocalBind globals locals lb =
                 (mkLocalValBind (mkSimpleBind p (mkUnguardedRhs (rewriteExpr globals locals rhs)) (_annMaybe xs)), vbs)
             _ -> trace ("Unsupported Local Bind: " ++ prettyPrint lb) $ (lb, S.empty)
 
+cntxtExpr = mkVar (mkName "__cntxt__")
+cntxtPat  = mkVarPat (mkName "__cntxt__")
+
+mkV :: Expr -> Expr
+mkV e = mkParen (mkInfixApp e upOp $ cntxtExpr)
+
+rewriteApp :: Bool -> Declarations -> Declarations -> Expr -> Expr
+rewriteApp init globals locals (App fun arg) = 
+    let fun' = case fun of 
+                App _ _ -> rewriteApp True globals locals fun
+                _       -> rewriteExpr globals locals fun
+        arg' = case arg of
+                App _ _ -> rewriteApp False globals locals arg
+                _       -> rewriteExpr globals locals arg
+    in  case fun of 
+            Var n -> if     externalDecl globals locals n
+                     then   if isPrimitiveFunc (prettyPrint n)
+                            then mkApp (rewritePrimitiveFuncName (prettyPrint n)) arg'
+                            else mkInfixApp fun' appOp arg'
+                     else   if      init 
+                            then    mkApp (mkApp fun' cntxtExpr) arg'
+                            else    mkApp fun' arg'
+            _      -> case fun' of 
+                        App _ _ -> mkApp fun' arg'
+                        InfixApp _ op _ -> mkInfixApp fun' appOp arg' 
+                        _       -> mkInfixApp fun' appOp arg'
 -- lifting expressions 
 rewriteExpr :: Declarations -> Declarations -> Expr -> Expr
 rewriteExpr globals locals e = 
     case e of 
-        Lit l -> mkParen $ mkApp mkVarT (mkLit l)
+        Lit l -> mkV (mkLit l)
         Var n -> rewriteVar globals locals n 
         InfixApp arg1 op arg2 -> rewriteInfixApp globals locals arg1 op arg2
         PrefixApp op arg -> mkInfixApp liftedNeg appOp arg
-        App fun arg ->  let fun' = rewriteExpr globals locals fun
-                            arg' = rewriteExpr globals locals arg
-                        in  case fun of 
-                                Var n -> if (externalDecl globals locals n)
-                                         then   if isPrimitiveFunc (prettyPrint n)
-                                                then mkApp (rewritePrimitiveFuncName (prettyPrint n)) arg'
-                                                else mkInfixApp fun' appOp arg'
-                                         else mkApp fun' arg'
-                                _ -> case fun' of 
-                                            App _ _ -> mkApp fun' arg'
-                                            InfixApp _ op _ -> mkInfixApp fun' appOp arg' 
-                                            _       -> mkInfixApp fun' appOp arg'
-        If c t e -> mkApp   (mkApp  (mkApp  liftedCond  
-                                            (mkParen (rewriteExpr globals locals c)))
-                                    (mkParen (rewriteExpr globals locals t)))
-                            (mkParen (rewriteExpr globals locals e))
+        App fun arg ->  rewriteApp True globals locals e
+        If c t e -> 
+            let cnd = mkParen $ rewriteExpr globals locals c
+                brT = mkParen $ mkLambda [cntxtPat] (rewriteExpr globals locals t)
+                brF = mkParen $ mkLambda [cntxtPat] (rewriteExpr globals locals e)
+            in  mkApp (mkApp  (mkApp  (mkApp liftedCond cntxtExpr) cnd) brT) brF
         Case v alts -> 
             let dummy    = mkName dummyVar
                 arg      = mkVarPat $ dummy
@@ -330,7 +358,7 @@ rewriteExpr globals locals e =
         TupleSection es -> trace "Unhandled TupleSelection" e 
         UnboxedTupleSection es -> trace "Unhandled UnboxedTupSec" e 
         --List es -> mkApp mkVarT (mkList $ map (rewriteExpr globals locals) (_annListElems es))
-        List es -> mkParen (mkApp mkVarT e)
+        List es -> mkV e
         ParArray es -> trace "Unhandled ParArray" e
         Paren ex -> mkParen (rewriteExpr globals locals ex)
         LeftSection lhs o -> trace "Unhandled LeftSection" e

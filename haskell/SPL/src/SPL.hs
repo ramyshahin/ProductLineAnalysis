@@ -40,6 +40,8 @@ import Debug.Trace
 --type FeatureSet         = Universe
 type PresenceCondition  = Prop
 
+type Context = PresenceCondition
+
 --type Val a = (Maybe a, PresenceCondition)
 type Val a = (a, PresenceCondition)
 
@@ -96,11 +98,43 @@ instance Eq a => Eq (Var a) where
 
 instance Functor Var where
     fmap :: (a -> b) -> Var a -> Var b
-    fmap f = apply (mkVarT f)
+    fmap f = apply (f ^| ttPC)
 
 instance Applicative Var where
-    pure  = mkVarT
+    pure  = (^| ttPC)
     (<*>) = apply
+
+{-
+-- Var monad
+data VarM a =
+    VarM (Context -> (a, Context))
+
+instance Functor VarM where
+    fmap :: (a -> b) -> VarM a -> VarM b
+    fmap f (VarM t) = VarM (\c -> let (x, c') = t c in (f x, c'))
+
+instance Applicative VarM where
+    pure :: a -> VarM a
+    pure x = VarM (\c -> (x, c))
+    
+    (<*>) :: VarM (a -> b) -> VarM a -> VarM b
+    (VarM l) <*> (VarM r) = VarM (\c -> let (v, c')  = l c
+                                            (w, c'') = r c'
+                                        in (v w, c''))
+
+instance Monad VarM where
+    (>>=) :: VarM a -> (a -> VarM b) -> VarM b
+    VarM l >>= t = VarM
+        (\c -> let (v, c')  = l c
+                   (VarM y) = t v
+               in y c')
+    
+    (>>) :: VarM a -> VarM b -> VarM b
+    l >> r = r
+
+    return  = pure
+    fail    = error
+-}
 
 --type family Var t where
 --    Var ((t :: * -> * -> * -> *) (s1 :: *) (s2 :: *) (s3 :: *))      = Var' (t (Var' s1) (Var' s2) (Var' s3))
@@ -108,13 +142,17 @@ instance Applicative Var where
 --    Var ((t :: * -> *) (s :: *))      = Var' (t (Var' s))
 --    Var (t :: *)                      = Var' t
 
-mkVar :: t -> PresenceCondition -> Var t
+mkVar :: PresenceCondition -> t -> Var t
 {-# INLINE mkVar #-}
-mkVar v pc = Var [(v,pc)]
+mkVar pc v = Var [(v,pc)]
 
-mkVarT :: t -> Var t
-{-# INLINE mkVarT #-}
-mkVarT v = mkVar v tt
+(^|) :: t -> PresenceCondition -> Var t
+x ^| pc = mkVar pc x
+infixl 9 ^|
+
+--mkVarT :: t -> Var t
+--{-# INLINE mkVarT #-}
+--mkVarT v = mkVar v tt
 
 mkVars :: [(t,PresenceCondition)] -> Var t
 mkVars vs = Var vs
@@ -222,18 +260,20 @@ apply f@(Var fn) x = --assert (disjInv f && disjInv x) $ --compact $
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
-evalCond :: Var Bool -> (PresenceCondition, PresenceCondition)
-evalCond (Var c) = 
+evalCond :: Context -> Var Bool -> (PresenceCondition, PresenceCondition)
+evalCond cntxt (Var c) = 
     let t = filter (\(v,pc) -> v == True) c
         f = filter (\(v,pc) -> v == False) c
         tPC = foldr (\(_, pc) x -> x \/ pc) ffPC t
         fPC = foldr (\(_, pc) x -> x \/ pc) ffPC f
-    in (tPC, fPC)
+    in (tPC /\ cntxt, fPC /\ cntxt)
 
-liftedCond :: Var Bool -> Var a -> Var a -> Var a
-liftedCond c x y = 
-    let (t,f) = evalCond c
-    in SPL.union ((mkVar id t) <*> x) ((mkVar id f) <*> y)
+liftedCond :: Context -> Var Bool -> (Context -> Var a) -> (Context -> Var a) -> Var a
+liftedCond cntxt c x y = 
+    let (t,f) = evalCond cntxt c 
+        tBranch = if (sat t) then (x t) else Var []
+        fBranch = if (sat f) then (y f) else Var []
+    in SPL.union tBranch fBranch
 
 {-
 liftedCond c'@(Var c) x y = --assert (disjInv c' && disjInv x && disjInv y) $ 
@@ -245,8 +285,8 @@ liftedCond c'@(Var c) x y = --assert (disjInv c' && disjInv x && disjInv y) $
                       c
           agg = unions parts
 -}
-liftedNeg :: Num a => Var (a -> a)
-liftedNeg = mkVarT (\x -> -x)
+neg' :: Num a => Var a -> Var a
+neg' = liftV (\x -> -x)
 
 partitionInv :: Var a -> [Var a] -> Bool
 partitionInv (Var x) xs = length x == sum xs
