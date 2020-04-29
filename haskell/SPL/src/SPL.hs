@@ -308,13 +308,13 @@ caseSplitter i@(Var input) splitter range = --assert (compInv i) $
 isNilVar :: Var a -> Bool
 isNilVar (Var xs) = null xs 
 
-liftedCase :: Var a -> (a -> Int) -> [Var a -> Var b] -> Var b
+liftedCase :: Var a -> (a -> Int) -> [Context -> Var a -> Var b] -> Var b
 liftedCase input splitter alts = --trace ("In: " ++ showPCs input) $ assert (compInv input) $ 
     --trace (foldl (++) "parts:\t" (map showPCs parts)) $ 
     --trace ("Out: " ++ showPCs agg) $
     assert (disjInv agg) agg
     where   split = caseSplitter input splitter (length alts) 
-            parts  = map (\(l,r) -> let ret = if isNilVar r then (Var []) else (restrict (definedAt r) (l r))
+            parts  = map (\(l,r) -> let ret = if isNilVar r then (Var []) else l (definedAt r) r
                                     in  {-trace ("\t\t\tBlabla:" ++ (showPCs r) ++ "\t" ++ (showPCs ret))-} ret) (zip alts split) 
             agg    = unions parts  
 

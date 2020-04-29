@@ -255,9 +255,9 @@ rewriteAlt globals locals (index, Alt p (CaseRhs e) _) =
         pVars   = getPatternVars p
         vUncurry = mkVar $ mkName ("uncurry" ++ show (length pVars))
         dotOp   = mkUnqualOp "."
-    in  --if (length pVars) > 0 
-        {- then -} mkInfixApp (mkParen (mkApp vUncurry vCase)) dotOp (mkParen (mkApp vLiftV vSplit))
-        --else vCase
+        c       = mkParen $ mkApp vUncurry (mkParen (mkApp vCase cntxtExpr))
+        s       = mkParen $ mkApp vLiftV vSplit
+    in  mkLambda [cntxtPat] $ mkInfixApp c dotOp s
 
 splitAlts :: Integer -> [Alt] -> [Alt]
 splitAlts index as =
@@ -267,6 +267,7 @@ splitAlts index as =
             let rhs = mkCaseRhs $ mkLit (mkIntLit index)
             in  (mkAlt p rhs Nothing) : (splitAlts (index + 1) as')
 
+cntxtVar = "__cntxt__"
 dummyVar = "__dummy__"
 
 mkAltBinding :: Declarations -> Declarations -> Integer -> Alt -> LocalBind
@@ -274,8 +275,8 @@ mkAltBinding globals locals index (Alt p (CaseRhs rhs) _) =
     let lhsName = mkName $ "case" ++ (show index)
         splitName = mkName $ "split" ++ (show index)
         params' = getPatternVars p
-        params = S.toList $ params'
-        lhs = mkMatchLhs lhsName (map (mkVarPat . mkName) params)
+        params = (S.toList $ params')
+        lhs = mkMatchLhs lhsName (map (mkVarPat . mkName) (cntxtVar : params))
         dummy = mkName dummyVar
         splitLhs = mkMatchLhs splitName [mkVarPat dummy]
         splitAlt = mkAlt p (mkCaseRhs (mkTuple (map (mkVar . mkName) params))) Nothing
@@ -290,8 +291,8 @@ rewriteLocalBind globals locals lb =
                 (mkLocalValBind (mkSimpleBind p (mkUnguardedRhs (rewriteExpr globals locals rhs)) (_annMaybe xs)), vbs)
             _ -> trace ("Unsupported Local Bind: " ++ prettyPrint lb) $ (lb, S.empty)
 
-cntxtExpr = mkVar (mkName "__cntxt__")
-cntxtPat  = mkVarPat (mkName "__cntxt__")
+cntxtExpr = mkVar (mkName cntxtVar)
+cntxtPat  = mkVarPat (mkName cntxtVar)
 
 mkV :: Expr -> Expr
 mkV e = mkParen (mkInfixApp e upOp $ cntxtExpr)
