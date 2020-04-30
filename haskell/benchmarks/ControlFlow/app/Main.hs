@@ -1,7 +1,3 @@
-{-# LANGUAGE CPP #-}
--- #define DEEP
-#define BRUTE_FORCE
-
 module Main where
 
 import CFG
@@ -12,8 +8,15 @@ import SPL
 import PresenceCondition 
 import Debug.Trace
 import Control.Exception
+import Criterion.Main
+import Control.DeepSeq
 
 inputFileName = "/mnt/f/code/busybox-1.18.5/coreutils/head.cfg.dot"
+
+instance NFData (Var a)
+  where 
+    rnf _ = () --ExitSuccess = ()
+    --rnf (ExitFailure _) = ()
 
 {-
 getCntxtContents :: Text2Node -> Text2Cntxt -> Context T.Text -> IO VNode
@@ -27,39 +30,40 @@ getCntxtContents txt2node txt2cntxt c = do
     return (n, pc)
 -}
 
-run :: Var CFG -> Var [CFGNode]
-
-#ifdef SHALLOW
-run = liftV analyze
-#endif
-
 getFunctionNodes :: [CFGNode] -> [CFGNode]
 getFunctionNodes = filter (\n -> case n of 
                                     (CFGNode _ _ (CFGFunc _) _ _)   -> True
                                     _                               -> False)
 getFunctionNodes' = liftV getFunctionNodes
 
-#ifdef BRUTE_FORCE
-run ns = 
+bruteforce ns = 
     let features = getFeatures ns
         configs  = getAllConfigs features
         inVecs   = zip (map (configIndex ns) configs) configs
     in  mkVars $ map (\(input, pc) -> 
                             (analyze input, pc)) 
                      inVecs
-#endif
 
-#ifdef DEEP
-run = Deep.analyze
-#endif
+shallow = liftV analyze
+
+deep = Deep.analyze
 
 nodes' = liftV nodes
 
-main :: IO ()
-main = do
+setupEnv = do
     cfg <- readGraph inputFileName
-    let features = trace ("Main: node counts: " ++ (show (length' (nodes' cfg)))) $ getFeatures cfg
-    let result = run cfg
+    let features = --trace ("Main: node counts: " ++ (show (length' (nodes' cfg)))) $ 
+            getFeatures cfg
     putStrLn $ "Features: " ++ (show features)
-    putStrLn $ show result
-    return ()
+    return cfg
+
+main = defaultMain [ env setupEnv $ \cfg -> bgroup "main"
+                        [   bench "brute-force" $ nf bruteforce cfg,
+                            bench "shallow"     $ nf shallow    cfg,
+                            bench "deep"        $ nf deep       cfg
+                            ] ]
+                            
+--main = do
+--    cfg <- setupEnv
+--    let result = bruteforce cfg
+--    putStrLn $ show result

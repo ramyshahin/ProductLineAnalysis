@@ -1,8 +1,8 @@
 -- PropBDD.hs
 -- Ramy Shahin
 -- May 7th 2017
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE RankNTypes #-}
+--{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+--{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE BangPatterns #-}
 module PropBDD where
 

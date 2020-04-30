@@ -31,6 +31,8 @@ dependencies:
 
 library:
   source-dirs: src
+  ghc-options:
+    - -O2
 
 executables:
   ControlFlow-exe:
@@ -42,6 +44,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - ControlFlow
+    - criterion
+    - deepseq
 
 tests:
   ControlFlow-test:

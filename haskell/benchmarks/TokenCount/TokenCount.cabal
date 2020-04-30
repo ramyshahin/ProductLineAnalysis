@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9216b7a6b7aa167219058ab5593ef9e2ee59cae2b4500cc97714edf8e9b3101a
+-- hash: 98cdb8e64314d4770aa44a493633701b24818145f2795a998ef44382e284bf10
 
 name:           TokenCount
 version:        0.1.0.0
@@ -45,7 +45,7 @@ executable TokenCount-exe
       Paths_TokenCount
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -fno-ignore-asserts
+  ghc-options: -O2 -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       SPL
     , TokenCount

@@ -3,13 +3,13 @@
 -- Software Product Line library
 -- Ramy Shahin - July 14th 2016
 -------------------------------------------------------------------------------
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
+--{-# LANGUAGE TypeFamilies #-}
+--{-# LANGUAGE PolyKinds #-}
+--{-# LANGUAGE RankNTypes #-}
+--{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE PatternSynonyms #-}
+--{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE CPP #-}
 
 module SPL where
