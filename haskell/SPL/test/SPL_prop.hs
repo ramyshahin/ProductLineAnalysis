@@ -96,8 +96,8 @@ list1 = x ^: list0
 
 length' :: Var [a] -> Var Int
 length' xs = liftedCond (null' xs) 
-                        (mkVarT 0)
-                        (mkVarT 1) ^+ (length' (tail' xs))
+                        (\__cntxt__ -> (mkVar 0 __cntxt__))
+                        (\__cntxt__ -> (mkVar 1 __cntxt__) ^+ (length' (tail' (restrict __cntxt__ xs))))
 
 prop_list0 = (length' list0) == (mkVarT 0)
 prop_list1 = (length' list1) == (mkVarT 1)
@@ -132,7 +132,7 @@ zero = (mkVarT 0)
 one = (mkVarT 1)
  
 safeDiv' :: Var Int -> Var Int -> Var Int
-safeDiv' a b = liftedCond (b ^== zero) zero (div' a b)
+safeDiv' a b = liftedCond (b ^== zero) (\__cntxt__ -> zero /^ __cntxt__) (\__cntxt__ -> div' (a /^ __cntxt__) (b /^ __cntxt__))
 divResult = safeDiv' w x
 
 prop_safeDiv = divResult == mkVars [(1,pq), (-1, p_q), (0,_p_q)]

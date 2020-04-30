@@ -9,27 +9,27 @@ import Prelude
 infixr 9 ^.
 
 map' :: (a -> b) -> [a] -> [b]
-map' f xs = 
+map' _f xs = 
     case xs of
         [] -> []
-        (y : ys) -> (f y) : (map' f ys)
+        (y : ys) -> (_f y) : (map' _f ys)
 
 filter' :: (a -> Bool) -> [a] -> [a]
-filter' p xs =
+filter' _p xs =
     case xs of
         [] -> []
-        (y : ys) -> if p y 
-                    then y : (filter' p ys) 
-                    else (filter' p ys)
+        (y : ys) -> if _p y 
+                    then y : (filter' _p ys) 
+                    else (filter' _p ys)
 
 foldr' :: (a -> b -> b) -> b -> [a] -> b
-foldr' f z xs = 
+foldr' _f z xs = 
     case xs of
         [] -> z
-        (y : ys) -> foldr' f (f y z) ys       
+        (y : ys) -> foldr' _f (_f y z) ys       
 
 foldl' :: (b -> a -> b) -> b -> [a] -> b
-foldl' f z xs = 
+foldl' _f z xs = 
     case xs of
         [] -> z
-        (y : ys) -> foldl' f (f z y) ys
+        (y : ys) -> foldl' _f (_f z y) ys

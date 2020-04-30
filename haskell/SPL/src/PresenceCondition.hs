@@ -14,8 +14,6 @@ type PCExpr = Prop
 (/\) = andBDD
 (\/) = orBDD
 negPC = notBDD
-ttPC = tt
-ffPC = ff
 
 languageDef = 
     emptyDef {

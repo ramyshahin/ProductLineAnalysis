@@ -15,11 +15,11 @@ data NodeType =
   deriving Show
 
 data CFGNode = CFGNode {
-    nID     :: Int,
+    _nID     :: Int,
     text    :: T.Text,
     ast     :: NodeType,
     _preds  :: [Int],
-    _succs  :: [Int]
+    __succs :: [Int]
     }
 
 getID (CFGNode i _ _ _ _) = i
@@ -34,8 +34,8 @@ nodes cfg = (snd . unzip . M.toList) $ _nodes cfg
 preds :: CFG -> CFGNode -> [CFGNode]
 preds cfg n = map (head . ((_nodes cfg) M.!)) (_preds n)
 
-succs :: CFG -> CFGNode -> [CFGNode]
-succs cfg n = map (head . ((_nodes cfg) M.!)) (_succs n)
+_succs :: CFG -> CFGNode -> [CFGNode]
+_succs cfg n = map (head . ((_nodes cfg) M.!)) (__succs n)
 
 instance Show CFGNode where
     show (CFGNode i t nt ps ss) =

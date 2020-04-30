@@ -177,6 +177,9 @@ restrict :: PresenceCondition -> Var t -> Var t
 restrict pc (Var v) =
     Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, conj[pc',pc])) v)
                                     
+(/^) x pc = restrict pc x
+(^|) x pc = mkVar x pc
+
 --disjointnessInv :: Show t => Var t -> Var t -> Bool
 --disjointnessInv x@(Var a) y@(Var b) = 
 --    let conjunctions = [andBDD pc1 pc2 | (_,pc1) <- a, (_,pc2) <- b]
@@ -230,10 +233,10 @@ evalCond (Var c) =
         fPC = foldr (\(_, pc) x -> x \/ pc) ffPC f
     in (tPC, fPC)
 
-liftedCond :: Var Bool -> Var a -> Var a -> Var a
+liftedCond :: Var Bool -> (PresenceCondition -> Var a) -> (PresenceCondition -> Var a) -> Var a
 liftedCond c x y = 
     let (t,f) = evalCond c
-    in SPL.union ((mkVar id t) <*> x) ((mkVar id f) <*> y)
+    in SPL.union (x t) (y f)
 
 {-
 liftedCond c'@(Var c) x y = --assert (disjInv c' && disjInv x && disjInv y) $ 
@@ -268,13 +271,13 @@ caseSplitter i@(Var input) splitter range = --assert (compInv i) $
 isNilVar :: Var a -> Bool
 isNilVar (Var xs) = null xs 
 
-liftedCase :: Var a -> (a -> Int) -> [Var a -> Var b] -> Var b
+liftedCase :: Var a -> (a -> Int) -> [PresenceCondition -> Var a -> Var b] -> Var b
 liftedCase input splitter alts = --trace ("In: " ++ showPCs input) $ assert (compInv input) $ 
     --trace (foldl (++) "parts:\t" (map showPCs parts)) $ 
     --trace ("Out: " ++ showPCs agg) $
     assert (disjInv agg) agg
     where   split = caseSplitter input splitter (length alts) 
-            parts  = map (\(l,r) -> let ret = if isNilVar r then (Var []) else (restrict (definedAt r) (l r))
+            parts  = map (\(l,r) -> let ret = if isNilVar r then (Var []) else l (definedAt r) r
                                     in  {-trace ("\t\t\tBlabla:" ++ (showPCs r) ++ "\t" ++ (showPCs ret))-} ret) (zip alts split) 
             agg    = unions parts  
 
@@ -361,6 +364,9 @@ primitiveOpNames = S.fromList [":", "+", "-", "*", "/", "==", "/=", "&&", "||", 
 
 primitiveFuncNames :: S.Set String
 primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "map", "filter", "foldr", "foldl"]
+
+ttPC = tt
+ffPC = ff
 
 -- lifted primitive functions
 not' :: Var Bool -> Var Bool

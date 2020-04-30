@@ -54,7 +54,7 @@ processEdge (t, as) = do
     return $ (nodeID, pc)
 
 appendEdges :: CFGNode -> [Int] -> [Int] -> CFGNode 
-appendEdges n ps ss = CFGNode (nID n) (text n) (ast n) ps ss
+appendEdges n ps ss = CFGNode (_nID n) (text n) (ast n) ps ss
 
 getCntxtContents :: Context T.Text -> IO (Var CFGNode)
 getCntxtContents (Cntxt n _ as ps ss) = do
@@ -80,8 +80,8 @@ showEdge ((CFGNode i0 _ _ _ _, CFGNode i1 _ _ _ _), pc) =
 
 collectNodeEdges :: CFGNode -> [(Int, Int)]
 collectNodeEdges n =
-    (map (\p -> (p, nID n)) (_preds n)) ++
-    (map (\s -> (nID n, s)) (_succs n))
+    (map (\p -> (p, _nID n)) (_preds n)) ++
+    (map (\s -> (_nID n, s)) (__succs n))
 
 collectAllEdges :: [CFGNode] -> [(Int, Int)]
 collectAllEdges ns =
@@ -90,12 +90,12 @@ collectAllEdges ns =
 adjustEdges :: [CFGNode] -> [CFGNode]
 adjustEdges ns =
     let edges       = collectAllEdges ns
-        getPreds n  = map fst (filter (\(_, s) -> s == nID n && s /= 0) edges)
-        getSuccs n  = map snd (filter (\(p, _) -> p == nID n && p /= 0) edges)
-    in  map (\n -> CFGNode (nID n) (text n) (ast n) (getPreds n) (getSuccs n)) ns
+        getPreds n  = map fst (filter (\(_, s) -> s == _nID n && s /= 0) edges)
+        getSuccs n  = map snd (filter (\(p, _) -> p == _nID n && p /= 0) edges)
+    in  map (\n -> CFGNode (_nID n) (text n) (ast n) (getPreds n) (getSuccs n)) ns
 
 mkCFG :: [CFGNode] -> CFG
-mkCFG  ns = CFG $ foldr (\n m -> MM.insert (nID n) n m) MM.empty ns
+mkCFG  ns = CFG $ foldr (\n m -> MM.insert (_nID n) n m) MM.empty ns
 mkCFG' = liftV mkCFG
 
 length' = liftV length

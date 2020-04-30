@@ -11,80 +11,50 @@ import Data.Maybe
 import Debug.Trace
 
 find :: Var Int -> Var [Int] -> Var Bool
-find n ns  = let case0 = (mkVarT False)
+find n ns  = let case0 __cntxt__ = (False ^| __cntxt__)
                  split0 __dummy__ = case __dummy__ of [] -> ()
-                 case1 h t = liftedCond (h ^== n) ((mkVarT True)) (find n t)
-                 split1 __dummy__ = case __dummy__ of (h:t) -> (h, t) 
-                 ret = liftedCase (ns) (\__dummy__ -> case __dummy__ of [] -> 0
-                                                                        (h:t) -> 1) [(uncurry0 case0) . (liftV split0), (uncurry2 case1) . (liftV split1)]
-             in --trace ("find: n:  " ++ (show n)) $ 
-                --trace ("find: ns: " ++ (show ns)) $
-                --trace ("find: ret:" ++ (show ret)) $
-                ret
+                 case1 __cntxt__ h t = liftedCond ((h /^ __cntxt__) ^== (n /^ __cntxt__)) (\__cntxt__ -> (True ^| __cntxt__)) (\__cntxt__ -> find (n /^ __cntxt__) (t /^ __cntxt__))
+                 split1 __dummy__ = case __dummy__ of (h:t) -> (h, t) in liftedCase (ns) (\__dummy__ -> case __dummy__ of [] -> 0
+                                                                                                                          (h:t) -> 1) [\__cntxt__ -> (uncurry0 (case0 __cntxt__)) . (liftV split0), \__cntxt__ -> (uncurry2 (case1 __cntxt__)) . (liftV split1)]
 
 isCase :: Var CFGNode -> Var Bool
-isCase n  = let case0 = (mkVarT True)
+isCase n  = let case0 __cntxt__ = (True ^| __cntxt__)
                 split0 __dummy__ = case __dummy__ of CFGStat (CCase _ _ _) -> ()
-                case1 = (mkVarT False)
-                split1 __dummy__ = case __dummy__ of _ -> () 
-                ret = liftedCase ((mkVarT ast) <*> n) (\__dummy__ -> case __dummy__ of CFGStat (CCase _ _ _) -> 0
-                                                                                       _ -> 1) [(uncurry0 case0) . (liftV split0), (uncurry0 case1) . (liftV split1)]
-            in  --trace ("isCase-in:  " ++ (show n)) $ 
-                --trace ("isCase-out: " ++ (show ret)) $
-                ret
+                case1 __cntxt__ = (False ^| __cntxt__)
+                split1 __dummy__ = case __dummy__ of _ -> () in liftedCase ((ast ^| ttPC) <*> n) (\__dummy__ -> case __dummy__ of CFGStat (CCase _ _ _) -> 0
+                                                                                                                                  _ -> 1) [\__cntxt__ -> (uncurry0 (case0 __cntxt__)) . (liftV split0), \__cntxt__ -> (uncurry0 (case1 __cntxt__)) . (liftV split1)]
 
 isDefault :: Var CFGNode -> Var Bool
-isDefault n  = let case0 = (mkVarT True)
+isDefault n  = let case0 __cntxt__ = (True ^| __cntxt__)
                    split0 __dummy__ = case __dummy__ of CFGStat (CDefault _ _) -> ()
-                   case1 = (mkVarT False)
-                   split1 __dummy__ = case __dummy__ of _ -> () in liftedCase ((mkVarT ast) <*> n) (\__dummy__ -> case __dummy__ of CFGStat (CDefault _ _) -> 0
-                                                                                                                                    _ -> 1) [(uncurry0 case0) . (liftV split0), (uncurry0 case1) . (liftV split1)]
+                   case1 __cntxt__ = (False ^| __cntxt__)
+                   split1 __dummy__ = case __dummy__ of _ -> () in liftedCase ((ast ^| ttPC) <*> n) (\__dummy__ -> case __dummy__ of CFGStat (CDefault _ _) -> 0
+                                                                                                                                     _ -> 1) [\__cntxt__ -> (uncurry0 (case0 __cntxt__)) . (liftV split0), \__cntxt__ -> (uncurry0 (case1 __cntxt__)) . (liftV split1)]
 
 isBreak :: Var CFGNode -> Var Bool
-isBreak n  = let case0 = (mkVarT True)
+isBreak n  = let case0 __cntxt__ = (True ^| __cntxt__)
                  split0 __dummy__ = case __dummy__ of CFGStat (CBreak _) -> ()
-                 case1 = (mkVarT False)
-                 split1 __dummy__ = case __dummy__ of _ -> () in liftedCase ((mkVarT ast) <*> n) (\__dummy__ -> case __dummy__ of CFGStat (CBreak _) -> 0
-                                                                                                                                  _ -> 1) [(uncurry0 case0) . (liftV split0), (uncurry0 case1) . (liftV split1)]
+                 case1 __cntxt__ = (False ^| __cntxt__)
+                 split1 __dummy__ = case __dummy__ of _ -> () in liftedCase ((ast ^| ttPC) <*> n) (\__dummy__ -> case __dummy__ of CFGStat (CBreak _) -> 0
+                                                                                                                                   _ -> 1) [\__cntxt__ -> (uncurry0 (case0 __cntxt__)) . (liftV split0), \__cntxt__ -> (uncurry0 (case1 __cntxt__)) . (liftV split1)]
 
 isFuncCall :: Var CFGNode -> Var Bool
-isFuncCall n  = let case0 = (mkVarT True)
+isFuncCall n  = let case0 __cntxt__ = (True ^| __cntxt__)
                     split0 __dummy__ = case __dummy__ of CFGDecl _ -> ()
-                    case1 = (mkVarT False)
-                    split1 __dummy__ = case __dummy__ of _ -> () in liftedCase ((mkVarT ast) <*> n) (\__dummy__ -> case __dummy__ of CFGDecl _ -> 0
-                                                                                                                                     _ -> 1) [(uncurry0 case0) . (liftV split0), (uncurry0 case1) . (liftV split1)]
+                    case1 __cntxt__ = (False ^| __cntxt__)
+                    split1 __dummy__ = case __dummy__ of _ -> () in liftedCase ((ast ^| ttPC) <*> n) (\__dummy__ -> case __dummy__ of CFGDecl _ -> 0
+                                                                                                                                      _ -> 1) [\__cntxt__ -> (uncurry0 (case0 __cntxt__)) . (liftV split0), \__cntxt__ -> (uncurry0 (case1 __cntxt__)) . (liftV split1)]
 
 followSuccessor :: Var CFG -> Var [Int] -> Var CFGNode -> Var Bool
-followSuccessor cfg visited n  = 
-    let v = find ((mkVarT nID) <*> n) visited
-        b = isBreak n
-        f = isFuncCall n
-        c = v ^|| b ^|| f
-        ret = liftedCond (c) 
-                         ((mkVarT True)) 
-                         (liftedCond ((isCase n) ^|| (isDefault n)) 
-                                     ((mkVarT False)) 
-                                     (followSuccessors cfg (((mkVarT nID) <*> n) ^: visited) ((mkVarT succs) <*> cfg <*> n)))
-    in  trace ("followSuccessor") $
-        --trace ("\tinput: " ++ (show n)) $
-        --trace ("\tfollowSuccessor visited: " ++ (show v)) $
-        --trace ("\tfollowSuccessor isBreak: " ++ (show b)) $
-        --trace ("\tfollowSuccessor isFuncCall: " ++ (show f)) $
-        --trace ("\tfollowSuccessor condition: " ++ (show c)) $
-        ret
-
+followSuccessor cfg visited n  = liftedCond ((find ((_nID ^| ttPC) <*> n) visited) ^|| (isBreak n) ^|| (isFuncCall n)) (\__cntxt__ -> (True ^| __cntxt__)) (\__cntxt__ -> liftedCond ((isCase (n /^ __cntxt__)) ^|| (isDefault (n /^ __cntxt__))) (\__cntxt__ -> (False ^| __cntxt__)) (\__cntxt__ -> followSuccessors (cfg /^ __cntxt__) (((_nID ^| __cntxt__) <*> (n /^ __cntxt__)) ^: (visited /^ __cntxt__)) ((_succs ^| __cntxt__) <*> (cfg /^ __cntxt__) <*> (n /^ __cntxt__))))
+ 
 followSuccessors :: Var CFG -> Var [Int] -> Var [CFGNode] -> Var Bool
-followSuccessors cfg visited ns  = 
-    let ret = foldr' (\a b -> a ^&& b) (mkVarT True) (map' (followSuccessor cfg visited) ns)
-    in trace ("followSuccessors") ret
+followSuccessors cfg visited ns  = foldr' (\a b -> a ^&& b) (True ^| ttPC) (map' (followSuccessor cfg visited) ns)
 
 terminatedCase :: Var CFG -> Var CFGNode -> Var Bool
-terminatedCase cfg n  = let ss = filter' (not' ^. isCase) ((mkVarT succs) <*> cfg <*> n) 
-                            ret = followSuccessors cfg (mkVarT []) ss
-                        in  trace ("terminatedCase") ret
+terminatedCase cfg n  = let ss = filter' (not' ^. isCase) ((_succs ^| ttPC) <*> cfg <*> n) in followSuccessors cfg (mkVarT []) ss
 
 analyze :: Var CFG -> Var [CFGNode]
-analyze cfg  = let ns = (mkVarT nodes) <*> cfg
-                   cases = filter' isCase ns 
-                   ret = filter' (not' ^. (terminatedCase cfg)) cases
-                in trace ("cases: " ++ (show cases)) ret
+analyze cfg  = let ns = (nodes ^| ttPC) <*> cfg
+                   cases = filter' isCase ns in filter' (not' ^. (terminatedCase cfg)) cases
+

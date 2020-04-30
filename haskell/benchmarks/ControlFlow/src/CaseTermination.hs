@@ -40,11 +40,11 @@ isFuncCall n =
 
 followSuccessor :: CFG -> [Int] -> CFGNode -> Bool
 followSuccessor cfg visited n = --trace (show n) $
-    if      (find (nID n) visited) || (isBreak n) || (isFuncCall n)
+    if      (find (_nID n) visited) || (isBreak n) || (isFuncCall n)
     then    True
     else    if      (isCase n) || (isDefault n)
             then    False
-            else    followSuccessors cfg ((nID n) : visited) (succs cfg n)
+            else    followSuccessors cfg ((_nID n) : visited) (_succs cfg n)
  
 followSuccessors :: CFG -> [Int] -> [CFGNode] -> Bool
 followSuccessors cfg visited ns =  
@@ -52,7 +52,7 @@ followSuccessors cfg visited ns =
 
 terminatedCase :: CFG -> CFGNode -> Bool
 terminatedCase cfg n = --trace (show n) $
-    let ss = filter (not . isCase) (succs cfg n)
+    let ss = filter (not . isCase) (_succs cfg n)
     in  followSuccessors cfg [] ss
 
 analyze :: CFG -> [CFGNode]

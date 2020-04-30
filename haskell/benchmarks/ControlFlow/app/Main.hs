@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
-#define DEEP
+-- #define DEEP
+#define BRUTE_FORCE
 
 module Main where
 
