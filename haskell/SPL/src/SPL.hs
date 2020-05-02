@@ -20,8 +20,9 @@ import Control.Applicative
 import Control.Monad
 import Data.List 
 import Data.Maybe
-import qualified Data.Vector as V 
-import qualified Data.Set as S  
+import qualified Data.Vector    as V 
+import qualified Data.Set       as S  
+import qualified Data.List      as L
 import Control.Exception
 import Control.Parallel.Strategies
 import System.Mem.StableName
@@ -78,12 +79,12 @@ isSubsetOf :: Eq t => Var t -> Var t -> Bool
 isSubsetOf (Var x) y' = and (map (`exists` y') x)
 
 showPCs :: Var a -> String
-showPCs (Var v) = "{" ++ (foldr (++) "" (map (\(x,pc) -> (show pc) ++ ", ") v)) ++ "}"
+showPCs (Var v) = "{" ++ (L.intercalate ", " (map (\(_,pc) -> show pc) v)) ++ "}"
 
 instance Show a => Show (Var a) where
     show v' = 
         let (Var v) = compact v' 
-        in "{" ++ (foldr (++) "" (map (\x -> (show x) ++ ", ") v)) ++ "}" 
+        in "{" ++ (L.intercalate ", " (map show v)) ++ "}" 
 
 -- a < b means that a is a subset of b in terms of products
 instance Eq a => Ord (Var a) where
@@ -280,6 +281,11 @@ liftedCase input splitter alts = --trace ("In: " ++ showPCs input) $ assert (com
             parts  = map (\(l,r) -> let ret = if isNilVar r then (Var []) else l (definedAt r) r
                                     in  {-trace ("\t\t\tBlabla:" ++ (showPCs r) ++ "\t" ++ (showPCs ret))-} ret) (zip alts split) 
             agg    = unions parts  
+
+fixCompleteness :: a -> Var a -> Var a
+fixCompleteness dummy v =
+    let r = undefinedAt v
+    in  if r == ffPC then v else SPL.union v $ mkVar dummy r
 
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]

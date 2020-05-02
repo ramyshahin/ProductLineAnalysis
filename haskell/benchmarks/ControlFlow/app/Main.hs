@@ -11,7 +11,7 @@ import Control.Exception
 import Criterion.Main
 import Control.DeepSeq
 
-inputFileName = "/mnt/f/code/busybox-1.18.5/coreutils/head.cfg.dot"
+inputFileName = "/mnt/f/code/busybox-1.18.5/miscutils/less.cfg"
 
 instance NFData (Var a)
   where 
@@ -51,19 +51,25 @@ deep = Deep.analyze
 nodes' = liftV nodes
 
 setupEnv = do
-    cfg <- readGraph inputFileName
+    cfg <- readCFG inputFileName
     let features = --trace ("Main: node counts: " ++ (show (length' (nodes' cfg)))) $ 
             getFeatures cfg
     putStrLn $ "Features: " ++ (show features)
     return cfg
 
+length' = liftV length
+
+{-
 main = defaultMain [ env setupEnv $ \cfg -> bgroup "main"
                         [   bench "brute-force" $ nf bruteforce cfg,
                             bench "shallow"     $ nf shallow    cfg,
                             bench "deep"        $ nf deep       cfg
                             ] ]
-                            
---main = do
---    cfg <- setupEnv
---    let result = bruteforce cfg
---    putStrLn $ show result
+-}
+
+--{-
+main = do
+    cfg <- setupEnv
+    --let result = bruteforce cfg
+    putStrLn $ show (length' (nodes' cfg)) --result
+-- -}

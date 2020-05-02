@@ -18,7 +18,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-13.23
+resolver: lts-15.10
 
 extra-include-dirs: [/usr/local/include]
 extra-lib-dirs: [/usr/local/lib]
