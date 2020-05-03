@@ -11,7 +11,7 @@ import Control.Exception
 import Criterion.Main
 import Control.DeepSeq
 
-inputFileName = "/mnt/f/code/busybox-1.18.5/miscutils/less.cfg"
+inputFileName = "/mnt/f/code/busybox-1.18.5/coreutils/head.cfg"
 
 instance NFData (Var a)
   where 
@@ -57,8 +57,6 @@ setupEnv = do
     putStrLn $ "Features: " ++ (show features)
     return cfg
 
-length' = liftV length
-
 {-
 main = defaultMain [ env setupEnv $ \cfg -> bgroup "main"
                         [   bench "brute-force" $ nf bruteforce cfg,
@@ -67,9 +65,10 @@ main = defaultMain [ env setupEnv $ \cfg -> bgroup "main"
                             ] ]
 -}
 
---{-
+-- {-
 main = do
     cfg <- setupEnv
-    --let result = bruteforce cfg
-    putStrLn $ show (length' (nodes' cfg)) --result
+    let result = deep cfg
+    putStrLn $ show result
+    putStrLn "Done."
 -- -}

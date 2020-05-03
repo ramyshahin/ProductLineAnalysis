@@ -95,12 +95,12 @@ mkBDDVar name =
 mkUniverse :: [String] -> Universe
 mkUniverse = map mkBDDVar  
     
-{-# NOINLINE tt #-}
+--{-# NOINLINE tt #-}
 tt = newBDD TT (readOne manager)
 ff = newBDD FF (readLogicZero manager)
 
-andBDD :: Prop -> Prop -> Prop
-andBDD a b =
+andBDD' :: Prop -> Prop -> Prop
+andBDD' a b =
     let a' = unsafePerformIO $ H.lookup prop2bdd a 
         b' = unsafePerformIO $ H.lookup prop2bdd b
     in  case (a', b') of 
@@ -109,21 +109,45 @@ andBDD a b =
         (Nothing, Just _) -> error $ "Can not find LHS: " ++ (show a)
         _ -> error $ "Can not find props: " ++ (show a) ++ " " ++ (show b)
 
-orBDD :: Prop -> Prop -> Prop
-orBDD a b = 
+andBDD :: Prop -> Prop -> Prop
+andBDD a b = 
+    let p  = And a b
+        b' = unsafePerformIO $ H.lookup prop2bdd p
+    in  case b' of
+        Just _ -> p
+        _       -> andBDD' a b
+
+orBDD' :: Prop -> Prop -> Prop
+orBDD' a b = 
     let a' = unsafePerformIO $ H.lookup prop2bdd a 
         b' = unsafePerformIO $ H.lookup prop2bdd b
     in  case (a', b') of 
         (Just a'', Just b'') -> newBDD (Or a b) $ bOr manager a'' b''
         _ -> error $ "Can not find props: " ++ (show a) ++ " " ++ (show b)
 
-notBDD :: Prop -> Prop 
-notBDD a = 
+orBDD :: Prop -> Prop -> Prop
+orBDD a b = 
+    let p  = Or a b
+        b' = unsafePerformIO $ H.lookup prop2bdd p
+    in  case b' of
+        Just _ -> p
+        _       -> orBDD' a b
+
+notBDD' :: Prop -> Prop 
+notBDD' a = 
     let a' = unsafePerformIO $ H.lookup prop2bdd a 
     in  case a' of 
         Just a' -> newBDD (Neg a) $ bNot manager a'
         _ -> error $ "Can not find prop: " ++ (show a)
 
+notBDD :: Prop -> Prop
+notBDD a =
+    let p = Neg a
+        b = unsafePerformIO $ H.lookup prop2bdd p
+    in  case b of
+        Just _  -> p
+        _       -> notBDD' a
+        
 neg :: Prop -> Prop 
 neg = notBDD 
 

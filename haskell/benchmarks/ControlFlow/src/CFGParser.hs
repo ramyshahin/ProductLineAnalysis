@@ -134,10 +134,10 @@ parseNode t lineNum nodeType = --trace "parseNode" $
                                 "function-inline"   -> CFGFunc $ T.strip nodeText
                                 "function-static"   -> CFGFunc $ T.strip nodeText
                                 _                   -> trace ("Unknown node type: " ++ T.unpack nodeType) $ CFGDummy nodeText
-    in  trace (show ast) (ast, pc)
+    in  (ast, pc)
     where fixCFragment s =  let (t0', t0'')             = T.breakOnEnd "::" s
                                 t0                      = if T.null t0'' then t0' else T.dropEnd 2 t0' 
-                                ps                      = trace (show t0) $ splitPCs t0 
+                                ps                      = splitPCs t0 
                                 (cs, pcs)               = unzip ps
                                 pc                      = foldr (/\) ttPC pcs
                             in  (T.concat cs, pc)
