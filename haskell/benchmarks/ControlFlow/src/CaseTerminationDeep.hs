@@ -9,6 +9,7 @@ import CFG
 import Language.C.Syntax.AST
 import Data.Maybe
 import Debug.Trace
+import Control.Exception
 
 find :: Var Int -> Var [Int] -> Var Bool
 find n ns  = let case0 __cntxt__ = (False ^| __cntxt__)
@@ -56,5 +57,8 @@ terminatedCase cfg n  = let ss = filter' (not' ^. isCase) ((_succs ^| ttPC) <*> 
 
 analyze :: Var CFG -> Var [CFGNode]
 analyze cfg  = let ns = (nodes ^| ttPC) <*> cfg
-                   cases = filter' isCase ns in filter' (not' ^. (terminatedCase cfg)) cases
+                   cases = assert (compInv ns)  $
+                           assert (not (isNilVar ns)) $ filter' isCase ns 
+               in assert (compInv cfg) $ 
+                  assert (compInv cases) $ filter' (not' ^. (terminatedCase cfg)) cases
 

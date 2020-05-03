@@ -219,7 +219,7 @@ apply_ (fn, fnpc) x'@(Var x)  = --localCtxt fnpc $
 
 --{-# INLINE apply #-}
 apply :: Var (a -> b) -> Var a -> Var b
-apply f@(Var fn) x = --assert (disjInv f && disjInv x) $ --compact $
+apply f@(Var fn) x = assert (disjInv f && disjInv x) $ --compact $
      unions [apply_ f x | f <- fn] 
 
 -- lifting conditional expression
@@ -253,8 +253,8 @@ liftedNeg :: Num a => Var (a -> a)
 liftedNeg = mkVarT (\x -> -x)
 
 partitionInv :: Var a -> [Var a] -> Bool
-partitionInv (Var x) xs = length x == sum xs
-    where sum xs = foldl (\c (Var x) -> c + length x) 0 xs
+partitionInv x xs = (definedAt x) == cover
+    where cover = foldr (\/) ffPC (map definedAt xs)
 
 caseSplitter :: Var a -> (a -> Int) -> Int -> [Var a]
 caseSplitter i@(Var input) splitter range = --assert (compInv i) $
@@ -273,13 +273,17 @@ isNilVar :: Var a -> Bool
 isNilVar (Var xs) = null xs 
 
 liftedCase :: Var a -> (a -> Int) -> [PresenceCondition -> Var a -> Var b] -> Var b
-liftedCase input splitter alts = --trace ("In: " ++ showPCs input) $ assert (compInv input) $ 
+liftedCase input splitter alts = --assert (not (isNilVar input)) $
+    --trace ("In: " ++ showPCs input) $ assert (disjInv input) $ 
     --trace (foldl (++) "parts:\t" (map showPCs parts)) $ 
     --trace ("Out: " ++ showPCs agg) $
-    assert (disjInv agg) agg
+    assert (disjInv agg) $ 
+    agg
     where   split = caseSplitter input splitter (length alts) 
-            parts  = map (\(l,r) -> let ret = if isNilVar r then (Var []) else l (definedAt r) r
-                                    in  {-trace ("\t\t\tBlabla:" ++ (showPCs r) ++ "\t" ++ (showPCs ret))-} ret) (zip alts split) 
+            parts  = map (\(l,r) -> let ret = if isNilVar r then Var [] else l (definedAt r) r
+                                    in  --trace ((show (definedAt r)) ++ "\t" ++ (show (definedAt ret))) $ 
+                                        --assert (definedAt ret == definedAt r) $ 
+                                        ret) (zip alts split) 
             agg    = unions parts  
 
 fixCompleteness :: a -> Var a -> Var a

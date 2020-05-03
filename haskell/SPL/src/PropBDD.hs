@@ -15,11 +15,12 @@ import Debug.Trace
 import Data.STRef
 import Control.Monad
 import System.IO.Unsafe
+import GHC.ForeignPtr
 
 type HashTable k v = H.BasicHashTable k v
 
 instance Hashable DDNode where
-    hashWithSalt s d = hashWithSalt s (show d)
+    hashWithSalt s d = hashWithSalt s (nodeReadIndex d) --(show d)
 
 data Prop =
     TT
@@ -53,10 +54,10 @@ htSize h = do
     return $ length xs 
 
 var2index :: HashTable String Int
-index2var :: HashTable Int String
+--index2var :: HashTable Int String
 
-getVars :: [(Int, String)]
-getVars = unsafePerformIO $ H.toList index2var
+getVars :: [(String, Int)]
+getVars = unsafePerformIO $ H.toList var2index
 
 lookupVar :: String -> Int
 lookupVar v = unsafePerformIO $ do
@@ -65,7 +66,7 @@ lookupVar v = unsafePerformIO $ do
         Nothing -> do 
             i' <- htSize var2index
             !d0 <- H.insert var2index v i' 
-            !d1 <- H.insert index2var i' v
+            -- !d1 <- H.insert index2var i' v
             return i'
         Just i' -> return i'
 
@@ -73,7 +74,7 @@ manager = cuddInit
 prop2bdd = unsafePerformIO H.new 
 bdd2prop = unsafePerformIO H.new 
 var2index = unsafePerformIO H.new
-index2var = unsafePerformIO H.new
+--index2var = unsafePerformIO H.new
 
 newBDD :: Prop -> DDNode -> Prop
 newBDD p d = unsafePerformIO $ do
@@ -147,7 +148,7 @@ notBDD a =
     in  case b of
         Just _  -> p
         _       -> notBDD' a
-        
+
 neg :: Prop -> Prop 
 neg = notBDD 
 
