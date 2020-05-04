@@ -57,7 +57,7 @@ instance Hashable Prop where
 
 instance Show Prop where
     show (Prop _ _ s) = s
-    
+
 type Universe = [Prop]
 
 --prop2bdd :: HashTable Prop DDNode
@@ -133,8 +133,10 @@ andBDD' a b =
 -}
 
 andBDD :: Prop -> Prop -> Prop
-andBDD (Prop p0 b0 _) (Prop p1 b1 _) = 
-    newBDD (And p0 p1) $ bAnd manager b0 b1 
+andBDD p0'@(Prop p0 b0 _) p1'@(Prop p1 b1 _) = 
+    if      p0 == TT then p1'
+    else if p1 == TT then p0'
+    else    newBDD (And p0 p1) $ bAnd manager b0 b1 
     
     --let p  = And p0 p1
     --    b' = unsafePerformIO $ H.lookup prop2bdd p
@@ -153,8 +155,10 @@ orBDD' a b =
 -}
 
 orBDD :: Prop -> Prop -> Prop
-orBDD (Prop p0 b0 _) (Prop p1 b1 _) = 
-    newBDD (Or p0 p1) $ bOr manager b0 b1
+orBDD p0'@(Prop p0 b0 _) p1'@(Prop p1 b1 _) = 
+    if      p0 == FF then p1'
+    else if p1 == FF then p0'
+    else newBDD (Or p0 p1) $ bOr manager b0 b1
 {-
     let p  = Or a b
         b' = unsafePerformIO $ H.lookup prop2bdd p
@@ -174,7 +178,9 @@ notBDD' a =
 
 notBDD :: Prop -> Prop
 notBDD (Prop p0 b0 _) =
-    newBDD (Neg p0) $ bNot manager b0
+    if      p0 == TT then ff
+    else if p0 == FF then tt
+    else newBDD (Neg p0) $ bNot manager b0
 
 {-
     let p = Neg a
