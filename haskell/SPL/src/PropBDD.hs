@@ -2,7 +2,6 @@
 -- Ramy Shahin
 -- May 7th 2017
 --{-# LANGUAGE GeneralizedNewtypeDeriving #-}
---{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE BangPatterns #-}
 module PropBDD where
 
@@ -20,6 +19,7 @@ import GHC.ForeignPtr
 type HashTable k v = H.BasicHashTable k v
 
 instance Hashable DDNode where
+    {-# INLINE hashWithSalt #-}
     hashWithSalt s d = hashWithSalt s (nodeReadIndex d)
 
 data Prop' =
@@ -32,6 +32,7 @@ data Prop' =
     deriving (Eq) 
 
 instance Show Prop' where 
+    {-# INLINE show #-}
     show p = case p of 
         TT -> "True"
         FF -> "False"
@@ -41,6 +42,7 @@ instance Show Prop' where
         Or  p1 p2 -> "(" ++ (show p1) ++ " \\/ " ++ (show p2) ++ ")"
 
 instance Hashable Prop' where
+    {-# INLINE hashWithSalt #-}
     hashWithSalt s p = hashWithSalt s (show p)
 
 data Prop = Prop {
@@ -53,9 +55,11 @@ instance Eq Prop where
     (Prop _ b0 _) == (Prop _ b1 _) = (b0 == b1)
 
 instance Hashable Prop where
+    {-# INLINE hashWithSalt #-}
     hashWithSalt s (Prop _ b _) = hashWithSalt s b
 
 instance Show Prop where
+    {-# INLINE show #-}
     show (Prop _ _ s) = s
 
 type Universe = [Prop]
@@ -63,7 +67,7 @@ type Universe = [Prop]
 --prop2bdd :: HashTable Prop DDNode
 bdd2prop :: HashTable DDNode Prop
 
-propTable :: HashTable Prop' Prop
+propTable :: HashTable String Prop
 
 htSize :: (Eq k, Hashable k) => H.BasicHashTable k v -> IO Int 
 htSize h = do
@@ -91,17 +95,19 @@ bdd2prop = unsafePerformIO H.new
 var2index = unsafePerformIO H.new
 propTable = unsafePerformIO H.new
 
+{-# INLINE newBDD #-}
 newBDD :: Prop' -> DDNode -> Prop
 newBDD p d = unsafePerformIO $ do
-    let ret = Prop p d (show p)
-    p' <- H.lookup propTable p
+    let s = show p
+    let ret = Prop p d s
+    p' <- H.lookup propTable s
     case p' of
         Nothing -> do  
                     p'' <- H.lookup bdd2prop d
                     case p'' of
                         Nothing -> do
                                     !d0 <- H.insert bdd2prop d ret
-                                    !d1 <- H.insert propTable p ret
+                                    !d1 <- H.insert propTable s ret
                                     --trace ("inserted: " ++ (show p)) (return p)
                                     return $ ret
                         Just _p -> return $ _p
