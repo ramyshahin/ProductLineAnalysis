@@ -41,7 +41,7 @@ packages:
 - rewriting/common
 #- rewriting/shallow
 - rewriting/deep
-- vcpp
+# - vcpp
 #- benchmarks/TokenCount
 - benchmarks/ControlFlow
 # Dependency packages to be pulled from upstream that are not in the resolver

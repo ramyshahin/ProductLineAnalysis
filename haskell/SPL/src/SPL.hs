@@ -191,7 +191,7 @@ tracePCs (Var xs) = foldl (\s (_,r) -> s ++ " " ++ (show r)) "" xs
 
 getFeatures' :: Var t -> S.Set String
 getFeatures' (Var vs) =
-    foldr S.union S.empty (map (getPCFeatures' . snd) vs)
+    foldr S.union S.empty (map (getPCFeatures' . p . snd) vs)
 
 getFeatures :: Var t -> [String]
 getFeatures = S.toList . getFeatures'

@@ -46,7 +46,7 @@ whiteSpace = Token.whiteSpace lexer -- parses whitespace
 --pc = parens pc
 
 -- parsing subexpressions
-bOperators = [ [ Prefix (reservedOp "!"   >> return neg) ],
+bOperators = [ [ Prefix (reservedOp "!"   >> return negPC) ],
                [ Infix  (reservedOp "/\\" >> return (/\)) AssocLeft],
                [ Infix  (reservedOp "\\/" >> return (\/))  AssocLeft],
                [ Infix  (reservedOp "&&" >> return (/\)) AssocLeft],
@@ -56,16 +56,16 @@ bOperators = [ [ Prefix (reservedOp "!"   >> return neg) ],
              ]
 
 bTerm =  parens pcExpr 
-     <|> (reserved "tt" >> return TT)
-     <|> (reserved "True" >> return TT)
-     <|> (reserved "ff" >> return FF)
-     <|> (reserved "False" >> return FF)
+     <|> (reserved "tt" >> return tt)
+     <|> (reserved "True" >> return tt)
+     <|> (reserved "ff" >> return ff)
+     <|> (reserved "False" >> return ff)
      <|> (reserved "definedEx" >> parens (liftM mkBDDVar identifier))
      <|> (reserved "def" >> parens (liftM mkBDDVar identifier))
-     <|> (integer >>= \i -> if i == 0 then return FF else return TT)
+     <|> (integer >>= \i -> if i == 0 then return ff else return tt)
      <|> liftM mkBDDVar identifier
 
-pcExpr :: Parser PCExpr 
+pcExpr :: Parser PCExpr
 pcExpr = buildExpressionParser bOperators bTerm 
 
 parsePC :: String -> PCExpr
@@ -77,7 +77,7 @@ parsePC str =
 mkFeature :: String -> PCExpr
 mkFeature f = mkBDDVar f
 
-getPCFeatures' :: PCExpr -> S.Set String
+getPCFeatures' :: Prop' -> S.Set String
 getPCFeatures' pc = 
   case pc of
     TT        -> S.empty
@@ -88,7 +88,7 @@ getPCFeatures' pc =
     Or  l r   -> S.union (getPCFeatures' l) (getPCFeatures' r) 
 
 getPCFeatures :: PCExpr -> [String]
-getPCFeatures = S.toList . getPCFeatures'
+getPCFeatures = S.toList . getPCFeatures' . p
 
 getAllConfigs :: [String] -> [PCExpr]
 getAllConfigs [] = []
