@@ -9,33 +9,34 @@ import Data.Maybe
 import Debug.Trace
 
 find :: Int -> [Int] -> Bool
-find n ns =
+find n ns = --trace "find" $
     case ns of
         []      -> False
         (h:t)   -> if h == n then True else find n t
 
 isCase :: CFGNode -> Bool
-isCase n = 
+isCase n = --trace "isCase" $
     case ast n of
         CFGStat (CCase _ _ _)   -> True
         _                       -> False
 
 isDefault :: CFGNode -> Bool
-isDefault n = 
+isDefault n = --trace "isDefault" $
     case ast n of
         CFGStat (CDefault _ _)  -> True
         _                       -> False
 
 isBreak :: CFGNode -> Bool
-isBreak n = 
+isBreak n = --trace "isBreak" $
     case ast n of
         CFGStat (CBreak _)      -> True
         _                       -> False
 
 isFuncCall :: CFGNode -> Bool
-isFuncCall n =
+isFuncCall n = --trace "isFuncCall" $
     case ast n of
         CFGDecl _   -> True
+        CFGFunc _   -> True
         _           -> False
 
 followSuccessor :: CFG -> [Int] -> CFGNode -> Bool
@@ -45,13 +46,13 @@ followSuccessor cfg visited n = --trace (show n) $
     else    if      (isCase n) || (isDefault n)
             then    False
             else    followSuccessors cfg ((_nID n) : visited) (_succs cfg n)
- 
+
 followSuccessors :: CFG -> [Int] -> [CFGNode] -> Bool
-followSuccessors cfg visited ns =  
+followSuccessors cfg visited ns = --trace "followSuccessors" $
     foldr (\a b -> a && b) True (map (followSuccessor cfg visited) ns)
 
 terminatedCase :: CFG -> CFGNode -> Bool
-terminatedCase cfg n = --trace (show n) $
+terminatedCase cfg n = --trace "terminatedCase" $ -- (show n) $
     let ss = filter (not . isCase) (_succs cfg n)
     in  followSuccessors cfg [] ss
 

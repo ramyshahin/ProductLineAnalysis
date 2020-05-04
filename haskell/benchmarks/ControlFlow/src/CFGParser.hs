@@ -79,7 +79,8 @@ parseDeclaration lineNum s = --trace "parseDeclaration" $
     in  case p of
             Left e -> --if trace ("parseDeclaration failed: " ++ s) tryAppend 
                       --then appendDummy lineNum s 
-                          trace ("Dummy declaration node: " ++ s) $ CFGDummy (T.pack s)
+                          --trace ("Dummy declaration node: " ++ s) $ 
+                          CFGDummy (T.pack s)
             Right e -> CFGVarDecl e
 
 --appendDummy :: Int -> String -> NodeType

@@ -41,6 +41,18 @@ instance NFData CFG where
 instance Show CFG where
     show cfg = show $ nodes cfg
 
+_find :: Int -> [Int] -> Bool
+_find n ns = --trace "find" $
+    case ns of
+        []      -> False
+        (h:t)   -> if h == n then True else _find n t
+
+uniquesOnly :: [Int] -> [Int]
+uniquesOnly xs = 
+    case xs of
+        [] -> []
+        (y : ys) -> if _find y ys then uniquesOnly ys else y : (uniquesOnly ys)
+
 nodes :: CFG -> [CFGNode]
 nodes cfg = (snd . unzip . M.toList) $ _nodes cfg
 
@@ -48,7 +60,7 @@ preds :: CFG -> CFGNode -> [CFGNode]
 preds cfg n = map (head . ((_nodes cfg) M.!)) (_preds n)
 
 _succs :: CFG -> CFGNode -> [CFGNode]
-_succs cfg n = map (head . ((_nodes cfg) M.!)) (__succs n)
+_succs cfg n = map (head . ((_nodes cfg) M.!)) (uniquesOnly (__succs n))
 
 instance Show CFGNode where
     show (CFGNode i t nt ps ss) =

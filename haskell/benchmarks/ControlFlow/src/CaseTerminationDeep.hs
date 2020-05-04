@@ -42,9 +42,12 @@ isBreak n  = let case0 __cntxt__ = (True ^| __cntxt__)
 isFuncCall :: Var CFGNode -> Var Bool
 isFuncCall n  = let case0 __cntxt__ = (True ^| __cntxt__)
                     split0 __dummy__ = case __dummy__ of CFGDecl _ -> ()
-                    case1 __cntxt__ = (False ^| __cntxt__)
-                    split1 __dummy__ = case __dummy__ of _ -> () in liftedCase ((ast ^| ttPC) <*> n) (\__dummy__ -> case __dummy__ of CFGDecl _ -> 0
-                                                                                                                                      _ -> 1) [\__cntxt__ -> (uncurry0 (case0 __cntxt__)) . (liftV split0), \__cntxt__ -> (uncurry0 (case1 __cntxt__)) . (liftV split1)]
+                    case1 __cntxt__ = (True ^| __cntxt__)
+                    split1 __dummy__ = case __dummy__ of CFGFunc _ -> ()
+                    case2 __cntxt__ = (False ^| __cntxt__)
+                    split2 __dummy__ = case __dummy__ of _ -> () in liftedCase ((ast ^| ttPC) <*> n) (\__dummy__ -> case __dummy__ of CFGDecl _ -> 0
+                                                                                                                                      CFGFunc _ -> 1              
+                                                                                                                                      _ -> 2) [\__cntxt__ -> (uncurry0 (case0 __cntxt__)) . (liftV split0), \__cntxt__ -> (uncurry0 (case1 __cntxt__)) . (liftV split1), \__cntxt__ -> (uncurry0 (case2 __cntxt__)) . (liftV split2)]
 
 followSuccessor :: Var CFG -> Var [Int] -> Var CFGNode -> Var Bool
 followSuccessor cfg visited n  = liftedCond ((find ((_nID ^| ttPC) <*> n) visited) ^|| (isBreak n) ^|| (isFuncCall n)) (\__cntxt__ -> (True ^| __cntxt__)) (\__cntxt__ -> liftedCond ((isCase (n /^ __cntxt__)) ^|| (isDefault (n /^ __cntxt__))) (\__cntxt__ -> (False ^| __cntxt__)) (\__cntxt__ -> followSuccessors (cfg /^ __cntxt__) (((_nID ^| __cntxt__) <*> (n /^ __cntxt__)) ^: (visited /^ __cntxt__)) ((_succs ^| __cntxt__) <*> (cfg /^ __cntxt__) <*> (n /^ __cntxt__))))

@@ -12,7 +12,7 @@ import Criterion.Main
 --import Control.DeepSeq
 --import GHC.Generics (Generic, Generic1)
 
-inputFileName = "/mnt/f/code/busybox-1.18.5/coreutils/head.cfg"
+inputFileName = "/mnt/f/code/busybox-1.18.5/miscutils/devfsd.cfg"
 
 {-
 instance NFData (Var a)
@@ -72,10 +72,10 @@ main = defaultMain [ env setupEnv $ \cfg -> bgroup "main"
                             ] ]
 -- -}
 
- {-
+{-
 main = do
     cfg <- setupEnv
-    let result = deep cfg
+    let result = bruteforce cfg
     putStrLn $ show result
     putStrLn "Done."
  -}
