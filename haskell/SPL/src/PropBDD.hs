@@ -3,6 +3,8 @@
 -- May 7th 2017
 --{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+
 module PropBDD where
 
 import Cudd.Cudd
@@ -15,6 +17,8 @@ import Data.STRef
 import Control.Monad
 import System.IO.Unsafe
 import GHC.ForeignPtr
+import GHC.Generics (Generic, Generic1)
+import Control.DeepSeq
 
 type HashTable k v = H.BasicHashTable k v
 
@@ -29,10 +33,12 @@ data Prop' =
   | Neg Prop'
   | And Prop' Prop'
   | Or Prop' Prop'    
-    deriving (Eq) 
+    deriving (Eq, Generic, NFData) 
+
+instance NFData DDNode where
+    rnf a = seq a ()
 
 instance Show Prop' where 
-    {-# INLINE show #-}
     show p = case p of 
         TT -> "True"
         FF -> "False"
@@ -47,27 +53,28 @@ instance Hashable Prop' where
 
 data Prop = Prop {
     p :: Prop',
-    b :: DDNode,
-    s :: String
-}
+    b :: DDNode--,
+    --s :: String
+    }
+    deriving (Generic, NFData)
 
 instance Eq Prop where
-    (Prop _ b0 _) == (Prop _ b1 _) = (b0 == b1)
+    (Prop _ b0) == (Prop _ b1) = (b0 == b1)
 
 instance Hashable Prop where
     {-# INLINE hashWithSalt #-}
-    hashWithSalt s (Prop _ b _) = hashWithSalt s b
+    hashWithSalt s (Prop _ b) = hashWithSalt s b
 
 instance Show Prop where
     {-# INLINE show #-}
-    show (Prop _ _ s) = s
+    show (Prop p _) = show p
 
 type Universe = [Prop]
 
 --prop2bdd :: HashTable Prop DDNode
 bdd2prop :: HashTable DDNode Prop
 
-propTable :: HashTable String Prop
+--propTable :: HashTable String Prop
 
 htSize :: (Eq k, Hashable k) => H.BasicHashTable k v -> IO Int 
 htSize h = do
@@ -93,25 +100,25 @@ manager = cuddInit
 --prop2bdd = unsafePerformIO H.new 
 bdd2prop = unsafePerformIO H.new 
 var2index = unsafePerformIO H.new
-propTable = unsafePerformIO H.new
+--propTable = unsafePerformIO H.new
 
 {-# INLINE newBDD #-}
 newBDD :: Prop' -> DDNode -> Prop
 newBDD p d = unsafePerformIO $ do
-    let s = show p
-    let ret = Prop p d s
-    p' <- H.lookup propTable s
-    case p' of
-        Nothing -> do  
-                    p'' <- H.lookup bdd2prop d
-                    case p'' of
+    --let s = show p
+    let ret = Prop p d --s
+    --p' <- H.lookup propTable s
+    --case p' of
+        --Nothing -> do  
+    p'' <- H.lookup bdd2prop d
+    case p'' of
                         Nothing -> do
                                     !d0 <- H.insert bdd2prop d ret
-                                    !d1 <- H.insert propTable s ret
+                                    -- !d1 <- H.insert propTable s ret
                                     --trace ("inserted: " ++ (show p)) (return p)
                                     return $ ret
                         Just _p -> return $ _p
-        Just p'' -> return p''
+        --Just p'' -> return p''
          
 mkBDDVar :: String -> Prop
 mkBDDVar name = 
@@ -139,7 +146,7 @@ andBDD' a b =
 -}
 
 andBDD :: Prop -> Prop -> Prop
-andBDD p0'@(Prop p0 b0 _) p1'@(Prop p1 b1 _) = 
+andBDD p0'@(Prop p0 b0) p1'@(Prop p1 b1) = 
     if      p0 == TT then p1'
     else if p1 == TT then p0'
     else    newBDD (And p0 p1) $ bAnd manager b0 b1 
@@ -161,7 +168,7 @@ orBDD' a b =
 -}
 
 orBDD :: Prop -> Prop -> Prop
-orBDD p0'@(Prop p0 b0 _) p1'@(Prop p1 b1 _) = 
+orBDD p0'@(Prop p0 b0) p1'@(Prop p1 b1) = 
     if      p0 == FF then p1'
     else if p1 == FF then p0'
     else newBDD (Or p0 p1) $ bOr manager b0 b1
@@ -183,7 +190,7 @@ notBDD' a =
 -}
 
 notBDD :: Prop -> Prop
-notBDD (Prop p0 b0 _) =
+notBDD (Prop p0 b0) =
     if      p0 == TT then ff
     else if p0 == FF then tt
     else newBDD (Neg p0) $ bNot manager b0

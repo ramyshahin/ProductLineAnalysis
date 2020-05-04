@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module CFG where
 
 import qualified Data.Text as T 
@@ -6,6 +7,8 @@ import qualified Data.List as L
 import Language.C.Syntax.AST
 import PresenceCondition
 import qualified Data.MultiMap as M
+import GHC.Generics (Generic)
+import Control.DeepSeq
 
 data NodeType =
     CFGExpr     CExpr
@@ -15,7 +18,7 @@ data NodeType =
   | CFGFunc     T.Text
   | CFGFuncRoot T.Text
   | CFGDummy    T.Text
-  deriving Show
+  deriving (Show, Generic, NFData)
 
 data CFGNode = CFGNode {
     _nID     :: Int,
@@ -24,12 +27,16 @@ data CFGNode = CFGNode {
     _preds  :: [Int],
     __succs :: [Int]
     }
+    deriving (Generic, NFData)
 
 getID (CFGNode i _ _ _ _) = i
 
 data CFG = CFG {
     _nodes :: M.MultiMap Int CFGNode
-} 
+    } 
+    
+instance NFData CFG where
+    rnf a = seq a ()
 
 instance Show CFG where
     show cfg = show $ nodes cfg

@@ -33,19 +33,21 @@ library:
   source-dirs: src
   ghc-options:
     - -O2
+  dependencies:
+  - deepseq
 
 executables:
   ControlFlow-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
-    - -threaded
+#    - -threaded
     - -rtsopts
-    - -with-rtsopts=-N
+#- -with-rtsopts=-N
     dependencies:
     - ControlFlow
     - criterion
-    - deepseq
+#    - deepseq
 
 tests:
   ControlFlow-test:

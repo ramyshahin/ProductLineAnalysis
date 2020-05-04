@@ -11,6 +11,7 @@
 {-# LANGUAGE BangPatterns #-}
 --{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 
 module SPL where
 
@@ -28,6 +29,8 @@ import Control.Parallel.Strategies
 import System.Mem.StableName
 import System.IO.Unsafe
 import Debug.Trace
+import GHC.Generics (Generic, Generic1)
+import Control.DeepSeq
 
 (===) :: a -> a -> Bool
 (!x) === (!y) = unsafePerformIO $ do 
@@ -57,6 +60,7 @@ type Val a = (a, PresenceCondition)
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
 data Var t = Var [(Val t)]
+    deriving (Generic, NFData)
 
 disjInv :: Var t -> Bool
 disjInv v'@(Var v) =

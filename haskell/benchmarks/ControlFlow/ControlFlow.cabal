@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0548d6c2a12f5c220808d01b7b755f281724f1dd6aad15453cce81ad3cae94f6
+-- hash: d6409ff82977530ebd776b1647b88be18301e4459494e38f7696cdf3661fa00b
 
 name:           ControlFlow
 version:        0.1.0.0
@@ -40,6 +40,7 @@ library
       SPL
     , base >=4.7 && <5
     , containers
+    , deepseq
     , graphviz
     , hashtables
     , language-c
@@ -53,14 +54,13 @@ executable ControlFlow-exe
       Paths_ControlFlow
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -rtsopts
   build-depends:
       ControlFlow
     , SPL
     , base >=4.7 && <5
     , containers
     , criterion
-    , deepseq
     , graphviz
     , hashtables
     , language-c

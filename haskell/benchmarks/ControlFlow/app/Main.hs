@@ -9,14 +9,17 @@ import PresenceCondition
 import Debug.Trace
 import Control.Exception
 import Criterion.Main
-import Control.DeepSeq
+--import Control.DeepSeq
+--import GHC.Generics (Generic, Generic1)
 
 inputFileName = "/mnt/f/code/busybox-1.18.5/coreutils/head.cfg"
 
+{-
 instance NFData (Var a)
   where 
-    rnf _ = () --ExitSuccess = ()
-    --rnf (ExitFailure _) = ()
+    rnf ExitSuccess = ()
+    rnf (ExitFailure _) = ()
+-}
 
 {-
 getCntxtContents :: Text2Node -> Text2Cntxt -> Context T.Text -> IO VNode
@@ -57,18 +60,22 @@ setupEnv = do
     putStrLn $ "Features: " ++ (show features)
     return cfg
 
-{-
+reportResults s cfg = do
+    let result = s cfg
+    putStrLn $ show result
+
+--{-
 main = defaultMain [ env setupEnv $ \cfg -> bgroup "main"
                         [   bench "brute-force" $ nf bruteforce cfg,
                             bench "shallow"     $ nf shallow    cfg,
                             bench "deep"        $ nf deep       cfg
                             ] ]
--}
+-- -}
 
--- {-
+ {-
 main = do
     cfg <- setupEnv
     let result = deep cfg
     putStrLn $ show result
     putStrLn "Done."
--- -}
+ -}
