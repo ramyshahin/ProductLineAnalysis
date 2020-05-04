@@ -20,7 +20,7 @@ import GHC.ForeignPtr
 import GHC.Generics (Generic, Generic1)
 import Control.DeepSeq
 
-type HashTable k v = H.BasicHashTable k v
+type HashTable k v = H.CuckooHashTable k v
 
 instance Hashable DDNode where
     {-# INLINE hashWithSalt #-}
@@ -67,7 +67,7 @@ instance Hashable Prop where
 
 instance Show Prop where
     {-# INLINE show #-}
-    show (Prop p _) = show p
+    show (Prop _ b) = show b
 
 type Universe = [Prop]
 
@@ -76,7 +76,7 @@ bdd2prop :: HashTable DDNode Prop
 
 --propTable :: HashTable String Prop
 
-htSize :: (Eq k, Hashable k) => H.BasicHashTable k v -> IO Int 
+htSize :: (Eq k, Hashable k) => HashTable k v -> IO Int 
 htSize h = do
     xs <- H.toList h 
     return $ length xs 
@@ -106,18 +106,19 @@ var2index = unsafePerformIO H.new
 newBDD :: Prop' -> DDNode -> Prop
 newBDD p d = unsafePerformIO $ do
     --let s = show p
-    let ret = Prop p d --s
+    --let ret = 
+      return $  Prop p d --s
     --p' <- H.lookup propTable s
     --case p' of
         --Nothing -> do  
-    p'' <- H.lookup bdd2prop d
-    case p'' of
-                        Nothing -> do
-                                    !d0 <- H.insert bdd2prop d ret
+    --p'' <- H.lookup bdd2prop d
+    --case p'' of
+                        --Nothing -> do
+                                    -- !d0 <- H.insert bdd2prop d ret
                                     -- !d1 <- H.insert propTable s ret
                                     --trace ("inserted: " ++ (show p)) (return p)
-                                    return $ ret
-                        Just _p -> return $ _p
+                                    --return $ ret
+                        --Just _p -> return $ _p
         --Just p'' -> return p''
          
 mkBDDVar :: String -> Prop
