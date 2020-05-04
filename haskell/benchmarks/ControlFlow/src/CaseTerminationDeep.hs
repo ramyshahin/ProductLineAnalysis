@@ -9,7 +9,6 @@ import CFG
 import Language.C.Syntax.AST
 import Data.Maybe
 import Debug.Trace
-import Control.Exception
 
 find :: Var Int -> Var [Int] -> Var Bool
 find n ns  = let case0 __cntxt__ = (False ^| __cntxt__)
@@ -46,22 +45,19 @@ isFuncCall n  = let case0 __cntxt__ = (True ^| __cntxt__)
                     split1 __dummy__ = case __dummy__ of CFGFunc _ -> ()
                     case2 __cntxt__ = (False ^| __cntxt__)
                     split2 __dummy__ = case __dummy__ of _ -> () in liftedCase ((ast ^| ttPC) <*> n) (\__dummy__ -> case __dummy__ of CFGDecl _ -> 0
-                                                                                                                                      CFGFunc _ -> 1              
+                                                                                                                                      CFGFunc _ -> 1
                                                                                                                                       _ -> 2) [\__cntxt__ -> (uncurry0 (case0 __cntxt__)) . (liftV split0), \__cntxt__ -> (uncurry0 (case1 __cntxt__)) . (liftV split1), \__cntxt__ -> (uncurry0 (case2 __cntxt__)) . (liftV split2)]
 
 followSuccessor :: Var CFG -> Var [Int] -> Var CFGNode -> Var Bool
 followSuccessor cfg visited n  = liftedCond ((find ((_nID ^| ttPC) <*> n) visited) ^|| (isBreak n) ^|| (isFuncCall n)) (\__cntxt__ -> (True ^| __cntxt__)) (\__cntxt__ -> liftedCond ((isCase (n /^ __cntxt__)) ^|| (isDefault (n /^ __cntxt__))) (\__cntxt__ -> (False ^| __cntxt__)) (\__cntxt__ -> followSuccessors (cfg /^ __cntxt__) (((_nID ^| __cntxt__) <*> (n /^ __cntxt__)) ^: (visited /^ __cntxt__)) ((_succs ^| __cntxt__) <*> (cfg /^ __cntxt__) <*> (n /^ __cntxt__))))
- 
+
 followSuccessors :: Var CFG -> Var [Int] -> Var [CFGNode] -> Var Bool
 followSuccessors cfg visited ns  = foldr' (\a b -> a ^&& b) (True ^| ttPC) (map' (followSuccessor cfg visited) ns)
 
 terminatedCase :: Var CFG -> Var CFGNode -> Var Bool
-terminatedCase cfg n  = let ss = filter' (not' ^. isCase) ((_succs ^| ttPC) <*> cfg <*> n) in followSuccessors cfg (mkVarT []) ss
+terminatedCase cfg n  = let ss = filter' (not' ^. isCase) ((_succs ^| ttPC) <*> cfg <*> n) in followSuccessors cfg ([] ^| ttPC) ss
 
 analyze :: Var CFG -> Var [CFGNode]
 analyze cfg  = let ns = (nodes ^| ttPC) <*> cfg
-                   cases = assert (compInv ns)  $
-                           assert (not (isNilVar ns)) $ filter' isCase ns 
-               in assert (compInv cfg) $ 
-                  assert (compInv cases) $ filter' (not' ^. (terminatedCase cfg)) cases
+                   cases = filter' isCase ns in filter' (not' ^. (terminatedCase cfg)) cases
 
