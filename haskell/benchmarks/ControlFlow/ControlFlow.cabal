@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d6409ff82977530ebd776b1647b88be18301e4459494e38f7696cdf3661fa00b
+-- hash: df887c0836ebdc7e19077efdbdf055d084ea7479745365485339e2e0c8fa978b
 
 name:           ControlFlow
 version:        0.1.0.0
@@ -54,7 +54,7 @@ executable ControlFlow-exe
       Paths_ControlFlow
   hs-source-dirs:
       app
-  ghc-options: -rtsopts
+  ghc-options: -O2 -rtsopts
   build-depends:
       ControlFlow
     , SPL

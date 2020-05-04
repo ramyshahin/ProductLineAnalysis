@@ -144,11 +144,8 @@ groupVals_ ((x,xpc):xs) ds cmp =
 groupVals :: [Val t] -> (t -> t -> Bool) -> [Val t]
 groupVals xs cmp = groupVals_ xs [] cmp
 
--- compaction seems to be turning some lazy expressions into strict,
--- resulting in condiitional expression bugs
 compact :: Var t -> Var t
---compact (Var v) = Var (groupVals v (===))
-compact = id 
+compact (Var v) = Var (groupVals v (===))
 
 compactEq :: Eq t => Var t -> Var t
 --compactEq (Var v) = Var (groupVals v (====))
@@ -223,7 +220,7 @@ apply_ (fn, fnpc) x'@(Var x)  = --localCtxt fnpc $
 
 --{-# INLINE apply #-}
 apply :: Var (a -> b) -> Var a -> Var b
-apply f@(Var fn) x = assert (disjInv f && disjInv x) $ --compact $
+apply f@(Var fn) x = assert (disjInv f && disjInv x) $ compact $
      unions [apply_ f x | f <- fn] 
 
 -- lifting conditional expression

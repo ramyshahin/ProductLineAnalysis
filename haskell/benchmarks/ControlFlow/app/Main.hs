@@ -12,7 +12,7 @@ import Criterion.Main
 --import Control.DeepSeq
 --import GHC.Generics (Generic, Generic1)
 
-inputFileName = "/mnt/f/code/busybox-1.18.5/miscutils/devfsd.cfg"
+inputFileName = "/mnt/f/code/busybox-1.18.5/miscutils/less.cfg"
 
 {-
 instance NFData (Var a)
@@ -64,18 +64,18 @@ reportResults s cfg = do
     let result = s cfg
     putStrLn $ show result
 
---{-
+{-
 main = defaultMain [ env setupEnv $ \cfg -> bgroup "main"
                         [   bench "brute-force" $ nf bruteforce cfg,
                             bench "shallow"     $ nf shallow    cfg,
                             bench "deep"        $ nf deep       cfg
                             ] ]
--- -}
+-}
 
-{-
+--{-
 main = do
     cfg <- setupEnv
-    let result = bruteforce cfg
+    let result = deep cfg
     putStrLn $ show result
     putStrLn "Done."
- -}
+-- -}
