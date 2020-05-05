@@ -32,6 +32,7 @@ import Debug.Trace
 import GHC.Generics (Generic, Generic1)
 import Control.DeepSeq
 
+{-# INLINE (===) #-}
 (===) :: a -> a -> Bool
 (!x) === (!y) = unsafePerformIO $ do 
     nx <- makeStableName $! x 
@@ -59,12 +60,15 @@ type Val a = (a, PresenceCondition)
 -- to the same set of products). This does not affect correctness, but severely
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
-data Var t = Var [(Val t)]
+newtype Var t = Var [(Val t)]
     deriving (Generic, NFData)
+
+-- instance NFData (Var a) where
+--    rnf (Var !xs) = xs `seq` (map (\(!x,!pc) -> x `seq` pc `seq` ()) xs) `seq` ()
 
 disjInv :: Var t -> Bool
 disjInv v'@(Var v) =
-    let ret = all (\((_, pc1),(_, pc2)) -> unsat (conj[pc1, pc2])) (pairs v)
+    let ret = all (\((_, pc1),(_, pc2)) -> unsat (pc1 /\ pc2)) (pairs v)
     in  if (not ret) then trace (showPCs v') ret else ret
 
 compInv :: Var t -> Bool
@@ -124,14 +128,17 @@ mkVarT v = mkVar v tt
 mkVars :: [(t,PresenceCondition)] -> Var t
 mkVars vs = Var vs
 
+{-# INLINE findVal #-}
 findVal :: t -> [Val t] -> (t -> t -> Bool) -> [Val t]
 findVal _ [] _ = []
 findVal v ((x,pc):xs) cmp = if (cmp v x) then (x,pc) : rest else rest
     where rest = findVal v xs cmp
 
+{-# INLINE phelem #-}
 phelem :: t -> [t] -> (t -> t -> Bool) -> Bool
 phelem v xs cmp = any (\x -> cmp v x) xs
 
+{-# INLINE groupVals_ #-}
 groupVals_ :: [Val t] -> [t] -> (t -> t -> Bool) -> [Val t]
 groupVals_ [] _ _ = []
 groupVals_ ((x,xpc):xs) ds cmp = 
@@ -141,9 +148,11 @@ groupVals_ ((x,xpc):xs) ds cmp =
         in  (x,pc) : rest
     where rest = groupVals_ xs (x:ds) cmp
 
+{-# INLINE groupVals #-}
 groupVals :: [Val t] -> (t -> t -> Bool) -> [Val t]
 groupVals xs cmp = groupVals_ xs [] cmp
 
+{-# INLINE compact #-}
 compact :: Var t -> Var t
 compact (Var v) = Var (groupVals v (===))
 
@@ -157,7 +166,7 @@ valIndex (Var v) x =
 
 index :: Var t -> PresenceCondition -> [t]
 index (Var v) pc = fst $ unzip v' 
-    where   v' = filter (\(x',pc') -> sat (conj[pc,pc'])) v
+    where   v' = filter (\(x',pc') -> sat (pc /\ pc')) v
 
 configIndex :: Var t -> PresenceCondition -> t
 configIndex v pc = 
@@ -166,7 +175,7 @@ configIndex v pc =
 
 subst :: PresenceCondition -> Var t -> Var t
 subst pc (Var v) =
-    Var (filter (\(_,pc') -> sat (conj [pc,pc'])) v)
+    Var (filter (\(_,pc') -> sat (pc /\ pc')) v)
 
 definedAt :: Var t -> PresenceCondition
 definedAt (Var xs) = disj(pcs)
@@ -177,7 +186,7 @@ undefinedAt = neg . definedAt
 
 restrict :: PresenceCondition -> Var t -> Var t
 restrict pc (Var v) =
-    Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, conj[pc',pc])) v)
+    Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
                                     
 (/^) x pc = restrict pc x
 (^|) x pc = mkVar x pc
@@ -190,12 +199,16 @@ restrict pc (Var v) =
 tracePCs :: Var t -> String
 tracePCs (Var xs) = foldl (\s (_,r) -> s ++ " " ++ (show r)) "" xs
 
+{-
 getFeatures' :: Var t -> S.Set String
 getFeatures' (Var vs) =
     foldr S.union S.empty (map (getPCFeatures' . p . snd) vs)
+-}
 
-getFeatures :: Var t -> [String]
-getFeatures = S.toList . getFeatures'
+getFeatures :: IO [String]
+getFeatures = do 
+    vs <- getVars ttPC
+    return $ (fst . unzip) vs
 
 union :: Var t -> Var t -> Var t
 union x@(Var a) y@(Var b) =
@@ -212,15 +225,16 @@ pairs :: [t] -> [(t,t)]
 pairs [] = []
 pairs xs = zip xs (tail xs)
 
+{-# INLINE apply_ #-}
 apply_ :: Val (a -> b) -> Var a -> Var b
---{-# INLINE apply_ #-}
 apply_ (fn, fnpc) x'@(Var x)  = --localCtxt fnpc $
-    let xs = filter (\(_, pc) -> sat (fnpc /\ pc)) x in 
-    mkVars $ map (\(v, pc) -> (fn v, fnpc /\ pc)) xs
+    mkVars $ [(fn v, pc') | (v, pc) <- x, let pc' = fnpc /\ pc, sat pc'] --map (\(v, pc) -> ) xs
+        --xs = filter (\(_, pc) -> sat (fnpc /\ pc)) x in 
+    
 
---{-# INLINE apply #-}
+{-# INLINE apply #-}
 apply :: Var (a -> b) -> Var a -> Var b
-apply f@(Var fn) x = assert (disjInv f && disjInv x) $ compact $
+apply f@(Var fn) x = assert (disjInv f && disjInv x) $ --compact $
      unions [apply_ f x | f <- fn] 
 
 -- lifting conditional expression

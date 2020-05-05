@@ -46,6 +46,7 @@ executables:
 #- -with-rtsopts=-N
     dependencies:
     - ControlFlow
+    - criterion-measurement
     - criterion
 #    - deepseq
 

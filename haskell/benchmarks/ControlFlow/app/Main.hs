@@ -9,29 +9,8 @@ import PresenceCondition
 import Debug.Trace
 import Control.Exception
 import Criterion.Main
---import Control.DeepSeq
---import GHC.Generics (Generic, Generic1)
 
 inputFileName = "/mnt/f/code/busybox-1.18.5/miscutils/less.cfg"
-
-{-
-instance NFData (Var a)
-  where 
-    rnf ExitSuccess = ()
-    rnf (ExitFailure _) = ()
--}
-
-{-
-getCntxtContents :: Text2Node -> Text2Cntxt -> Context T.Text -> IO VNode
-getCntxtContents txt2node txt2cntxt c = do
-    (n@(CFGNode i t nt ps ss), pc) <- getCntxtContents txt2node txt2cntxt c
-    putStrLn $ "Node: " ++ show t
-    putStrLn $ "\tID: " ++ show i
-    putStrLn $ "\tin-edges: " ++ show ps
-    putStrLn $ "\tout-edges: " ++ show ss
-    putStrLn $ "\tPC: " ++ show pc
-    return (n, pc)
--}
 
 getFunctionNodes :: [CFGNode] -> [CFGNode]
 getFunctionNodes = filter (\n -> case n of 
@@ -39,9 +18,8 @@ getFunctionNodes = filter (\n -> case n of
                                     _                               -> False)
 getFunctionNodes' = liftV getFunctionNodes
 
-bruteforce ns = 
-    let features = getFeatures ns
-        configs  = getAllConfigs features
+bruteforce (ns, features) = 
+    let configs  = getAllConfigs features
         inVecs   = zip (map (configIndex ns) configs) configs
     in  mkVars $ map (\(input, pc) -> 
                             (analyze input, pc)) 
@@ -55,18 +33,20 @@ nodes' = liftV nodes
 
 setupEnv = do
     cfg <- readCFG inputFileName
-    let features = --trace ("Main: node counts: " ++ (show (length' (nodes' cfg)))) $ 
-            getFeatures cfg
+    features <- cfg `seq` getFeatures
+    putStrLn $ "File:     " ++ inputFileName
     putStrLn $ "Features: " ++ (show features)
-    return cfg
+    putStrLn $ "Feature#: " ++ (show $ length features)
+    putStrLn $ "Config#:  " ++ (show $ length (getAllConfigs features))
+    return (cfg, features)
 
 reportResults s cfg = do
     let result = s cfg
     putStrLn $ show result
 
 {-
-main = defaultMain [ env setupEnv $ \cfg -> bgroup "main"
-                        [   bench "brute-force" $ nf bruteforce cfg,
+main = defaultMain [ env setupEnv $ \ ~(cfg, feats) -> bgroup "main"
+                        [   bench "brute-force" $ nf bruteforce (cfg, feats),
                             bench "shallow"     $ nf shallow    cfg,
                             bench "deep"        $ nf deep       cfg
                             ] ]
@@ -74,7 +54,7 @@ main = defaultMain [ env setupEnv $ \cfg -> bgroup "main"
 
 --{-
 main = do
-    cfg <- setupEnv
+    (cfg, _) <- setupEnv
     let result = deep cfg
     putStrLn $ show result
     putStrLn "Done."

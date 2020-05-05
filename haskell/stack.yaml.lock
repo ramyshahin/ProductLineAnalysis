@@ -54,6 +54,13 @@ packages:
   original:
     hackage: Stack-0.4.0
 - completed:
+    hackage: criterion-measurement-0.1.2.0@sha256:128b778bea62b60a98be25331ab3e07095c9df1f8e91340be160b34432d30f0e,2070
+    pantry-tree:
+      size: 726
+      sha256: 9eda4c32ce569dc50772f415285640484ba0a9cafd346912711dfac4f83b7bff
+  original:
+    hackage: criterion-measurement-0.1.2.0
+- completed:
     hackage: criterion-1.5.6.2@sha256:da86b8c918ed41d6acd7772142aa62ab293453058ef72cb46e02d93b5cbe270f,5128
     pantry-tree:
       size: 2336

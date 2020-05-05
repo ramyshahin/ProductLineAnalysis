@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: df887c0836ebdc7e19077efdbdf055d084ea7479745365485339e2e0c8fa978b
+-- hash: f34a7ac25652263ee0d2d40f3712da57da838300edaf368cc29a350c57ca37a4
 
 name:           ControlFlow
 version:        0.1.0.0
@@ -61,6 +61,7 @@ executable ControlFlow-exe
     , base >=4.7 && <5
     , containers
     , criterion
+    , criterion-measurement
     , graphviz
     , hashtables
     , language-c

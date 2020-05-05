@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass, BangPatterns #-}
 module CFG where
 
 import qualified Data.Text as T 
@@ -18,7 +18,10 @@ data NodeType =
   | CFGFunc     T.Text
   | CFGFuncRoot T.Text
   | CFGDummy    T.Text
-  deriving (Show, Generic, NFData)
+    deriving (Show, Generic, NFData)
+
+--instance NFData NodeType where
+--    rnf !n = seq n ()
 
 data CFGNode = CFGNode {
     _nID     :: Int,
@@ -29,6 +32,9 @@ data CFGNode = CFGNode {
     }
     deriving (Generic, NFData)
 
+--instance NFData CFGNode where
+--    rnf (CFGNode !id !t !a !ps !ss) = seq id (seq t (seq a (seq ps (seq ss ()))))
+
 getID (CFGNode i _ _ _ _) = i
 
 data CFG = CFG {
@@ -36,7 +42,7 @@ data CFG = CFG {
     } 
     
 instance NFData CFG where
-    rnf a = seq a ()
+    rnf (CFG !ns) = seq ns ()
 
 instance Show CFG where
     show cfg = show $ nodes cfg

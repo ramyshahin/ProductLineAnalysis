@@ -20,12 +20,13 @@ import GHC.ForeignPtr
 import GHC.Generics (Generic, Generic1)
 import Control.DeepSeq
 
-type HashTable k v = H.CuckooHashTable k v
+type HashTable k v = H.BasicHashTable k v
 
 instance Hashable DDNode where
     {-# INLINE hashWithSalt #-}
     hashWithSalt s d = hashWithSalt s (nodeReadIndex d)
 
+{-
 data Prop' =
     TT
   | FF
@@ -33,11 +34,13 @@ data Prop' =
   | Neg Prop'
   | And Prop' Prop'
   | Or Prop' Prop'    
-    deriving (Eq, Generic, NFData) 
+  deriving (Eq, Generic, NFData) 
+-}
 
 instance NFData DDNode where
-    rnf a = seq a ()
+    rnf (DDNode a) = a `seq` ()
 
+{-
 instance Show Prop' where 
     show p = case p of 
         TT -> "True"
@@ -46,33 +49,37 @@ instance Show Prop' where
         Neg p' -> "~" ++ (show p')
         And p1 p2 -> "(" ++ (show p1) ++ " /\\ " ++ (show p2) ++ ")"
         Or  p1 p2 -> "(" ++ (show p1) ++ " \\/ " ++ (show p2) ++ ")"
+-}
 
-instance Hashable Prop' where
-    {-# INLINE hashWithSalt #-}
-    hashWithSalt s p = hashWithSalt s (show p)
+--instance Hashable Prop' where
+--    {-# INLINE hashWithSalt #-}
+--    hashWithSalt s p = hashWithSalt s (show p)
 
-data Prop = Prop {
-    p :: Prop',
-    b :: DDNode--,
-    --s :: String
+
+newtype Prop = Prop {
+    b :: DDNode
     }
     deriving (Generic, NFData)
 
+--instance NFData Prop where
+--    rnf (Prop !p !b) = p `seq` b `seq` ()
+
 instance Eq Prop where
-    (Prop _ b0) == (Prop _ b1) = (b0 == b1)
+    {-# INLINE (==) #-}
+    (Prop b0) == (Prop b1) = (b0 == b1)
 
 instance Hashable Prop where
     {-# INLINE hashWithSalt #-}
-    hashWithSalt s (Prop _ b) = hashWithSalt s b
+    hashWithSalt s (Prop b) = hashWithSalt s b
 
 instance Show Prop where
     {-# INLINE show #-}
-    show (Prop _ b) = show b
+    show (Prop b) = show b
 
 type Universe = [Prop]
 
 --prop2bdd :: HashTable Prop DDNode
-bdd2prop :: HashTable DDNode Prop
+--bdd2prop :: HashTable DDNode Prop
 
 --propTable :: HashTable String Prop
 
@@ -83,8 +90,10 @@ htSize h = do
 
 var2index :: HashTable String Int
 
-getVars :: [(String, Int)]
-getVars = unsafePerformIO $ H.toList var2index
+getVars :: Prop ->  IO [(String, Int)]
+getVars _ = do 
+    size <- htSize var2index
+    H.toList var2index
 
 lookupVar :: String -> Int
 lookupVar v = unsafePerformIO $ do
@@ -98,16 +107,17 @@ lookupVar v = unsafePerformIO $ do
 
 manager = cuddInit
 --prop2bdd = unsafePerformIO H.new 
-bdd2prop = unsafePerformIO H.new 
+--bdd2prop = unsafePerformIO H.new 
 var2index = unsafePerformIO H.new
 --propTable = unsafePerformIO H.new
 
 {-# INLINE newBDD #-}
-newBDD :: Prop' -> DDNode -> Prop
-newBDD p d = unsafePerformIO $ do
+newBDD :: DDNode -> Prop
+newBDD d = --unsafePerformIO $ do
     --let s = show p
     --let ret = 
-      return $  Prop p d --s
+      --return $  
+      Prop d --s
     --p' <- H.lookup propTable s
     --case p' of
         --Nothing -> do  
@@ -125,14 +135,16 @@ mkBDDVar :: String -> Prop
 mkBDDVar name = 
     let i = lookupVar name 
         r = ithVar manager i 
-    in newBDD (Atom name) r
+    in newBDD r -- (Atom name) r
 
 mkUniverse :: [String] -> Universe
 mkUniverse = map mkBDDVar  
     
---{-# NOINLINE tt #-}
-tt = newBDD TT (readOne manager)
-ff = newBDD FF (readLogicZero manager)
+{-# INLINE tt #-}
+tt = newBDD (readOne manager)
+
+{-# INLINE ff #-}
+ff = newBDD (readLogicZero manager)
 
 {-
 andBDD' :: Prop -> Prop -> Prop
@@ -146,11 +158,14 @@ andBDD' a b =
         _ -> error $ "Can not find props: " ++ (show a) ++ " " ++ (show b)
 -}
 
+{-# INLINE andBDD #-}
 andBDD :: Prop -> Prop -> Prop
-andBDD p0'@(Prop p0 b0) p1'@(Prop p1 b1) = 
-    if      p0 == TT then p1'
-    else if p1 == TT then p0'
-    else    newBDD (And p0 p1) $ bAnd manager b0 b1 
+andBDD p0@(Prop b0) p1@(Prop b1) = 
+    if      p0 == ff then ff
+    else if p1 == ff then ff
+    else if p0 == tt then p1
+    else if p1 == tt then p0
+    else    newBDD $ bAnd manager b0 b1 
     
     --let p  = And p0 p1
     --    b' = unsafePerformIO $ H.lookup prop2bdd p
@@ -168,11 +183,14 @@ orBDD' a b =
         _ -> error $ "Can not find props: " ++ (show a) ++ " " ++ (show b)
 -}
 
+{-# INLINE orBDD #-}
 orBDD :: Prop -> Prop -> Prop
-orBDD p0'@(Prop p0 b0) p1'@(Prop p1 b1) = 
-    if      p0 == FF then p1'
-    else if p1 == FF then p0'
-    else newBDD (Or p0 p1) $ bOr manager b0 b1
+orBDD p0@(Prop b0) p1@(Prop b1) = 
+    if      p0 == tt then tt
+    else if p1 == tt then tt
+    else if p0 == ff then p1
+    else if p1 == ff then p0
+    else newBDD $ bOr manager b0 b1
 {-
     let p  = Or a b
         b' = unsafePerformIO $ H.lookup prop2bdd p
@@ -190,11 +208,12 @@ notBDD' a =
         _ -> error $ "Can not find prop: " ++ (show a)
 -}
 
+{-# INLINE notBDD #-}
 notBDD :: Prop -> Prop
-notBDD (Prop p0 b0) =
-    if      p0 == TT then ff
-    else if p0 == FF then tt
-    else newBDD (Neg p0) $ bNot manager b0
+notBDD p@(Prop b) =
+    if      p == tt then ff
+    else if p == ff then tt
+    else newBDD $ bNot manager b
 
 {-
     let p = Neg a
@@ -207,8 +226,8 @@ notBDD (Prop p0 b0) =
 neg :: Prop -> Prop 
 neg = notBDD 
 
-conj :: [Prop] -> Prop
-conj =  foldl andBDD tt
+--conj :: [Prop] -> Prop
+--conj =  foldl andBDD tt
 
 disj :: [Prop] -> Prop
 disj = foldr orBDD ff

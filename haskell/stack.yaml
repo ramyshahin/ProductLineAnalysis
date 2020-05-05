@@ -64,6 +64,7 @@ extra-deps:
 - Stack-0.4.0
 #- binary-orphans-1.0.1@sha256:82eaf63df8fb7ba8da12352de03a14269e9c11bdcc3e052310d959789bf55c1e,2116
 #- splitmix-0.0.4@sha256:fb9bb8b54a2e76c8a021fe5c4c3798047e1f60e168379a1f80693047fe00ad0e,4813
+- criterion-measurement-0.1.2.0
 - criterion-1.5.6.2
 - graphviz-2999.20.0.4
 - language-c-0.8.3

@@ -11,8 +11,13 @@ import qualified Data.Set as S
 
 type PCExpr = Prop
 
+{-# INLINE (/\) #-}
 (/\) = andBDD
+
+{-# INLINE (\/) #-}
 (\/) = orBDD
+
+{-# INLINE negPC #-}
 negPC = notBDD
 
 languageDef = 
@@ -77,6 +82,7 @@ parsePC str =
 mkFeature :: String -> PCExpr
 mkFeature f = mkBDDVar f
 
+{-
 getPCFeatures' :: Prop' -> S.Set String
 getPCFeatures' pc = 
   case pc of
@@ -89,6 +95,7 @@ getPCFeatures' pc =
 
 getPCFeatures :: PCExpr -> [String]
 getPCFeatures = S.toList . getPCFeatures' . p
+-}
 
 getAllConfigs :: [String] -> [PCExpr]
 getAllConfigs [] = []
@@ -111,6 +118,6 @@ getAllConfigs (f:fs) = fPos ++ fNeg
 -}
 
 
-getValidConfigs :: [String] -> PCExpr -> [PCExpr]
-getValidConfigs univ featModel = filter (\c -> sat (conj[c,featModel])) cs 
-    where cs = getAllConfigs univ
+--getValidConfigs :: [String] -> PCExpr -> [PCExpr]
+--getValidConfigs univ featModel = filter (\c -> sat (conj[c,featModel])) cs 
+--    where cs = getAllConfigs univ
