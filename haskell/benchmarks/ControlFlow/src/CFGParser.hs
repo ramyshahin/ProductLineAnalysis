@@ -58,7 +58,7 @@ processNode edges record =
         fixCompleteness dummyNode node
 
 readCFG :: String -> IO (Var CFG)
-readCFG inputFileName = trace "readCFG" $ do
+readCFG inputFileName = do
     fileTxt <- TIO.readFile inputFileName
     let lines = T.lines fileTxt
     let (nodeRecs, edgeRecs) = L.partition (\t -> T.head t == 'N') lines

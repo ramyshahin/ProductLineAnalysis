@@ -165,8 +165,9 @@ liftedCond = mkVar (mkName "liftedCond")
 liftedNeg = mkVar (mkName "liftedNeg")
 liftedCase = mkVar (mkName "liftedCase")
 
-liftOp (NormalOp o) = trace ("liftOp: " ++ (prettyPrint o))
-    mkParen (mkApp mkVarT (mkVar (mkParenName o)))
+liftOp (NormalOp o) inBranch = --trace ("liftOp: " ++ (prettyPrint o))
+    let pc = if inBranch then cntxtExpr else ttExpr 
+    in  mkParen (mkInfixApp (mkVar (mkParenName o)) upOp pc)
 
 rewritePrimitiveFuncName :: String -> Expr
 rewritePrimitiveFuncName s = mkVar $ mkName (s ++ "\'")
@@ -209,7 +210,7 @@ rewriteInfixApp :: Declarations -> Declarations -> Bool -> Expr -> Operator -> E
 rewriteInfixApp globals locals inBranch lhs op rhs =
     let lhs' = rewriteExpr globals locals inBranch lhs
         rhs' = rewriteExpr globals locals inBranch rhs
-        rewriteIt = mkInfixApp    (mkInfixApp (liftOp op) appOp (mkParen lhs')) 
+        rewriteIt = mkInfixApp    (mkInfixApp (liftOp op inBranch) appOp (mkParen lhs')) 
                                         appOp 
                                         (mkParen $ rhs')
     in  case op of

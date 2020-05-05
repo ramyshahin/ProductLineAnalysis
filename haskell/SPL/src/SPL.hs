@@ -184,9 +184,13 @@ definedAt (Var xs) = disj(pcs)
 undefinedAt :: Var t -> PresenceCondition
 undefinedAt = neg . definedAt
 
+{-# INLINE restrict #-}
 restrict :: PresenceCondition -> Var t -> Var t
-restrict pc (Var v) =
-    Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
+restrict pc v'@(Var v) =
+    if      pc == ttPC then v'
+    else if pc == ffPC then Var []
+    else    Var [(x, p) | (x, pc') <- v, let p = pc' /\ pc, sat p]
+    --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
                                     
 (/^) x pc = restrict pc x
 (^|) x pc = mkVar x pc
@@ -319,6 +323,7 @@ liftA4 f a b c d = fmap f a <*> b <*> c <*> d
 liftA5 :: Applicative f => (a -> b -> c -> d -> e -> g) -> f a -> f b -> f c -> f d -> f e -> f g
 liftA5 f a b c d e = fmap f a <*> b <*> c <*> d <*> e
 
+{-# INLINE liftV #-}
 liftV :: (a -> b) -> Var a -> Var b
 liftV = liftA
 
@@ -343,6 +348,7 @@ liftV5 = liftA5
 --pattern x :^ xs <- Cons' x xs
 --infixr :^
 
+{-# INLINE (|:|) #-}
 (|:|) :: Var a -> Var [a] -> Var [a]
 (|:|) = liftV2 (:)
 infixr 5 |:|
@@ -385,7 +391,8 @@ infixr 3 ^&&
 infixr 2 ^||
 
 primitiveOpNames :: S.Set String
-primitiveOpNames = S.fromList [":", "+", "-", "*", "/", "==", "/=", "&&", "||", "."]
+--primitiveOpNames = S.fromList [":", "+", "-", "*", "/", "==", "/=", "&&", "||", "."]
+primitiveOpNames = S.fromList ["."]
 
 primitiveFuncNames :: S.Set String
 primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "map", "filter", "foldr", "foldl"]

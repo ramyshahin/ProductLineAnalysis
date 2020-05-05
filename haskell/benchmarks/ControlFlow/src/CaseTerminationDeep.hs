@@ -13,7 +13,7 @@ import Debug.Trace
 find :: Var Int -> Var [Int] -> Var Bool
 find n ns  = let case0 __cntxt__ = (False ^| __cntxt__)
                  split0 __dummy__ = case __dummy__ of [] -> ()
-                 case1 __cntxt__ h t = liftedCond ((h /^ __cntxt__) ^== (n /^ __cntxt__)) (\__cntxt__ -> (True ^| __cntxt__)) (\__cntxt__ -> find (n /^ __cntxt__) (t /^ __cntxt__))
+                 case1 __cntxt__ h t = liftedCond (((==) ^| __cntxt__) <*> ((h /^ __cntxt__)) <*> ((n /^ __cntxt__))) (\__cntxt__ -> (True ^| __cntxt__)) (\__cntxt__ -> find (n /^ __cntxt__) (t /^ __cntxt__))
                  split1 __dummy__ = case __dummy__ of (h:t) -> (h, t) in liftedCase (ns) (\__dummy__ -> case __dummy__ of [] -> 0
                                                                                                                           (h:t) -> 1) [\__cntxt__ -> (uncurry0 (case0 __cntxt__)) . (liftV split0), \__cntxt__ -> (uncurry2 (case1 __cntxt__)) . (liftV split1)]
 
@@ -49,10 +49,10 @@ isFuncCall n  = let case0 __cntxt__ = (True ^| __cntxt__)
                                                                                                                                       _ -> 2) [\__cntxt__ -> (uncurry0 (case0 __cntxt__)) . (liftV split0), \__cntxt__ -> (uncurry0 (case1 __cntxt__)) . (liftV split1), \__cntxt__ -> (uncurry0 (case2 __cntxt__)) . (liftV split2)]
 
 followSuccessor :: Var CFG -> Var [Int] -> Var CFGNode -> Var Bool
-followSuccessor cfg visited n  = liftedCond ((find ((_nID ^| ttPC) <*> n) visited) ^|| (isBreak n) ^|| (isFuncCall n)) (\__cntxt__ -> (True ^| __cntxt__)) (\__cntxt__ -> liftedCond ((isCase (n /^ __cntxt__)) ^|| (isDefault (n /^ __cntxt__))) (\__cntxt__ -> (False ^| __cntxt__)) (\__cntxt__ -> followSuccessors (cfg /^ __cntxt__) (((_nID ^| __cntxt__) <*> (n /^ __cntxt__)) ^: (visited /^ __cntxt__)) ((_succs ^| __cntxt__) <*> (cfg /^ __cntxt__) <*> (n /^ __cntxt__))))
+followSuccessor cfg visited n  = liftedCond (((||) ^| ttPC) <*> ((find ((_nID ^| ttPC) <*> n) visited)) <*> (((||) ^| ttPC) <*> ((isBreak n)) <*> ((isFuncCall n)))) (\__cntxt__ -> (True ^| __cntxt__)) (\__cntxt__ -> liftedCond (((||) ^| __cntxt__) <*> ((isCase (n /^ __cntxt__))) <*> ((isDefault (n /^ __cntxt__)))) (\__cntxt__ -> (False ^| __cntxt__)) (\__cntxt__ -> followSuccessors (cfg /^ __cntxt__) (((:) ^| __cntxt__) <*> (((_nID ^| __cntxt__) <*> (n /^ __cntxt__))) <*> ((visited /^ __cntxt__))) ((_succs ^| __cntxt__) <*> (cfg /^ __cntxt__) <*> (n /^ __cntxt__))))
 
 followSuccessors :: Var CFG -> Var [Int] -> Var [CFGNode] -> Var Bool
-followSuccessors cfg visited ns  = foldr' (\a b -> a ^&& b) (True ^| ttPC) (map' (followSuccessor cfg visited) ns)
+followSuccessors cfg visited ns  = foldr' (\a b -> ((&&) ^| ttPC) <*> (a) <*> (b)) (True ^| ttPC) (map' (followSuccessor cfg visited) ns)
 
 terminatedCase :: Var CFG -> Var CFGNode -> Var Bool
 terminatedCase cfg n  = let ss = filter' (not' ^. isCase) ((_succs ^| ttPC) <*> cfg <*> n) in followSuccessors cfg ([] ^| ttPC) ss

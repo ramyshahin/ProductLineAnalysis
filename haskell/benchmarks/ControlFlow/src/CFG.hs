@@ -42,7 +42,7 @@ data CFG = CFG {
     } 
     
 instance NFData CFG where
-    rnf (CFG !ns) = seq ns ()
+    rnf n = seq n ()
 
 instance Show CFG where
     show cfg = show $ nodes cfg

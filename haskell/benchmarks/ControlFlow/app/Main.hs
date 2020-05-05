@@ -10,7 +10,7 @@ import Debug.Trace
 import Control.Exception
 import Criterion.Main
 
-inputFileName = "/mnt/f/code/busybox-1.18.5/miscutils/less.cfg"
+inputFileName = "/mnt/f/code/busybox-1.18.5/libbb/lineedit.cfg"
 
 getFunctionNodes :: [CFGNode] -> [CFGNode]
 getFunctionNodes = filter (\n -> case n of 
@@ -25,9 +25,9 @@ bruteforce (ns, features) =
                             (analyze input, pc)) 
                      inVecs
 
-shallow = liftV analyze
+shallow (c, _) = (liftV analyze) c
 
-deep = Deep.analyze
+deep (c,_) = Deep.analyze c
 
 nodes' = liftV nodes
 
@@ -52,10 +52,23 @@ main = defaultMain [ env setupEnv $ \ ~(cfg, feats) -> bgroup "main"
                             ] ]
 -}
 
+{-
+test t = do
+    cfg <- readCFG inputFileName
+    features <- cfg `seq` getFeatures
+    return $ t (cfg, features)
+
+main = defaultMain [ bgroup "main"
+                        [   bench "brute-force" $ nfIO (test bruteforce), -- (cfg, feats),
+                            bench "shallow"     $ nfIO (test shallow),    --cfg,
+                            bench "deep"        $ nfIO (test deep)       --cfg
+                            ] ]
+-}
 --{-
 main = do
-    (cfg, _) <- setupEnv
-    let result = deep cfg
+    (cfg, feats) <- setupEnv
+    putStrLn $ "Features: " ++ (show feats)
+    let result = deep (cfg, feats)
     putStrLn $ show result
     putStrLn "Done."
--- -}
+ ---}
