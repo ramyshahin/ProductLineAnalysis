@@ -102,7 +102,7 @@ lookupVar v = unsafePerformIO $ do
         Nothing -> do 
             i' <- htSize var2index
             !d0 <- H.insert var2index v i' 
-            return i'
+            return $ trace v i'
         Just i' -> return i'
 
 manager = cuddInit

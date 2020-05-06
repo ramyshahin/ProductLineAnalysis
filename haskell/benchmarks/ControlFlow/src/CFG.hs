@@ -1,5 +1,8 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, BangPatterns #-}
-module CFG where
+module CFG 
+    ( module CFG
+    , module NodeTypes
+    ) where
 
 import qualified Data.Text as T 
 import qualified Data.List as L
@@ -10,16 +13,7 @@ import qualified Data.MultiMap as M
 import GHC.Generics (Generic)
 import Control.DeepSeq
 import SPL
-
-data NodeType =
-    CFGExpr     CExpr
-  | CFGStat     CStat
-  | CFGVarDecl  CExtDecl
-  | CFGDecl     T.Text
-  | CFGFunc     T.Text
-  | CFGFuncRoot T.Text
-  | CFGDummy    T.Text
-    deriving (Show, Generic, NFData)
+import NodeTypes
 
 --instance NFData NodeType where
 --    rnf !n = seq n ()
@@ -44,7 +38,7 @@ data CFG = CFG {
     } 
     
 instance NFData CFG where
-    rnf n = seq n ()
+    rnf n = (_nodes n) `seq` n `seq` ()
 
 instance Show CFG where
     show cfg = show $ _nodes cfg

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 098e9e1487122bd55b580fc2df844e8cf8cc1c3cb4ea24ffd447e395d264e75e
+-- hash: 93e71245a06a59f25d84734d96e9f0cfb84de25de7b88a48fac5f1664dbb837e
 
 name:           ControlFlow
 version:        0.1.0.0
@@ -31,6 +31,7 @@ library
       CaseTerminationDeep
       CFG
       CFGParser
+      NodeTypes
       VCFG
   other-modules:
       Paths_ControlFlow
@@ -55,7 +56,7 @@ executable ControlFlow-exe
       Paths_ControlFlow
   hs-source-dirs:
       app
-  ghc-options: -O2 -rtsopts
+  ghc-options: -O2 -rtsopts -fno-full-laziness
   build-depends:
       ControlFlow
     , SPL
@@ -63,6 +64,7 @@ executable ControlFlow-exe
     , containers
     , criterion
     , criterion-measurement
+    , deepseq
     , graphviz
     , hashtables
     , language-c

@@ -43,12 +43,13 @@ executables:
     ghc-options:
     - -O2
     - -rtsopts
+    - -fno-full-laziness
 #- -with-rtsopts=-N
     dependencies:
     - ControlFlow
     - criterion-measurement
     - criterion
-#    - deepseq
+    - deepseq
 
 tests:
   ControlFlow-test:

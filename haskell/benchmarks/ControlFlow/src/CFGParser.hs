@@ -23,9 +23,6 @@ type VNode = Var CFGNode
 
 mkVNode' = liftV5 CFGNode
 
---lv2vl :: Show a => [Var a] -> Var [a]
---lv2vl = foldr (|:|) (mkVarT [])
-
 processEdge :: T.Text -> ((Int, Int), PCExpr)
 processEdge t = --trace "processEdge" $
     let (e : from' : to' : pc' : []) = T.splitOn ";" t
