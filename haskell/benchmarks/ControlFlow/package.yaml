@@ -27,7 +27,7 @@ dependencies:
 - text
 - SPL
 - hashtables
-- multimap
+- more-containers
 
 library:
   source-dirs: src
@@ -43,7 +43,7 @@ executables:
     ghc-options:
     - -O2
     - -rtsopts
-    - -fno-full-laziness
+
 #- -with-rtsopts=-N
     dependencies:
     - ControlFlow

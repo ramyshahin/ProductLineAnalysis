@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, BangPatterns #-}
 
 module CFGParser where
 
@@ -13,7 +13,7 @@ import qualified Data.Text.IO       as TIO
 import qualified Data.Text          as T
 import qualified Data.List          as L
 import qualified Data.Maybe         as M
-import qualified Data.MultiMap      as MM
+import qualified Data.Multimap      as MM
 import SPL
 import PresenceCondition 
 
@@ -25,10 +25,10 @@ mkVNode' = liftV5 CFGNode
 
 processEdge :: T.Text -> ((Int, Int), PCExpr)
 processEdge t = --trace "processEdge" $
-    let (e : from' : to' : pc' : []) = T.splitOn ";" t
-        from = (read (T.unpack from')) :: Int
-        to   = (read (T.unpack to'))   :: Int
-        pc   = parsePC (T.unpack pc')
+    let (!e : from' : to' : pc' : []) = T.splitOn ";" t
+        !from = (read (T.unpack from')) :: Int
+        !to   = (read (T.unpack to'))   :: Int
+        !pc   = parsePC $! (T.unpack pc')
     in  assert (e == "E") $ ((from, to), pc)
 
 
@@ -39,13 +39,13 @@ processNode edges record =
         id          = (read (T.unpack id')) :: Int
         lineNum     = (read (T.unpack lineNum')) :: Int
         cCode       = T.intercalate ";" $ L.init rest
-        pc          = parsePC $ T.unpack (L.last rest)
-        (ast, pc')  = parseNode cCode lineNum t
-        preds       = map (\((f,_), pc) -> mkV 0 (f,pc)) $ filter (\((_,t),_) -> t == id) edges
-        succs       = map (\((_,t), pc) -> mkV 0 (t,pc)) $ filter (\((f,_),_) -> f == id) edges
-        node        = CFGNode id cCode ast preds succs
+        !pc         = parsePC $! T.unpack (L.last rest)
+        (!ast, !pc')= parseNode cCode lineNum t
+        !preds      = map (\((f,_), pc) -> mkV 0 (f,pc)) $ filter (\((_,t),_) -> t == id) edges
+        !succs      = map (\((_,t), pc) -> mkV 0 (t,pc)) $ filter (\((f,_),_) -> f == id) edges
+        !node       = CFGNode id cCode ast preds succs
     in  assert (n == "N") $
-        assert (length rest >= 2) $ 
+        assert (length rest >= 2) $! 
         --fixCompleteness dummyNode node
         (node, pc /\ pc')
 
@@ -59,7 +59,7 @@ readCFG inputFileName = do
     return $ mkCFG nodes
 
 mkCFG :: [(CFGNode, PresenceCondition)] -> CFG
-mkCFG  ns = CFG $ foldr (\n'@(n,pc) m -> MM.insert (_nID n) n' m) MM.empty ns
+mkCFG  ns = CFG $ foldr (\n'@(n,pc) m -> MM.append (_nID n) n' m) MM.empty ns
 
 --mkVCFG :: [VCFGNode] -> VCFG
 --mkVCFG  ns = CFG $ foldr (\n m -> MM.insert (_nID n) n m) MM.empty ns
@@ -119,8 +119,8 @@ splitPCs t =
 
 parseNode :: T.Text -> Int -> T.Text -> (NodeType, PCExpr)
 parseNode t lineNum nodeType = --trace "parseNode" $ 
-    let (nodeText,pc)    = fixCFragment t
-        ast              = case T.unpack nodeType of
+    let (!nodeText,!pc)  = fixCFragment t
+        !ast             = case T.unpack nodeType of
                                 "statement"         -> parseStatement lineNum (T.unpack nodeText)
                                 "expression"        -> parseExpr lineNum (T.unpack nodeText)
                                 "declaration"       -> CFGDecl $ T.strip nodeText
@@ -129,10 +129,10 @@ parseNode t lineNum nodeType = --trace "parseNode" $
                                 "function-static"   -> CFGFunc $ T.strip nodeText
                                 _                   -> trace ("Unknown node type: " ++ T.unpack nodeType) $ CFGDummy nodeText
     in  (ast, pc)
-    where fixCFragment s =  let (t0', t0'')             = T.breakOnEnd "::" s
-                                t0                      = if T.null t0'' then t0' else T.dropEnd 2 t0' 
-                                ps                      = splitPCs t0 
-                                (cs, pcs)               = unzip ps
-                                pc                      = foldr (/\) ttPC pcs
+    where fixCFragment s =  let (!t0', !t0'')           = T.breakOnEnd "::" s
+                                !t0                     = if T.null t0'' then t0' else T.dropEnd 2 t0' 
+                                !ps                     = splitPCs t0 
+                                (!cs, !pcs)             = unzip ps
+                                !pc                     = foldr (/\) ttPC pcs
                             in  (T.concat cs, pc)
           --isCPPDirective = T.isPrefixOf (T.pack "#")

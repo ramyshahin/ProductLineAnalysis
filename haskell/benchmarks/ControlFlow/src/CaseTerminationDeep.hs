@@ -9,7 +9,7 @@ import Language.C.Syntax.AST
 import Data.Maybe
 import Debug.Trace
 import Control.Exception
-import qualified Data.MultiMap as M
+--import qualified Data.MultiMap as M
 
 find :: Var Int -> [Var Int] -> Var Bool
 find n _ns  = --trace "find" $

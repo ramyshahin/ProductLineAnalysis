@@ -90,10 +90,10 @@ htSize h = do
 
 var2index :: HashTable String Int
 
-getVars :: Prop ->  IO [(String, Int)]
+getVars :: Prop -> IO [(String, Int)]
 getVars _ = do 
-    size <- htSize var2index
-    H.toList var2index
+    --size <- htSize var2index
+    H.toList $! var2index
 
 lookupVar :: String -> Int
 lookupVar v = unsafePerformIO $ do
@@ -102,7 +102,7 @@ lookupVar v = unsafePerformIO $ do
         Nothing -> do 
             i' <- htSize var2index
             !d0 <- H.insert var2index v i' 
-            return $ trace v i'
+            return $ i'
         Just i' -> return i'
 
 manager = cuddInit

@@ -7,7 +7,7 @@ import CFG
 import Language.C.Syntax.AST
 import Data.Maybe
 import Debug.Trace
-import qualified Data.MultiMap as M
+--import qualified Data.MultiMap as M
 
 find :: Int -> [Int] -> Bool
 find n _ns = --trace "find" $

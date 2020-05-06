@@ -63,7 +63,7 @@ type Val a = (a, PresenceCondition)
 newtype Var t = Var [(Val t)]
     deriving (Generic, NFData)
 
--- instance NFData (Var a) where
+--instance NFData (Var a) where
 --    rnf (Var !xs) = xs `seq` (map (\(!x,!pc) -> x `seq` pc `seq` ()) xs) `seq` ()
 
 disjInv :: Var t -> Bool
@@ -211,7 +211,7 @@ getFeatures' (Var vs) =
 
 getFeatures :: IO [String]
 getFeatures = do 
-    vs <- getVars ttPC
+    !vs <- getVars ttPC
     return $ (fst . unzip) vs
 
 union :: Var t -> Var t -> Var t
@@ -231,8 +231,8 @@ pairs xs = zip xs (tail xs)
 
 {-# INLINE apply_ #-}
 apply_ :: Val (a -> b) -> Var a -> Var b
-apply_ (fn, fnpc) x'@(Var x)  = --localCtxt fnpc $
-    mkVars $ [(fn v, pc') | (v, pc) <- x, let pc' = fnpc /\ pc, sat pc'] --map (\(v, pc) -> ) xs
+apply_ (fn, !fnpc) x'@(Var x)  = --localCtxt fnpc $
+    mkVars $ [(fn v, pc') | (v, !pc) <- x, let !pc' = fnpc /\ pc, sat pc'] --map (\(v, pc) -> ) xs
         --xs = filter (\(_, pc) -> sat (fnpc /\ pc)) x in 
     
 

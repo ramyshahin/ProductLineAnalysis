@@ -89,13 +89,6 @@ packages:
   original:
     hackage: text-1.2.3.1
 - completed:
-    hackage: multimap-1.2.1@sha256:9d70d1c278f53c39c142c04643df3a4c58b683c359beca5addf5d7545aaf7931,1231
-    pantry-tree:
-      size: 272
-      sha256: 5524981cdb7cf9f4b9983913deb942484103991ad951bcb62d4ba527ed281642
-  original:
-    hackage: multimap-1.2.1
-- completed:
     hackage: QuickCheck-2.14@sha256:a1bac79e48b36d5bccd771e981058c44707f440156a0a411ebdcfec8cfccfda9,6982
     pantry-tree:
       size: 2203
@@ -137,6 +130,13 @@ packages:
       sha256: 223678ac76c58919a1e936d62f8a250698cf3946824507dac29919ee3f5e833d
   original:
     hackage: classyplate-0.3.2.0
+- completed:
+    hackage: more-containers-0.2.2.0@sha256:ffd06f1bcdba951b7a8535ac28674387ca47d5232f829bfd633382b5b8d177d6,1432
+    pantry-tree:
+      size: 844
+      sha256: 7238cbb56eb903070fa62bf48edbdbe6ac7857d94a307e862c527d2cf030c514
+  original:
+    hackage: more-containers-0.2.2.0
 snapshots:
 - completed:
     size: 524154

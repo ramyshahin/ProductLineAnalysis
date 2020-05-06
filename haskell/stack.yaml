@@ -69,13 +69,14 @@ extra-deps:
 - graphviz-2999.20.0.4
 - language-c-0.8.3
 - text-1.2.3.1
-- multimap-1.2.1
+#- multimap-1.2.1
 - QuickCheck-2.14
 - deepseq-1.4.4.0
 - parsec-3.1.14.0
 - references-0.3.3.1
 - Cabal-2.4.1.0
 - classyplate-0.3.2.0
+- more-containers-0.2.2.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

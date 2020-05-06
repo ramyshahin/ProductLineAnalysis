@@ -9,7 +9,7 @@ import qualified Data.List as L
 
 import Language.C.Syntax.AST
 import PresenceCondition
-import qualified Data.MultiMap as M
+import qualified Data.Multimap as M
 import GHC.Generics (Generic)
 import Control.DeepSeq
 import SPL
@@ -34,7 +34,7 @@ data CFGNode = CFGNode {
 getID (CFGNode i _ _ _ _) = i
 
 data CFG = CFG {
-    nodes :: M.MultiMap Int CFGNode
+    nodes :: M.ListMultimap Int CFGNode
     } 
     
 instance NFData CFG where

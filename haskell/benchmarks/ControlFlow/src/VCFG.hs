@@ -8,7 +8,7 @@ import Control.Exception
 import Language.C.Syntax.AST
 import qualified CFG as C
 import qualified Data.Text as T
-import qualified Data.MultiMap as M
+import qualified Data.Multimap as M
 import GHC.Generics (Generic)
 import Control.DeepSeq
 import SPL
@@ -39,33 +39,40 @@ data CFGNode = CFGNode {
     __succs :: [Var Int]
     } deriving (Show, Generic, NFData)
 
+dummyCNode = C.CFGNode 0 (T.pack "") (CFGDummy (T.pack "")) [] []
+
 toShallowNode :: (CFGNode, PresenceCondition) -> Var C.CFGNode
 toShallowNode (n, pc) = 
     let ps = lv2vl $ _preds n
         ss = lv2vl $ __succs n
-    in  (C.CFGNode ^| pc) <*> ((_nID n) ^| pc) <*> ((text n) ^| pc) 
-                            <*> ((ast n) ^| pc) <*> ps <*> ss
+        d  = (C.CFGNode ^| pc) <*> ((_nID n) ^| pc) <*> ((text n) ^| pc) 
+                               <*> ((ast n) ^| pc) <*> ps <*> ss
+    in  fixCompleteness dummyCNode d
 
 data CFG = CFG {
-    nodes :: M.MultiMap Int (CFGNode, PresenceCondition)
+    nodes :: M.ListMultimap Int (CFGNode, PresenceCondition)
 }
 
 instance NFData CFG where
-    rnf n = (_nodes n) `seq` n `seq` ()
+    rnf n = n `seq` ((M.toList . nodes) n) `seq` ()
 
 _nodes :: CFG -> [(CFGNode, PresenceCondition)]
 _nodes cfg = (snd . unzip . M.toList) $ nodes cfg
 
 mkShallowCFG :: [C.CFGNode] -> C.CFG
-mkShallowCFG  ns = C.CFG $ foldr (\n m -> M.insert (C._nID n) n m) M.empty ns
+mkShallowCFG  ns = C.CFG $! foldr (\n m -> M.append (C._nID n) n m) M.empty ns
 
-mkShallowCFG' = liftV mkShallowCFG
+mkShallowCFG' ns@(Var ns') = trace ("Variants: " ++ (show (length ns'))) $ 
+    (liftV mkShallowCFG) ns
 
 toShallowCFG :: CFG -> Var C.CFG
 toShallowCFG c =
-    let ns = _nodes c
-        ns' = map toShallowNode ns
-    in  mkShallowCFG' (lv2vl ns')
+    let !ns = _nodes c
+        !ns' = map toShallowNode ns
+        !vl@(Var vl') = lv2vl ns'
+        !ret = mkShallowCFG' vl
+    in  trace ("Var Node count: " ++ (show (length vl'))) $
+        ret
 
 _succs' :: Var CFG -> Var CFGNode -> [Var CFGNode]
 _succs' (Var ((cfg, pc) : ss)) n'@(Var n) = 
