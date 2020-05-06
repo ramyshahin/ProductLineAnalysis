@@ -13,8 +13,7 @@ import Control.Exception
 import Criterion.Main
 import GHC.Generics (Generic)
 import Control.DeepSeq
-
-inputFileName = "/mnt/f/code/busybox-1.18.5/miscutils/less.cfg"
+import System.IO
 
 getFunctionNodes :: [CFGNode] -> [CFGNode]
 getFunctionNodes = filter (\n -> case n of 
@@ -47,8 +46,8 @@ data Env = Env {
     nodeCount   :: Int
     } deriving (Generic, NFData)
 
-setupEnv = do
-    !cfg <- readCFG inputFileName
+setupEnv filename = do
+    !cfg <- readCFG filename
     let !nodes = (V._nodes cfg)
     let !nodeCount = nodes `seq` length nodes
     !features <- cfg `seq` getFeatures
@@ -56,8 +55,8 @@ setupEnv = do
     let !shallow@(Var sh') = V.toShallowCFG cfg
     let !featCount = deep `seq` shallow `seq` length features
     let !configCount = length (getAllConfigs features)
-    let env = Env deep shallow inputFileName features configCount nodeCount
-    putStrLn $ "File:            " ++ inputFileName
+    let env = Env deep shallow filename features configCount nodeCount
+    putStrLn $ "File:            " ++ filename
     putStrLn $ "Node#:           " ++ (show $ nodeCount)
     --putStrLn $ "Features:        " ++ (show features)
     putStrLn $ "Feature#:        " ++ (show $ featCount)
@@ -70,11 +69,16 @@ reportResults s cfg = do
     putStrLn $ show result
 
 --{-
-main = defaultMain [ env setupEnv $ \ ~env -> bgroup "main"
-                        [   bench "brute-force" $ nf bruteforce (shallowCFG env, features env),
-                            bench "shallow"     $ nf shallow    (shallowCFG env),
-                            bench "deep"        $ nf deep       (deepCFG env)
-                            ] ]
+main = do  
+    handle <- openFile "files.txt" ReadMode
+    contents <- hGetContents handle
+    let files = lines contents
+    defaultMain $ map (\file -> env (setupEnv file) $ \ ~env -> bgroup (fileName env)
+                                    [   bench "brute-force" $ nf bruteforce (shallowCFG env, features env),
+                                        bench "shallow"     $ nf shallow    (shallowCFG env),
+                                        bench "deep"        $ nf deep       (deepCFG env)
+                                    ]
+                      ) files 
 ---}
 
 {-
