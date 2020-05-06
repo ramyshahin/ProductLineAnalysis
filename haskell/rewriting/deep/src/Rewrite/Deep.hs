@@ -113,8 +113,8 @@ moduleNameDeepPrelude = mkModuleName "VPreludeDeep"
 importDeepPrelude = mkImportDecl False False False Nothing moduleNameDeepPrelude Nothing Nothing
 
 rewriteImports :: ImportDeclList  -> ImportDeclList 
-rewriteImports xs = (annListElems .= concat [[importSPL, importDeepPrelude], (imports xs)]) xs 
---rewriteImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs 
+--rewriteImports xs = (annListElems .= concat [[importSPL, importDeepPrelude], (imports xs)]) xs 
+rewriteImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs 
     
 -- | Rewrite declarations
 --
@@ -123,6 +123,8 @@ rewriteType t = case t of
     FunctionType a b    -> mkFunctionType (rewriteType a) (rewriteType b)
     --InfixTypeApp l op r -> mkInfixTypeApp (rewriteType l) op (rewriteType r)
     ParenType t         -> mkParenType (rewriteType t)
+    TupleType ts        -> mkTupleType (map rewriteType (_annListElems ts))
+    ListType t          -> mkListType (rewriteType t)
     -- TODO: handle other cases
     _ -> mkTypeApp tyVar t
 
@@ -254,6 +256,13 @@ rewriteAlt globals locals (index, Alt p (CaseRhs e) _) =
         s       = mkParen $ mkApp vLiftV vSplit
     in  mkLambda [cntxtPat] $ mkInfixApp c dotOp s
 
+rewriteAlt' :: Declarations -> Declarations -> Bool -> Alt -> Alt
+rewriteAlt' globals locals inBranch (Alt p (CaseRhs e) xs) =
+    let params' = getPatternVars p
+        --params = S.toList $ params'
+        rhs     = mkCaseRhs $ rewriteExpr globals (S.union locals params') inBranch e
+    in  mkAlt p rhs (_annMaybe xs)
+
 splitAlts :: Integer -> [Alt] -> [Alt]
 splitAlts index as =
     case as of
@@ -306,6 +315,14 @@ liftExpr globals locals inBranch e = mkParen $
     let pc = if inBranch then cntxtExpr else ttExpr
     in  mkInfixApp e upOp pc  
 
+isDeepExpr :: Expr -> Bool
+isDeepExpr e = 
+    case e of
+        Var n -> let vn = prettyPrint n
+                     h  = head vn
+                 in (h == '_')
+        _     -> False
+
 rewriteExpr :: Declarations -> Declarations -> Bool -> Expr -> Expr
 rewriteExpr globals locals inBranch e = 
     case e of 
@@ -329,7 +346,8 @@ rewriteExpr globals locals inBranch e =
                         (mkApp  liftedCond  (mkParen (rewriteExpr globals locals inBranch c)))
                         (mkParen $ mkLambda [cntxtPat] (rewriteBranch globals locals t)))
                         (mkParen $ mkLambda [cntxtPat] (rewriteBranch globals locals e))
-        Case v alts -> 
+        Case v alts -> if isDeepExpr v then mkCase v $ map (rewriteAlt' globals locals inBranch) $ _annListElems alts
+            else
             let dummy    = mkName dummyVar
                 arg      = mkVarPat $ dummy
                 splitter = mkParen $ mkLambda [arg] (mkCase (mkVar dummy) (splitAlts 0 $ _annListElems alts))
@@ -357,7 +375,7 @@ rewriteExpr globals locals inBranch e =
         TupleSection es -> trace "Unhandled TupleSelection" e 
         UnboxedTupleSection es -> trace "Unhandled UnboxedTupSec" e 
         --List es -> mkApp mkVarT (mkList $ map (rewriteExpr globals locals) (_annListElems es))
-        List es -> liftExpr globals locals inBranch e
+        List es -> e -- liftExpr globals locals inBranch e
         ParArray es -> trace "Unhandled ParArray" e
         Paren ex -> mkParen (rewriteExpr globals locals inBranch ex)
         LeftSection lhs o -> trace "Unhandled LeftSection" e

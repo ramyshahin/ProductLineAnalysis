@@ -7,12 +7,13 @@ import CFG
 import Language.C.Syntax.AST
 import Data.Maybe
 import Debug.Trace
+import qualified Data.MultiMap as M
 
 find :: Int -> [Int] -> Bool
-find n ns = --trace "find" $
-    case ns of
+find n _ns = --trace "find" $
+    case _ns of
         []      -> False
-        (h:t)   -> if h == n then True else find n t
+        (h:_t)   -> if h == n then True else find n _t
 
 isCase :: CFGNode -> Bool
 isCase n = --trace "isCase" $
@@ -40,12 +41,12 @@ isFuncCall n = --trace "isFuncCall" $
         _           -> False
 
 followSuccessor :: CFG -> [Int] -> CFGNode -> Bool
-followSuccessor cfg visited n = --trace (show n) $
-    if      (find (_nID n) visited) || (isBreak n) || (isFuncCall n)
+followSuccessor cfg _visited n = --trace (show n) $
+    if      (find (_nID n) _visited) || (isBreak n) || (isFuncCall n)
     then    True
     else    if      (isCase n) || (isDefault n)
             then    False
-            else    followSuccessors cfg ((_nID n) : visited) (_succs cfg n)
+            else    followSuccessors cfg ((_nID n) : _visited) (_succs cfg n)
 
 followSuccessors :: CFG -> [Int] -> [CFGNode] -> Bool
 followSuccessors cfg visited ns = --trace "followSuccessors" $
@@ -58,6 +59,6 @@ terminatedCase cfg n = --trace "terminatedCase" $ -- (show n) $
 
 analyze :: CFG -> [CFGNode]
 analyze cfg = --trace (show ns) $
-    let ns = nodes cfg 
-        cases = filter isCase ns 
+    let _ns = _nodes cfg 
+        cases = filter isCase _ns 
     in  filter (not . (terminatedCase cfg)) cases

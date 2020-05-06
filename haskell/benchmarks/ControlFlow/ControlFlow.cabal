@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f34a7ac25652263ee0d2d40f3712da57da838300edaf368cc29a350c57ca37a4
+-- hash: 098e9e1487122bd55b580fc2df844e8cf8cc1c3cb4ea24ffd447e395d264e75e
 
 name:           ControlFlow
 version:        0.1.0.0
@@ -31,6 +31,7 @@ library
       CaseTerminationDeep
       CFG
       CFGParser
+      VCFG
   other-modules:
       Paths_ControlFlow
   hs-source-dirs:

@@ -11,7 +11,7 @@
 {-# LANGUAGE BangPatterns #-}
 --{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass, FlexibleInstances, ExplicitForAll #-}
 
 module SPL where
 
@@ -238,25 +238,86 @@ apply_ (fn, fnpc) x'@(Var x)  = --localCtxt fnpc $
 
 {-# INLINE apply #-}
 apply :: Var (a -> b) -> Var a -> Var b
-apply f@(Var fn) x = assert (disjInv f && disjInv x) $ --compact $
+apply f@(Var fn) x = assert (disjInv f) $
+     assert (disjInv x) $ --compact $
      unions [apply_ f x | f <- fn] 
+
+-- VClass type class
+class VClass a where
+    nil  :: a b
+    isNil:: a b -> Bool
+    at   :: a b -> PresenceCondition
+    comb :: a b -> a b -> a b 
+    caseSplitter :: a b -> (b -> Int) -> Int -> [a b] 
+    combs :: [a b] -> a b
+    combs = foldr comb nil
+
+--instance Foldable Var where
+--    foldMap f (Var xs) = foldMap (\(x,pc) -> (f x, pc)) xs
+
+instance VClass Var where
+    nil  = Var []
+    isNil (Var xs) = null xs 
+    at   = definedAt
+    --cons v pc (Var vs) = Var $ (v,pc) : vs
+    comb = SPL.union
+
+    caseSplitter i@(Var input) splitter range = --assert (compInv i) $
+        let initV = V.replicate range nil
+            xs = foldl 
+                    (\vec (v, pc) -> let index = splitter v 
+                                         (Var item)  = vec V.! index
+                                         item' = Var $ (v,pc) : item
+                                     in  vec V.// [(index, item')]) 
+                 initV input 
+            ret = V.toList xs
+        in  --trace (foldl (++) "splits:\t" (map showPCs ret)) $ 
+            assert (partitionInv i ret) ret
+
+--newtype VDeep a = VDeep a
+
+--instance Foldable VList where
+--    foldMap f (VList l) = f (l, ttPC)
+
+{-
+instance VClass [a] where -- VList where
+    nil  = VDeep []
+    isNil _ = False
+    at _ = ttPC 
+    --cons x pc (VList xs) = VList $ (x ^| pc) : xs
+    comb (VDeep xs) (VDeep ys) = VDeep (xs ++ ys) -- (VList a) (VList b) = VList (a ++ b)
+
+    --caseSplitter i splitter range = -- BUGBUG
+    --    let r = caseSplitter (Var [(i,ttPC)]) (\x -> splitter [x]) range
+    --    in  map (\(Var vs) -> (fst . unzip) vs) r 
+        --let initV = V.replicate range nil
+        --    index = splitter input
+        --    v'    = initV V.// [(index, i)]
+        --in  V.toList v'
+-}
 
 -- lifting conditional expression
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 
 evalCond :: Var Bool -> (PresenceCondition, PresenceCondition)
-evalCond (Var c) = 
+evalCond c'@(Var c) = 
     let t = filter (\(v,pc) -> v == True) c
         f = filter (\(v,pc) -> v == False) c
         tPC = foldr (\(_, pc) x -> x \/ pc) ffPC t
         fPC = foldr (\(_, pc) x -> x \/ pc) ffPC f
-    in (tPC, fPC)
+    in  --trace ("tPC: " ++ (show tPC)) $ 
+        --trace ("fPC: " ++ (show fPC)) $
+        assert (tPC /\ fPC == ffPC) $
+        assert (tPC \/ fPC == definedAt c') $
+        (tPC, fPC)
 
-liftedCond :: Var Bool -> (PresenceCondition -> Var a) -> (PresenceCondition -> Var a) -> Var a
+liftedCond :: VClass a => Var Bool -> (PresenceCondition -> a b) -> (PresenceCondition -> a b) -> a b
 liftedCond c x y = 
     let (t,f) = evalCond c
-    in SPL.union (x t) (y f)
+    in  if t == ffPC then (y f)
+        else if f == ffPC then (x t)
+        else comb (x t) (y f)
 
 {-
 liftedCond c'@(Var c) x y = --assert (disjInv c' && disjInv x && disjInv y) $ 
@@ -275,35 +336,36 @@ partitionInv :: Var a -> [Var a] -> Bool
 partitionInv x xs = (definedAt x) == cover
     where cover = foldr (\/) ffPC (map definedAt xs)
 
+    {-
 caseSplitter :: Var a -> (a -> Int) -> Int -> [Var a]
 caseSplitter i@(Var input) splitter range = --assert (compInv i) $
     let initV = V.replicate range (Var [])
         xs = foldl 
-                (\vec (v,pc) -> let index = splitter v 
-                                    (Var item)  = vec V.! index
-                                    item' = Var $ (v, pc) : item
-                                in  vec V.// [(index, item')]) 
+                (\vec (v, pc) -> let index = splitter v 
+                                     (Var item)  = vec V.! index
+                                     item' = Var $ (v,pc) : item
+                                  in  vec V.// [(index, item')]) 
                 initV input 
         ret = V.toList xs
     in  --trace (foldl (++) "splits:\t" (map showPCs ret)) $ 
         assert (partitionInv i ret) ret
-
+-}
 isNilVar :: Var a -> Bool
 isNilVar (Var xs) = null xs 
 
-liftedCase :: Var a -> (a -> Int) -> [PresenceCondition -> Var a -> Var b] -> Var b
+liftedCase :: (VClass v, VClass u) => v a -> (a -> Int) -> [PresenceCondition -> v a -> u b] -> u b
 liftedCase input splitter alts = --assert (not (isNilVar input)) $
     --trace ("In: " ++ showPCs input) $ assert (disjInv input) $ 
     --trace (foldl (++) "parts:\t" (map showPCs parts)) $ 
     --trace ("Out: " ++ showPCs agg) $
-    assert (disjInv agg) $ 
+    --assert (disjInv agg) $ 
     agg
     where   split = caseSplitter input splitter (length alts) 
-            parts  = map (\(l,r) -> let ret = if isNilVar r then Var [] else l (definedAt r) r
+            parts  = map (\(l,r) -> let ret = if (isNil r) then nil else l (at r) r
                                     in  --trace ((show (definedAt r)) ++ "\t" ++ (show (definedAt ret))) $ 
                                         --assert (definedAt ret == definedAt r) $ 
                                         ret) (zip alts split) 
-            agg    = unions parts  
+            agg    = combs parts  
 
 fixCompleteness :: a -> Var a -> Var a
 fixCompleteness dummy v =
@@ -354,8 +416,8 @@ liftV5 = liftA5
 infixr 5 |:|
 
 -- lifted primitive operators
---(:^) :: Var a -> Var [a] -> Var [a]
-(^:) = (|:|) --liftV2 (:)
+(^:) :: Var a -> [Var a] -> [Var a]
+(^:) = (:)
 infixr 5 ^:
 
 (^+) :: Num a => Var a -> Var a -> Var a
@@ -392,10 +454,11 @@ infixr 2 ^||
 
 primitiveOpNames :: S.Set String
 --primitiveOpNames = S.fromList [":", "+", "-", "*", "/", "==", "/=", "&&", "||", "."]
-primitiveOpNames = S.fromList ["."]
+primitiveOpNames = S.fromList [".", ":"]
 
 primitiveFuncNames :: S.Set String
-primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "map", "filter", "foldr", "foldl"]
+primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "map", "filter", "foldr", "foldl",
+                                    "_succs", "_nodes", "_nID"]
 
 ttPC = tt
 ffPC = ff
@@ -404,11 +467,11 @@ ffPC = ff
 not' :: Var Bool -> Var Bool
 not' = liftV not
 
-head' :: Var [a] -> Var a
-head' = liftV head
+head' :: [Var a] -> Var a
+head' = head --liftV head
 
-tail' :: Var [a] -> Var [a]
-tail' = liftV tail
+tail' :: [Var a] -> [Var a]
+tail' = tail
 
 null' :: Foldable t => Var (t a) -> Var Bool
 null' = liftV null
@@ -419,25 +482,28 @@ fst' = liftV fst
 snd' :: Var (a, b) -> Var b
 snd' = liftV snd
 
-#ifdef SHALLOW
+--ifdef SHALLOW
 
-(^.) :: Var (b -> c) -> Var (a -> b) -> Var a -> Var c
-(^.) = liftV3 (.)
+--(^.) :: (Var b -> Var c) -> (Var a -> Var b) -> Var a -> Var c
+(^.) = (.)
 infixr 9 ^.
 
-map' :: Var (a -> b) -> Var [a] -> Var [b]
-map' = liftV2 map
+map' :: (Var a -> Var b) -> [Var a] -> [Var b]
+map' = map
 
-filter' :: Var (a -> Bool) -> Var [a] -> Var [a]
-filter' = liftV2 filter
+filter' :: (Var a -> Var Bool) -> [Var a] -> [Var a]
+filter' p [] = []
+filter' p (x : xs) = 
+    let r@(Var r') = liftedCond (p x) (\pc -> x /^ pc) (\pc -> (Var []) /^ pc)
+    in  if null r' then filter' p xs else r : (filter' p xs)
 
-foldr' :: Var (a -> b -> b) -> Var b -> Var [a] -> Var b
-foldr' = liftV3 foldr
+foldr' :: (Var a -> Var b -> Var b) -> Var b -> [Var a] -> Var b
+foldr' = foldr
 
-foldl' :: Var (b -> a -> b) -> Var b -> Var [a] -> Var b
-foldl' = liftV3 foldl
+foldl' :: (Var b -> Var a -> Var b) -> Var b -> [Var a] -> Var b
+foldl' = foldl
 
-#endif
+-- #endif
 
 ----- tuple access
 oneOfOne :: (a) -> a

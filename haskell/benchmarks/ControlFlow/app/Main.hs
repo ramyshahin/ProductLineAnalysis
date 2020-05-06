@@ -68,7 +68,7 @@ main = defaultMain [ bgroup "main"
 main = do
     (cfg, feats) <- setupEnv
     putStrLn $ "Features: " ++ (show feats)
-    let result = deep (cfg, feats)
+    let result = deep (cfg ^| ttPC, feats)
     putStrLn $ show result
     putStrLn "Done."
  ---}

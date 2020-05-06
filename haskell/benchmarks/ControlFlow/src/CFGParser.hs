@@ -2,7 +2,7 @@
 
 module CFGParser where
 
-import CFG
+import VCFG
 import Language.C.Parser
 import Language.C.Data.InputStream
 import Language.C.Data.Position
@@ -19,18 +19,12 @@ import PresenceCondition
 
 type VNode = Var CFGNode
 
-dummyNode = CFGNode 0 T.empty (CFGDummy T.empty) [] []
-
-mkV :: a -> (a, PCExpr) -> Var a
-mkV dummy (v, pc) = 
-    if   pc == ttPC
-    then mkVarT v
-    else mkVars [(v, pc), (dummy, negPC pc)]
+--dummyNode = CFGNode 0 T.empty (CFGDummy T.empty) [] []
 
 mkVNode' = liftV5 CFGNode
 
-lv2vl :: Show a => [Var a] -> Var [a]
-lv2vl = foldr (|:|) (mkVarT [])
+--lv2vl :: Show a => [Var a] -> Var [a]
+--lv2vl = foldr (|:|) (mkVarT [])
 
 processEdge :: T.Text -> ((Int, Int), PCExpr)
 processEdge t = --trace "processEdge" $
@@ -42,7 +36,7 @@ processEdge t = --trace "processEdge" $
 
 
 
-processNode :: [((Int, Int), PCExpr)] -> T.Text -> Var CFGNode
+processNode :: [((Int, Int), PCExpr)] -> T.Text -> (CFGNode, PresenceCondition)
 processNode edges record = 
     let (n : id' : t : lineNum' : rest) = T.splitOn ";" record
         id          = (read (T.unpack id')) :: Int
@@ -52,24 +46,26 @@ processNode edges record =
         (ast, pc')  = parseNode cCode lineNum t
         preds       = map (\((f,_), pc) -> mkV 0 (f,pc)) $ filter (\((_,t),_) -> t == id) edges
         succs       = map (\((_,t), pc) -> mkV 0 (t,pc)) $ filter (\((f,_),_) -> f == id) edges
-        node        = mkVNode' (mkVar id (pc /\ pc')) (mkVarT cCode) (mkVarT ast) (lv2vl preds) (lv2vl succs)
+        node        = CFGNode id cCode ast preds succs
     in  assert (n == "N") $
         assert (length rest >= 2) $ 
-        fixCompleteness dummyNode node
+        --fixCompleteness dummyNode node
+        (node, pc /\ pc')
 
-readCFG :: String -> IO (Var CFG)
+readCFG :: String -> IO (CFG)
 readCFG inputFileName = do
     fileTxt <- TIO.readFile inputFileName
     let lines = T.lines fileTxt
     let (nodeRecs, edgeRecs) = L.partition (\t -> T.head t == 'N') lines
     let edges = map processEdge edgeRecs
     let nodes = map (processNode edges) nodeRecs
-    return $ mkCFG' (lv2vl nodes)
+    return $ mkCFG nodes
 
-mkCFG :: [CFGNode] -> CFG
-mkCFG  ns = CFG $ foldr (\n m -> MM.insert (_nID n) n m) MM.empty ns
+mkCFG :: [(CFGNode, PresenceCondition)] -> CFG
+mkCFG  ns = CFG $ foldr (\n'@(n,pc) m -> MM.insert (_nID n) n' m) MM.empty ns
 
-mkCFG' = liftV mkCFG
+--mkVCFG :: [VCFGNode] -> VCFG
+--mkVCFG  ns = CFG $ foldr (\n m -> MM.insert (_nID n) n m) MM.empty ns
 
 -- parsing node expression/statement
 parseDeclaration :: Int -> String -> NodeType
