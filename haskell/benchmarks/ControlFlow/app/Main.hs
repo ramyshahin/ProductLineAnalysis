@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP, DeriveGeneric, DeriveAnyClass, BangPatterns #-}
-#define CASE_TERMINATION
+-- #define CASE_TERMINATION
+#define RETURN 
 
 module Main where
 
@@ -22,6 +23,12 @@ import System.Environment
 import CaseTermination
 import qualified CaseTerminationDeep as Deep
 analysis = "CaseTermination"
+#endif
+
+#ifdef RETURN
+import Return
+import qualified ReturnDeep as Deep
+analysis = "Return"
 #endif
 
 getFunctionNodes :: [CFGNode] -> [CFGNode]
@@ -97,7 +104,7 @@ customParser = CustomArgs
     )
     <*> parseWith defaultConfig
 
---{-
+{-
 main = do  
     --putStrLn $ "Analysis: " ++ analysis
     --handle <- openFile "files.txt" ReadMode
@@ -114,7 +121,7 @@ main = do
                                         bench "deep"        $ nf deep       (deepCFG env)
                                     ]
                         ]
----}
+-}
 
 {-
 tBruteforce = do
@@ -141,11 +148,14 @@ main = defaultMain [ bgroup "main"
                             bench "deep"        $ nfIO tDeep        --cfg
                             ] ]
 -}
-{-
+--{-
+fname = "head.cfg"
+
 main = do
-    (cfg, feats) <- setupEnv
-    putStrLn $ "Features: " ++ (show feats)
-    let result = deep (cfg ^| ttPC, feats)
+    env <- setupEnv fname
+    --putStrLn $ "Features: " ++ (show feats)
+    let result = deep $ deepCFG env
+    --let result = bruteforce (shallowCFG env, features env) 
     putStrLn $ show result
     putStrLn "Done."
--}
+---}

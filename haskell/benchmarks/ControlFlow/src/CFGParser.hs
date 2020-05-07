@@ -126,7 +126,7 @@ parseNode t lineNum nodeType = --trace "parseNode" $
                                 "declaration"       -> CFGDecl $ T.strip nodeText
                                 "function"          -> CFGFuncRoot $ T.strip nodeText
                                 "function-inline"   -> CFGFunc $ T.strip nodeText
-                                "function-static"   -> CFGFunc $ T.strip nodeText
+                                "function-static"   -> CFGFuncRoot $ T.strip nodeText
                                 _                   -> trace ("Unknown node type: " ++ T.unpack nodeType) $ CFGDummy nodeText
     in  (ast, pc)
     where fixCFragment s =  let (!t0', !t0'')           = T.breakOnEnd "::" s
