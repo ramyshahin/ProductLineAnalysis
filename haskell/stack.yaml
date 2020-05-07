@@ -77,6 +77,7 @@ extra-deps:
 - Cabal-2.4.1.0
 - classyplate-0.3.2.0
 - more-containers-0.2.2.0
+- optparse-applicative-0.14.3.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

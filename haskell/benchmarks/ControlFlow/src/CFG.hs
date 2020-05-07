@@ -14,6 +14,7 @@ import GHC.Generics (Generic)
 import Control.DeepSeq
 import SPL
 import NodeTypes
+import Debug.Trace
 
 --instance NFData NodeType where
 --    rnf !n = seq n ()
@@ -55,9 +56,16 @@ _find n _ns = --trace "find" $
 --            [] -> []
 --            (y : _ys) -> if _find y _ys then uniquesOnly _ys else y : (uniquesOnly _ys)
     
-_succs :: CFG -> CFGNode -> [CFGNode]
-_succs cfg n = map (head . ((nodes cfg) M.!)) (__succs n)
+findNode cfg id = 
+    let ns = (nodes cfg) M.! id
+    in  --if null ns then trace (show id) ns else 
+        ns
 
+_succs :: CFG -> CFGNode -> [CFGNode]
+_succs cfg n = 
+    let rs  = map (findNode cfg) (__succs n)
+        rs' =  filter (not . null) rs
+    in  map head rs'
 {-
 vl2lv :: Var [a] -> [Var a]
 vl2v vs = 

@@ -50,7 +50,8 @@ executables:
     - criterion-measurement
     - criterion
     - deepseq
-
+    - optparse-applicative
+    
 tests:
   ControlFlow-test:
     main:                Spec.hs

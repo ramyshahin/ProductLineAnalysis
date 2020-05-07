@@ -137,6 +137,13 @@ packages:
       sha256: 7238cbb56eb903070fa62bf48edbdbe6ac7857d94a307e862c527d2cf030c514
   original:
     hackage: more-containers-0.2.2.0
+- completed:
+    hackage: optparse-applicative-0.14.3.0@sha256:37d7ff26d8cddf7f2b58e9ed60c1550f3d94b32bc449e3c038be074f256e08a8,4376
+    pantry-tree:
+      size: 2643
+      sha256: c23d41e112198ffb15c57101c90feb3e7dbf2771e48610e3c30fb367f92eaaeb
+  original:
+    hackage: optparse-applicative-0.14.3.0
 snapshots:
 - completed:
     size: 524154

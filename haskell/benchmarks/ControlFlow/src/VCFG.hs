@@ -62,7 +62,7 @@ _nodes cfg = (snd . unzip . M.toList) $ nodes cfg
 mkShallowCFG :: [C.CFGNode] -> C.CFG
 mkShallowCFG  ns = C.CFG $! foldr (\n m -> M.append (C._nID n) n m) M.empty ns
 
-mkShallowCFG' ns@(Var ns') = trace ("Variants: " ++ (show (length ns'))) $ 
+mkShallowCFG' ns@(Var ns') = --trace ("Variants: " ++ (show (length ns'))) $ 
     (liftV mkShallowCFG) ns
 
 toShallowCFG :: CFG -> Var C.CFG
@@ -71,7 +71,7 @@ toShallowCFG c =
         !ns' = map toShallowNode ns
         !vl@(Var vl') = lv2vl ns'
         !ret = mkShallowCFG' vl
-    in  trace ("Var Node count: " ++ (show (length vl'))) $
+    in  --trace ("Var Node count: " ++ (show (length vl'))) $
         ret
 
 _succs' :: Var CFG -> Var CFGNode -> [Var CFGNode]
