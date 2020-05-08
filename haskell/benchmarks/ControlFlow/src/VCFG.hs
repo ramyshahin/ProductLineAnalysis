@@ -114,7 +114,7 @@ _nodes' (Var ((cfg, pc) : ss)) =
     assert (null ss) $
     assert (pc == ttPC) $
     let ns = (snd . unzip . M.toList) $ nodes cfg
-    in   map (\v -> mkV dummyNode v) ns  -- map (\x -> Var [x]) ns
+    in  map (\x -> Var [x]) ns --  map (\v -> mkV dummyNode v) ns
 
 _nID' :: Var CFGNode -> Var Int
 _nID' (Var n) = foldr union (Var []) $ map (\(n', pc) -> (_nID n') ^| pc) n

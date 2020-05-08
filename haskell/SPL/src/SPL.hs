@@ -457,7 +457,7 @@ primitiveOpNames :: S.Set String
 primitiveOpNames = S.fromList [".", ":"]
 
 primitiveFuncNames :: S.Set String
-primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "map", "filter", "foldr", "foldl",
+primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "map", "filter", "foldr", "foldl", "length",
                                     "_succs", "_nodes", "_nID"]
 
 ttPC = tt
@@ -505,6 +505,11 @@ foldr' f z xs =
 
 foldl' :: (Var b -> Var a -> Var b) -> Var b -> [Var a] -> Var b
 foldl' = foldl
+
+length' :: [Var a] -> Var Integer
+length' [] = (0 ^| ttPC)
+length' (x : xs) = 
+    (Var [(1, definedAt x), (0, undefinedAt x)]) ^+ length' xs
 
 -- #endif
 

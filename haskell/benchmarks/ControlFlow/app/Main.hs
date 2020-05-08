@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP, DeriveGeneric, DeriveAnyClass, BangPatterns #-}
 -- #define CASE_TERMINATION
-#define RETURN 
+-- #define RETURN 
+#define RETURN_AVG
 
 module Main where
 
@@ -31,13 +32,19 @@ import qualified ReturnDeep as Deep
 analysis = "Return"
 #endif
 
+#ifdef RETURN_AVG
+import ReturnAvg
+import qualified ReturnAvgDeep as Deep
+analysis = "Return Average"
+#endif
+
 getFunctionNodes :: [CFGNode] -> [CFGNode]
 getFunctionNodes = filter (\n -> case n of 
                                     (CFGNode _ _ (CFGFunc _) _ _)   -> True
                                     _                               -> False)
 getFunctionNodes' = liftV getFunctionNodes
 
-bruteforce :: (Var CFG, [String]) -> Var [CFGNode]
+--bruteforce :: (Var CFG, [String]) -> Var [CFGNode]
 bruteforce (ns, features) = 
     let configs  = getAllConfigs features
         inVecs'   = zip (map (index ns) configs) configs
@@ -77,6 +84,7 @@ setupEnv filename = do
     let hdr = foldr (\s t -> s ++ "," ++ t) "" 
             [filename, show nodeCount, show featCount, show configCount, show presentConfigs]
     let env = Env deep shallow filename features configCount nodeCount hdr
+    putStrLn $ "Analysis:        " ++ analysis
     putStrLn $ "File:            " ++ filename
     putStrLn $ "Node#:           " ++ (show $ nodeCount)
     --putStrLn $ "Features:        " ++ (show features)
