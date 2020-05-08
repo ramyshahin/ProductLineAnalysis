@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3bfaf0712e742a3229b6d8da75be88d54073e35f0c878911cebd6813628b23bc
+-- hash: 703127c5536b6759644fc5382cc4085d6a8807df55314d6db0e274a19f13b4e0
 
 name:           ControlFlow
 version:        0.1.0.0
@@ -31,6 +31,8 @@ library
       CaseTerminationDeep
       CFG
       CFGParser
+      Gotos
+      GotosDeep
       NodeTypes
       Return
       ReturnAvg

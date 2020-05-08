@@ -1,7 +1,8 @@
 {-# LANGUAGE CPP, DeriveGeneric, DeriveAnyClass, BangPatterns #-}
 -- #define CASE_TERMINATION
 -- #define RETURN 
-#define RETURN_AVG
+-- #define RETURN_AVG
+#define GOTOS
 
 module Main where
 
@@ -38,10 +39,16 @@ import qualified ReturnAvgDeep as Deep
 analysis = "Return Average"
 #endif
 
+#ifdef GOTOS
+import Gotos
+import qualified GotosDeep as Deep
+analysis = "Goto Density"
+#endif
+
 getFunctionNodes :: [CFGNode] -> [CFGNode]
 getFunctionNodes = filter (\n -> case n of 
-                                    (CFGNode _ _ (CFGFunc _) _ _)   -> True
-                                    _                               -> False)
+                                    (CFGNode _ _ _ (CFGFunc _) _ _)   -> True
+                                    _                                 -> False)
 getFunctionNodes' = liftV getFunctionNodes
 
 --bruteforce :: (Var CFG, [String]) -> Var [CFGNode]

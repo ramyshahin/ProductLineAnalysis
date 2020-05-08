@@ -33,19 +33,20 @@ data NodeType =
 
 data CFGNode = CFGNode {
     _nID :: Int,
+    _fname :: T.Text,
     text :: T.Text,
     ast :: C.NodeType,
     _preds :: [Var Int],
     __succs :: [Var Int]
     } deriving (Show, Generic, NFData)
 
-dummyCNode = C.CFGNode 0 (T.pack "") (CFGDummy (T.pack "")) [] []
+dummyCNode = C.CFGNode 0 (T.pack "") (T.pack "") (CFGDummy (T.pack "")) [] []
 
 toShallowNode :: (CFGNode, PresenceCondition) -> Var C.CFGNode
 toShallowNode (n, pc) = 
     let ps = lv2vl $ _preds n
         ss = lv2vl $ __succs n
-        d  = (C.CFGNode ^| pc) <*> ((_nID n) ^| pc) <*> ((text n) ^| pc) 
+        d  = (C.CFGNode ^| pc) <*> ((_nID n) ^| pc) <*> ((_fname n) ^| pc) <*> ((text n) ^| pc) 
                                <*> ((ast n) ^| pc) <*> ps <*> ss
     in  fixCompleteness dummyCNode d
 
@@ -96,7 +97,7 @@ fixCompleteness v =
     else    SPL.union v (dummyNode ^| (undefinedAt v))
 -}
 
-dummyNode = CFGNode 0 T.empty (C.CFGDummy T.empty) [] []
+dummyNode = CFGNode 0 T.empty T.empty (C.CFGDummy T.empty) [] []
 
 --node2Vnode :: CFGNode -> Var CFGNode
 --node2Vnode n = 

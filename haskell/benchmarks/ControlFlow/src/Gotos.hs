@@ -1,6 +1,6 @@
 -- Return Average code analysis
--- Returning the average number of return statements per function
-module ReturnAvg where
+-- Returning the average number of goto statements per label
+module Gotos where
 
 import CFG
 import Language.C.Syntax.AST
@@ -27,6 +27,18 @@ isReturn n =
         CFGStat (CReturn _ _) -> True
         _                   -> False
         
+isGoto :: CFGNode -> Bool
+isGoto n = 
+            case ast n of
+                CFGStat (CGoto _ _) -> True
+                _                   -> False
+
+isLabel :: CFGNode -> Bool
+isLabel n = 
+                    case ast n of
+                        CFGStat (CLabel _ _ _ _) -> True
+                        _                   -> False
+
 isFuncCall :: CFGNode -> Bool
 isFuncCall n =
     case ast n of
@@ -55,8 +67,8 @@ returnAvg cfg n = --trace (show n) $
 analyze :: CFG -> Rational
 analyze cfg = --trace (show ns) $
     let _ns = _nodes cfg 
-        _fns = trace (show _ns) $ 
-            filter isFnRoot _ns 
-        fnCount = length _fns
-        total   = foldr (\a b -> a + b) 0 (map (returnAvg cfg) _fns)
-    in  total % (toInteger fnCount)
+        _ls = filter isLabel _ns
+        _gs = filter isGoto _ns
+        labelCount = length _ls
+        gotoCount  = length _gs
+    in  if labelCount == 0 then 0 else (toInteger gotoCount) % (toInteger labelCount)

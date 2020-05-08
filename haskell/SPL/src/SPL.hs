@@ -452,9 +452,13 @@ infixr 3 ^&&
 (^||) = liftV2 (||)
 infixr 2 ^||
 
+(^++) :: [Var a] -> [Var a] -> [Var a]
+(^++) = (++)
+infixr 5 ^++
+
 primitiveOpNames :: S.Set String
 --primitiveOpNames = S.fromList [":", "+", "-", "*", "/", "==", "/=", "&&", "||", "."]
-primitiveOpNames = S.fromList [".", ":"]
+primitiveOpNames = S.fromList [".", ":", "++"]
 
 primitiveFuncNames :: S.Set String
 primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "map", "filter", "foldr", "foldl", "length",

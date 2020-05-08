@@ -40,10 +40,10 @@ processNode edges record =
         lineNum     = (read (T.unpack lineNum')) :: Int
         cCode       = T.intercalate ";" $ L.init rest
         !pc         = parsePC $! T.unpack (L.last rest)
-        (!ast, !pc')= parseNode cCode lineNum t
+        (!ast, !pc', fname) = parseNode cCode lineNum t
         !preds      = map (\((f,_), pc) -> mkV 0 (f,pc)) $ filter (\((_,t),_) -> t == id) edges
         !succs      = map (\((_,t), pc) -> mkV 0 (t,pc)) $ filter (\((f,_),_) -> f == id) edges
-        !node       = CFGNode id cCode ast preds succs
+        !node       = CFGNode id fname cCode ast preds succs
     in  assert (n == "N") $
         assert (length rest >= 2) $! 
         --fixCompleteness dummyNode node
@@ -118,9 +118,9 @@ splitPCs t =
         (c1, rest') = T.breakOn "#endif" (T.drop 3 rest)
     in  if T.null rest then [(c0, ttPC)] else (c0, ttPC) : (extractPC c1) : splitPCs (T.drop 6 rest')
 
-parseNode :: T.Text -> Int -> T.Text -> (NodeType, PCExpr)
+parseNode :: T.Text -> Int -> T.Text -> (NodeType, PCExpr, T.Text)
 parseNode t lineNum nodeType = --trace "parseNode" $ 
-    let (!nodeText,!pc)  = fixCFragment t
+    let (!nodeText,!pc,fname)  = fixCFragment t
         !ast             = case T.unpack nodeType of
                                 "statement"         -> parseStatement lineNum (T.unpack nodeText)
                                 "expression"        -> parseExpr lineNum (T.unpack nodeText)
@@ -129,11 +129,11 @@ parseNode t lineNum nodeType = --trace "parseNode" $
                                 "function-inline"   -> CFGFunc $ T.strip nodeText
                                 "function-static"   -> CFGFuncRoot $ T.strip nodeText
                                 _                   -> trace ("Unknown node type: " ++ T.unpack nodeType) $ CFGDummy nodeText
-    in  (ast, pc)
+    in  (ast, pc, fname)
     where fixCFragment s =  let (!t0', !t0'')           = T.breakOnEnd "::" s
                                 !t0                     = if T.null t0'' then t0' else T.dropEnd 2 t0' 
                                 !ps                     = splitPCs t0 
                                 (!cs, !pcs)             = unzip ps
                                 !pc                     = foldr (/\) ttPC pcs
-                            in  (T.concat cs, pc)
+                            in  (T.concat cs, pc, t0'')
           --isCPPDirective = T.isPrefixOf (T.pack "#")

@@ -21,6 +21,7 @@ import Debug.Trace
 
 data CFGNode = CFGNode {
     _nID     :: Int,
+    _fname   :: T.Text,
     text    :: T.Text,
     ast     :: NodeType,
     _preds  :: [Int],
@@ -32,7 +33,7 @@ data CFGNode = CFGNode {
 --instance NFData CFGNode where
 --    rnf (CFGNode !id !t !a !ps !ss) = seq id (seq t (seq a (seq ps (seq ss ()))))
 
-getID (CFGNode i _ _ _ _) = i
+--getID (CFGNode i _ _ _ _) = i
 
 data CFG = CFG {
     nodes :: M.ListMultimap Int CFGNode
@@ -101,8 +102,8 @@ preds cfg n = map (head . ((nodes cfg) M.!)) (_preds n)
 --_succs cfg n = map (head . ((_nodes cfg) M.!)) (uniquesOnly (__succs n))
 
 instance Show CFGNode where
-    show (CFGNode i t nt ps ss) =
-        "Node: " ++ (show i) ++ "\t" ++ (show t) 
+    show (CFGNode i fname t nt ps ss) =
+        "Node: " ++ (show i) ++ "\t" ++ (show t) ++ "\t" ++ (show fname)
         ++ "\n\tAST: " ++ (show nt)
         ++ "\n\tpredecessors: " ++ (L.intercalate ", " (map show ps))
         ++ "\n\tsuccessors  : " ++ (L.intercalate ", " (map show ss)) ++ "\n"
