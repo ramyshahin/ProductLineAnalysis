@@ -1,3 +1,4 @@
+/mnt/f/code/busybox-1.31.1/modutils/modutils-24.cfg
 /mnt/f/code/busybox-1.31.1/libbb/procps.cfg
 /mnt/f/code/busybox-1.31.1/archival/libarchive/decompress_unxz.cfg
 /mnt/f/code/busybox-1.31.1/editors/patch.cfg

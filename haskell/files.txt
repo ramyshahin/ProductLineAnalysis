@@ -256,7 +256,6 @@
 /mnt/f/code/busybox-1.31.1/modutils/lsmod.cfg
 /mnt/f/code/busybox-1.31.1/modutils/modinfo.cfg
 /mnt/f/code/busybox-1.31.1/modutils/modprobe.cfg
-/mnt/f/code/busybox-1.31.1/modutils/modutils-24.cfg
 /mnt/f/code/busybox-1.31.1/modutils/modutils.cfg
 /mnt/f/code/busybox-1.31.1/modutils/rmmod.cfg
 /mnt/f/code/busybox-1.31.1/networking/dnsd.cfg
