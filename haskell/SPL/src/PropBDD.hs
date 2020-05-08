@@ -68,6 +68,9 @@ instance Eq Prop where
     {-# INLINE (==) #-}
     (Prop b0) == (Prop b1) = (b0 == b1)
 
+instance Ord Prop where
+    (Prop b0) <= (Prop b1) = nodeReadIndex b0 <= nodeReadIndex b1
+
 instance Hashable Prop where
     {-# INLINE hashWithSalt #-}
     hashWithSalt s (Prop b) = hashWithSalt s b

@@ -375,7 +375,7 @@ rewriteExpr globals locals inBranch e =
         TupleSection es -> trace "Unhandled TupleSelection" e 
         UnboxedTupleSection es -> trace "Unhandled UnboxedTupSec" e 
         --List es -> mkApp mkVarT (mkList $ map (rewriteExpr globals locals) (_annListElems es))
-        List es -> e -- liftExpr globals locals inBranch e
+        List es -> mkList (map (rewriteExpr globals locals inBranch) (_annListElems es)) -- liftExpr globals locals inBranch e
         ParArray es -> trace "Unhandled ParArray" e
         Paren ex -> mkParen (rewriteExpr globals locals inBranch ex)
         LeftSection lhs o -> trace "Unhandled LeftSection" e

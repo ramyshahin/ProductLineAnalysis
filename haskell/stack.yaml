@@ -78,6 +78,7 @@ extra-deps:
 - classyplate-0.3.2.0
 - more-containers-0.2.2.0
 - optparse-applicative-0.14.3.0
+- Unique-0.4.7.7
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

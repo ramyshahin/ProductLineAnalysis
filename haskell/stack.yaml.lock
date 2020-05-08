@@ -144,6 +144,13 @@ packages:
       sha256: c23d41e112198ffb15c57101c90feb3e7dbf2771e48610e3c30fb367f92eaaeb
   original:
     hackage: optparse-applicative-0.14.3.0
+- completed:
+    hackage: Unique-0.4.7.7@sha256:2269d3528271e25d34542e7c24a4e541e27ec33460e1ea00845da95b82eec6fa,2777
+    pantry-tree:
+      size: 1366
+      sha256: 65b9779a0d9502efffea5c93c44d260edc97f8efeaa21e6a302e0fc94f4ff5c7
+  original:
+    hackage: Unique-0.4.7.7
 snapshots:
 - completed:
     size: 524154

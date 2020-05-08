@@ -35,7 +35,8 @@ library:
     - -O2
   dependencies:
   - deepseq
-
+  - Unique
+  
 executables:
   ControlFlow-exe:
     main:                Main.hs
@@ -51,7 +52,7 @@ executables:
     - criterion
     - deepseq
     - optparse-applicative
-    
+
 tests:
   ControlFlow-test:
     main:                Spec.hs

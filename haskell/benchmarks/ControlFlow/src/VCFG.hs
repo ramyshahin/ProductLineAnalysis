@@ -76,19 +76,25 @@ toShallowCFG c =
 
 _succs' :: Var CFG -> Var CFGNode -> [Var CFGNode]
 _succs' (Var ((cfg, pc) : ss)) n'@(Var n) = 
-    --trace (show n') $
     assert (null ss) $
-    --trace (show pc) $
-    --assert (pc == ttPC) $ 
     let ss' = foldr (++) [] $ map (\(n',_) -> if (_nID n') == 0 then [] else __succs n') n
-    in  map (\(Var xs) -> Var $ map 
-        (\(n,pc) -> let ys = --trace (show n) $ 
-                            (nodes cfg) M.! n
-                    in  assert (not (null ys)) $ head ys) 
-            (filter (\(n, pc) -> n /= 0) xs)) 
-        ss'
-                    
+        zs  = map (\(Var xs) -> Var $ 
+                                  map 
+                                    (\(n,pc) -> let ys = --trace (show n) $ 
+                                                        (nodes cfg) M.! n
+                                                in  assert (not (null ys)) $ head ys)
+                                    (filter (\(n, pc) -> n /= 0) xs)
+                  ) ss'
+    in  zs -- map (fixCompleteness dummyNode) zs 
 _succs' (Var []) _ = []
+
+{-
+fixCompleteness :: Var a -> Var a
+fixCompleteness v = 
+    if      definedAt v == ttPC 
+    then    v
+    else    SPL.union v (dummyNode ^| (undefinedAt v))
+-}
 
 dummyNode = CFGNode 0 T.empty (C.CFGDummy T.empty) [] []
 
@@ -108,7 +114,7 @@ _nodes' (Var ((cfg, pc) : ss)) =
     assert (null ss) $
     assert (pc == ttPC) $
     let ns = (snd . unzip . M.toList) $ nodes cfg
-    in  map (\v -> mkV dummyNode v) ns 
+    in   map (\v -> mkV dummyNode v) ns  -- map (\x -> Var [x]) ns
 
 _nID' :: Var CFGNode -> Var Int
 _nID' (Var n) = foldr union (Var []) $ map (\(n', pc) -> (_nID n') ^| pc) n

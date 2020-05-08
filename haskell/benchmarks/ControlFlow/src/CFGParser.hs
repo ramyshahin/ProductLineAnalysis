@@ -52,7 +52,8 @@ processNode edges record =
 readCFG :: String -> IO (CFG)
 readCFG inputFileName = do
     fileTxt <- TIO.readFile inputFileName
-    let lines = T.lines fileTxt
+    let lines' = T.lines fileTxt
+    let lines  = L.nub lines'
     let (nodeRecs, edgeRecs) = L.partition (\t -> T.head t == 'N') lines
     let edges = map processEdge edgeRecs
     let nodes = map (processNode edges) nodeRecs

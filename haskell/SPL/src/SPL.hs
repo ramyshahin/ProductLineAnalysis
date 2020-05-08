@@ -95,13 +95,13 @@ instance Show a => Show (Var a) where
         in "{" ++ (L.intercalate ", " (map show v)) ++ "}" 
 
 -- a < b means that a is a subset of b in terms of products
-instance Eq a => Ord (Var a) where
-    (<) x' y' = (isSubsetOf x' y') && not (isSubsetOf y' x')
-    (<=) x y = (x < y) || (x == y)
+--instance Eq a => Ord (Var a) where
+--    (<) x' y' = (isSubsetOf x' y') && not (isSubsetOf y' x')
+--    (<=) x y = (x < y) || (x == y)
 
-instance Eq a => Eq (Var a) where
-    (==) x y = (isSubsetOf x y) && (isSubsetOf y x)
-    (/=) x y = not (x == y)
+--instance Eq a => Eq (Var a) where
+--    (==) x y = (isSubsetOf x y) && (isSubsetOf y x)
+--    (/=) x y = not (x == y)
 
 instance Functor Var where
     fmap :: (a -> b) -> Var a -> Var b
@@ -498,7 +498,10 @@ filter' p (x : xs) =
     in  if null r' then filter' p xs else r : (filter' p xs)
 
 foldr' :: (Var a -> Var b -> Var b) -> Var b -> [Var a] -> Var b
-foldr' = foldr
+foldr' f z xs = 
+    let ret = foldr f z xs
+    in  if definedAt ret == ttPC then ret
+        else SPL.union ret (z /^ (undefinedAt ret))
 
 foldl' :: (Var b -> Var a -> Var b) -> Var b -> [Var a] -> Var b
 foldl' = foldl

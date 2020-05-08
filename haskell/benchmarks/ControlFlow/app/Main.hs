@@ -104,7 +104,7 @@ customParser = CustomArgs
     )
     <*> parseWith defaultConfig
 
-{-
+--{-
 main = do  
     --putStrLn $ "Analysis: " ++ analysis
     --handle <- openFile "files.txt" ReadMode
@@ -121,7 +121,7 @@ main = do
                                         bench "deep"        $ nf deep       (deepCFG env)
                                     ]
                         ]
--}
+---}
 
 {-
 tBruteforce = do
@@ -148,7 +148,7 @@ main = defaultMain [ bgroup "main"
                             bench "deep"        $ nfIO tDeep        --cfg
                             ] ]
 -}
---{-
+{-
 fname = "head.cfg"
 
 main = do
@@ -158,4 +158,4 @@ main = do
     --let result = bruteforce (shallowCFG env, features env) 
     putStrLn $ show result
     putStrLn "Done."
----}
+-}

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d6838eeaccb76fada45f540b5bcae76a6d8cc3bbe24195b9204edebf096f4f32
+-- hash: d3bc79589ef730fbb1122a3d3825f71d33ae01c2e69b6bc983d49ef7fe2b3fc7
 
 name:           ControlFlow
 version:        0.1.0.0
@@ -42,6 +42,7 @@ library
   ghc-options: -O2
   build-depends:
       SPL
+    , Unique
     , base >=4.7 && <5
     , containers
     , deepseq
