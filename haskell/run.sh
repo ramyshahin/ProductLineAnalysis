@@ -6,6 +6,6 @@ fileList() {
 }
 
 fileList|while read i; do
-  stack run -- --filename $i --csv stats.csv
+  stack run -- --filename $i --csv stats.csv 
 done
 

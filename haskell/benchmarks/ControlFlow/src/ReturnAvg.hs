@@ -55,7 +55,7 @@ returnAvg cfg n = --trace (show n) $
 analyze :: CFG -> Rational
 analyze cfg = --trace (show ns) $
     let _ns = _nodes cfg 
-        _fns = trace (show _ns) $ 
+        _fns = --trace (show _ns) $ 
             filter isFnRoot _ns 
         fnCount = length _fns
         total   = foldr (\a b -> a + b) 0 (map (returnAvg cfg) _fns)

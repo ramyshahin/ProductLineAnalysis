@@ -1,8 +1,8 @@
 {-# LANGUAGE CPP, DeriveGeneric, DeriveAnyClass, BangPatterns #-}
--- #define CASE_TERMINATION
+#define CASE_TERMINATION
 -- #define RETURN 
 -- #define RETURN_AVG
-#define GOTOS
+-- #define GOTOS
 
 module Main where
 
