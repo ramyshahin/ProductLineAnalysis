@@ -26,8 +26,8 @@ xmlns="http://www.w3.org/TR/REC-html40">
  c_rgszSh[0] = "stats";
  c_rgszSh[1] = "bruteforce";
  c_rgszSh[2] = "deep";
- c_rgszSh[3] = "shallow";
- c_rgszSh[4] = "Sheet4";
+ c_rgszSh[3] = "Sheet4";
+ c_rgszSh[4] = "shallow";
 
 
 
@@ -57,7 +57,7 @@ function fnGetIEVer()
 function fnBuildFrameset()
 {
  var szHTML="<frameset rows=\"*,18\" border=0 width=0 frameborder=no framespacing=0>"+
-  "<frame src=\""+document.all.item("shLink")[4].href+"\" name=\"frSheet\" noresize>"+
+  "<frame src=\""+document.all.item("shLink")[3].href+"\" name=\"frSheet\" noresize>"+
   "<frameset cols=\"54,*\" border=0 width=0 frameborder=no framespacing=0>"+
   "<frame src=\"\" name=\"frScroll\" marginwidth=0 marginheight=0 scrolling=no>"+
   "<frame src=\"\" name=\"frTabs\" marginwidth=0 marginheight=0 scrolling=no>"+
@@ -317,20 +317,20 @@ function fnSetActiveSheet(iSh)
     <x:WorksheetSource HRef="stats_files/sheet003.htm"/>
    </x:ExcelWorksheet>
    <x:ExcelWorksheet>
-    <x:Name>shallow</x:Name>
+    <x:Name>Sheet4</x:Name>
     <x:WorksheetSource HRef="stats_files/sheet004.htm"/>
    </x:ExcelWorksheet>
    <x:ExcelWorksheet>
-    <x:Name>Sheet4</x:Name>
+    <x:Name>shallow</x:Name>
     <x:WorksheetSource HRef="stats_files/sheet005.htm"/>
    </x:ExcelWorksheet>
   </x:ExcelWorksheets>
   <x:Stylesheet HRef="stats_files/stylesheet.css"/>
-  <x:WindowHeight>9060</x:WindowHeight>
-  <x:WindowWidth>23040</x:WindowWidth>
+  <x:WindowHeight>15840</x:WindowHeight>
+  <x:WindowWidth>29040</x:WindowWidth>
   <x:WindowTopX>32767</x:WindowTopX>
   <x:WindowTopY>32767</x:WindowTopY>
-  <x:ActiveSheet>4</x:ActiveSheet>
+  <x:ActiveSheet>3</x:ActiveSheet>
   <x:ProtectStructure>False</x:ProtectStructure>
   <x:ProtectWindows>False</x:ProtectWindows>
  </x:ExcelWorkbook>
@@ -338,7 +338,7 @@ function fnSetActiveSheet(iSh)
 </head>
 
 <frameset rows="*,39" border=0 width=0 frameborder=no framespacing=0>
- <frame src="stats_files/sheet005.htm" name="frSheet">
+ <frame src="stats_files/sheet004.htm" name="frSheet">
  <frame src="stats_files/tabstrip.htm" name="frTabs" marginwidth=0 marginheight=0>
  <noframes>
   <body>
