@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 703127c5536b6759644fc5382cc4085d6a8807df55314d6db0e274a19f13b4e0
+-- hash: 14863639099d6b6e07e2183df99fd8156c71bf6018ff4ed99610a70440a905b8
 
 name:           ControlFlow
 version:        0.1.0.0
@@ -27,10 +27,14 @@ source-repository head
 
 library
   exposed-modules:
+      CallDensity
+      CallDensityDeep
       CaseTermination
       CaseTerminationDeep
       CFG
       CFGParser
+      DanglingSwitch
+      DanglingSwitchDeep
       Gotos
       GotosDeep
       NodeTypes

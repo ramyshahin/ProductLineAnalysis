@@ -1,8 +1,10 @@
 {-# LANGUAGE CPP, DeriveGeneric, DeriveAnyClass, BangPatterns #-}
-#define CASE_TERMINATION
+-- #define CASE_TERMINATION
 -- #define RETURN 
 -- #define RETURN_AVG
 -- #define GOTOS
+-- #define DANGLING_SWITCH
+#define CALL_DENSITY
 
 module Main where
 
@@ -27,6 +29,12 @@ import qualified CaseTerminationDeep as Deep
 analysis = "CaseTermination"
 #endif
 
+#ifdef DANGLING_SWITCH
+import DanglingSwitch
+import qualified DanglingSwitchDeep as Deep
+analysis = "DanglingSwitch"
+#endif
+
 #ifdef RETURN
 import Return
 import qualified ReturnDeep as Deep
@@ -43,6 +51,12 @@ analysis = "Return Average"
 import Gotos
 import qualified GotosDeep as Deep
 analysis = "Goto Density"
+#endif
+
+#ifdef CALL_DENSITY
+import CallDensity
+import qualified CallDensityDeep as Deep
+analysis = "Call Density"
 #endif
 
 getFunctionNodes :: [CFGNode] -> [CFGNode]
