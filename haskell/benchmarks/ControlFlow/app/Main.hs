@@ -1,7 +1,10 @@
 {-# LANGUAGE CPP, DeriveGeneric, DeriveAnyClass, BangPatterns #-}
 -- #define CASE_TERMINATION
 -- #define RETURN 
-#define RETURN_AVG
+-- #define RETURN_AVG
+-- #define GOTOS
+-- #define DANGLING_SWITCH
+#define CALL_DENSITY
 
 module Main where
 
@@ -26,6 +29,12 @@ import qualified CaseTerminationDeep as Deep
 analysis = "CaseTermination"
 #endif
 
+#ifdef DANGLING_SWITCH
+import DanglingSwitch
+import qualified DanglingSwitchDeep as Deep
+analysis = "DanglingSwitch"
+#endif
+
 #ifdef RETURN
 import Return
 import qualified ReturnDeep as Deep
@@ -38,10 +47,22 @@ import qualified ReturnAvgDeep as Deep
 analysis = "Return Average"
 #endif
 
+#ifdef GOTOS
+import Gotos
+import qualified GotosDeep as Deep
+analysis = "Goto Density"
+#endif
+
+#ifdef CALL_DENSITY
+import CallDensity
+import qualified CallDensityDeep as Deep
+analysis = "Call Density"
+#endif
+
 getFunctionNodes :: [CFGNode] -> [CFGNode]
 getFunctionNodes = filter (\n -> case n of 
-                                    (CFGNode _ _ (CFGFunc _) _ _)   -> True
-                                    _                               -> False)
+                                    (CFGNode _ _ _ (CFGFunc _) _ _)   -> True
+                                    _                                 -> False)
 getFunctionNodes' = liftV getFunctionNodes
 
 --bruteforce :: (Var CFG, [String]) -> Var [CFGNode]
