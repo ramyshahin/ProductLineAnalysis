@@ -42,8 +42,8 @@ packages:
 - rewriting/shallow
 - rewriting/deep
 - vcpp
-- benchmarks/TokenCount
-- benchmarks/ControlFlow
+#- benchmarks/TokenCount
+#- benchmarks/ControlFlow
 # Dependency packages to be pulled from upstream that are not in the resolver
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)

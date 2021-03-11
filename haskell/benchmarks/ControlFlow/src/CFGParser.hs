@@ -25,13 +25,13 @@ dummyNode = CFGNode 0 T.empty (CFGDummy T.empty) [] []
 mkV :: a -> (a, PCExpr) -> Var a
 mkV dummy (v, pc) = 
     if   pc == ttPC
-    then mkVarT v
+    then mkVar ttPC v
     else mkVars [(v, pc), (dummy, negPC pc)]
 
 _mkVNode' = liftV5 CFGNode
 
 lv2vl :: Show a => [Var a] -> Var [a]
-lv2vl = foldr (|:|) (mkVarT [])
+lv2vl = foldr (|:|) (mkVar ttPC [])
 
 getCodeFromField :: RecordField -> T.Text
 getCodeFromField (FieldLabel l) = T.cons '@' l
@@ -56,7 +56,7 @@ processEdge (t, as) = do
 appendEdges :: CFGNode -> [Int] -> [Int] -> CFGNode 
 appendEdges n ps ss = CFGNode (nID n) (text n) (ast n) ps ss
 
-getCntxtContents :: Context T.Text -> IO (Var CFGNode)
+getCntxtContents :: Data.GraphViz.Types.Graph.Context T.Text -> IO (Var CFGNode)
 getCntxtContents (Cntxt n _ as ps ss) = do
     let xs'         = foldl T.append T.empty (map getCodeFromAttribute as)
     let ys          = filter (not . T.null) $ T.splitOn (T.pack "@") xs'

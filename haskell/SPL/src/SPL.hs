@@ -150,9 +150,9 @@ mkVar pc v = Var [(v,pc)]
 x ^| pc = mkVar pc x
 infixl 9 ^|
 
---mkVarT :: t -> Var t
---{-# INLINE mkVarT #-}
---mkVarT v = mkVar v tt
+mkVarT :: a -> Var a
+{-# INLINE mkVarT #-}
+mkVarT v = v ^| tt
 
 mkVars :: [(t,PresenceCondition)] -> Var t
 mkVars vs = Var vs

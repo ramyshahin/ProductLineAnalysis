@@ -11,7 +11,8 @@ import Language.Haskell.Tools.PrettyPrint (prettyPrint)
 import Language.Haskell.Tools.Refactor
 import Language.Haskell.Tools.AST
 import Language.Haskell.Tools.AST.Ann 
-    
+import Language.Haskell.Tools.Rewrite.Match.Decls
+
 import Control.Reference -- ((.-), (.=), (^.) (&))
 import FastString
 import Debug.Trace 
@@ -126,7 +127,7 @@ rewriteType init t = case t of
     --InfixTypeApp l op r -> mkInfixTypeApp (rewriteType l) op (rewriteType r)
     ParenType t         -> mkParenType (rewriteType True t)
     -- TODO: handle other cases
-    _ -> mkTypeApp tyVar t
+    _ -> mkParenType $ mkTypeApp tyVar t
 
 -- TODO
 -- mkTypeSignature takes only one name, so a signature might map
@@ -136,13 +137,29 @@ rewriteTypeSig (TypeSignature ns t) =
     let n = head $ _annListElems ns
     in  mkTypeSigDecl $ mkTypeSignature n (rewriteType True t)
 
+--notSupported :: a -> a
+notSupported x = trace ("Not supported: " ++ prettyPrint x) x
+
+-- rewrite constructor declaration
+rewriteConDecl :: ConDecl -> ConDecl
+rewriteConDecl d = 
+    case d of
+        ConDecl n ts -> mkConDecl n $ (map (rewriteType False) (_annListElems ts))
+        _ -> notSupported d
+
+--rewriteDataDecl :: Declarations -> DataDecl -> DataDecl
+--rewriteDataDecl decls d = d.declCons & annList ._ rewriteConDecl
+
 rewriteDecl :: Declarations -> Decl -> Decl
 rewriteDecl decls d = 
      case d of
         TypeSigDecl sig -> rewriteTypeSig sig
         ValueBinding vb -> rewriteValueBind decls vb
+        DataDecl newType ctxt hd cns drv -> 
+            mkDataDecl newType (_annMaybe ctxt) hd (map rewriteConDecl 
+                       (_annListElems cns)) (_annListElems drv)
         -- TODO: other cases
-        _ -> trace ("Unhandled Decl " ++ prettyPrint d) $ d
+        _ -> notSupported d
 
 rewriteValueBind :: Declarations -> ValueBind -> Decl
 rewriteValueBind globals vb = mkValueBinding $ case vb of
