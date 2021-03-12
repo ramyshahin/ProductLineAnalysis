@@ -19,10 +19,8 @@ import Debug.Trace
 import qualified Data.Set as S 
 import qualified SPL as L
 
---notSupported :: a -> a
-notSupported x = trace ("Not supported: " ++ prettyPrint x) x
-
-type Declarations = S.Set String
+import Rewrite.Base
+import Rewrite.Decl
 
 deepRewrite :: RefactoringChoice
 deepRewrite = ModuleRefactoring "DeepRewrite" (localRefactoring deep)
@@ -119,53 +117,6 @@ importDeepPrelude = mkImportDecl False False False Nothing moduleNameDeepPrelude
 rewriteImports :: ImportDeclList  -> ImportDeclList 
 --rewriteImports xs = (annListElems .= concat [[importSPL, importDeepPrelude], (imports xs)]) xs 
 rewriteImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs 
-    
--- | Rewrite declarations
---
-rewriteType :: Bool -> Type -> Type
-rewriteType init t = case t of
-    FunctionType a b    -> 
-        if      init
-        then    mkFunctionType (mkVarType (mkName "Context")) (rewriteType False t)
-        else    mkFunctionType (rewriteType False a) (rewriteType False b)
-    --InfixTypeApp l op r -> mkInfixTypeApp (rewriteType l) op (rewriteType r)
-    ParenType t         -> mkParenType (rewriteType True t)
-    -- TODO: handle other cases
-    _ -> mkParenType $ mkTypeApp tyVar t
-
--- TODO
--- mkTypeSignature takes only one name, so a signature might map
--- to multiple declarations
-rewriteTypeSig :: TypeSignature -> Decl
-rewriteTypeSig (TypeSignature ns t) = 
-    let n = head $ _annListElems ns
-    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType True t)
-
--- rewrite constructor declaration
-rewriteConDecl :: ConDecl -> ConDecl
-rewriteConDecl d = 
-    case d of
-        ConDecl n ts -> mkConDecl n $ (map (rewriteType False) (_annListElems ts))
-        _ -> notSupported d
-
-innerTypeName :: Name -> Name
-innerTypeName n = mkName (prettyPrint n ++ "_")
-
-rewriteDeclHead :: Declarations -> DeclHead -> DeclHead
-rewriteDeclHead decls dh =
-    case dh of
-        NameDeclHead n -> mkNameDeclHead (innerTypeName n)
-        ParenDeclHead  b -> mkParenDeclHead (rewriteDeclHead decls b)
-        DeclHeadApp f op -> mkDeclHeadApp (rewriteDeclHead decls f) op
-        InfixDeclHead l op r -> notSupported dh
-
-getName :: DeclHead -> Name
-getName dh =
-    case dh of
-        NameDeclHead n -> n
-        ParenDeclHead  b -> getName b
-        DeclHeadApp f op -> getName f
-        InfixDeclHead l op r -> mkName ""
 
 rewriteDecl :: Declarations -> Decl -> [Decl]
 rewriteDecl decls d = 
@@ -173,7 +124,8 @@ rewriteDecl decls d =
         TypeSigDecl sig -> [rewriteTypeSig sig]
         ValueBinding vb -> [rewriteValueBind decls vb]
         DataDecl newType ctxt hd cns drv -> 
-            let newDeclHead = rewriteDeclHead decls hd in
+            let newDeclHead = rewriteDeclHead decls hd 
+                consNames   = map getConName (_annListElems cns) in 
             [mkDataDecl newType (_annMaybe ctxt) newDeclHead
                         (map rewriteConDecl (_annListElems cns)) 
                         (_annListElems drv),
@@ -182,7 +134,7 @@ rewriteDecl decls d =
             mkValueBinding $ mkFunctionBind 
                 [mkMatch (mkMatchLhs (mkName "type") [mkVarPat $ getName hd]) 
                          (mkUnguardedRhs $ (mkApp (mkVar $ mkName "Var") (mkVar $ getName newDeclHead))) Nothing]
-            ]
+            ] ++ map liftConstructor consNames
         -- TODO: other cases
         _ -> [notSupported d]
 

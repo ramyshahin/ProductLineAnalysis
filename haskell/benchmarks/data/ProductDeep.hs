@@ -2,4 +2,7 @@ module ProductDeep where
 import SPL
 
 data Point_ = Point (Var Int) (Var Int)
-Point :: Var Point_
+type Point = Var Point_
+_Point = mkVarT . Point
+
+
