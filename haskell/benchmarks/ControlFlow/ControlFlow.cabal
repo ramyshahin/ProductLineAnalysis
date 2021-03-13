@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3e5c64a372c5755fd0bc93c0b32861af862b5c261bcad1b1e1a95de3df8d7f76
+-- hash: 14863639099d6b6e07e2183df99fd8156c71bf6018ff4ed99610a70440a905b8
 
 name:           ControlFlow
 version:        0.1.0.0
@@ -27,22 +27,37 @@ source-repository head
 
 library
   exposed-modules:
+      CallDensity
+      CallDensityDeep
       CaseTermination
       CaseTerminationDeep
       CFG
       CFGParser
+      DanglingSwitch
+      DanglingSwitchDeep
+      Gotos
+      GotosDeep
+      NodeTypes
+      Return
+      ReturnAvg
+      ReturnAvgDeep
+      ReturnDeep
+      VCFG
   other-modules:
       Paths_ControlFlow
   hs-source-dirs:
       src
+  ghc-options: -O2
   build-depends:
       SPL
+    , Unique
     , base >=4.7 && <5
     , containers
+    , deepseq
     , graphviz
     , hashtables
     , language-c
-    , multimap
+    , more-containers
     , text
   default-language: Haskell2010
 
@@ -52,16 +67,20 @@ executable ControlFlow-exe
       Paths_ControlFlow
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -O2 -rtsopts
   build-depends:
       ControlFlow
     , SPL
     , base >=4.7 && <5
     , containers
+    , criterion
+    , criterion-measurement
+    , deepseq
     , graphviz
     , hashtables
     , language-c
-    , multimap
+    , more-containers
+    , optparse-applicative
     , text
   default-language: Haskell2010
 
@@ -81,6 +100,6 @@ test-suite ControlFlow-test
     , graphviz
     , hashtables
     , language-c
-    , multimap
+    , more-containers
     , text
   default-language: Haskell2010

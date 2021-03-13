@@ -27,21 +27,31 @@ dependencies:
 - text
 - SPL
 - hashtables
-- multimap
+- more-containers
 
 library:
   source-dirs: src
-
+  ghc-options:
+    - -O2
+  dependencies:
+  - deepseq
+  - Unique
+  
 executables:
   ControlFlow-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
-    - -threaded
+    - -O2
     - -rtsopts
-    - -with-rtsopts=-N
+
+#- -with-rtsopts=-N
     dependencies:
     - ControlFlow
+    - criterion-measurement
+    - criterion
+    - deepseq
+    - optparse-applicative
 
 tests:
   ControlFlow-test:

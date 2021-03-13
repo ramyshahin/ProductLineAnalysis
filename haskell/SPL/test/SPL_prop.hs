@@ -97,12 +97,10 @@ list1 = x ^: list0
 --null' = liftV null
 --tail' = liftV tail
 
-length' :: Context -> Var [a] -> Var Int
-length' cntxt xs = 
-    liftedCond cntxt
-               (null' xs) 
-               (\__cntxt__ -> 0 ^| __cntxt__)
-               (\__cntxt__ -> ((+) ^| __cntxt__) <*> (1 ^| __cntxt__) <*> (length' __cntxt__ ((tail ^| __cntxt__) <*> xs)))
+length' :: Var [a] -> Var Int
+length' xs = liftedCond (null' xs) 
+                        (\__cntxt__ -> (mkVar 0 __cntxt__))
+                        (\__cntxt__ -> (mkVar 1 __cntxt__) ^+ (length' (tail' (restrict __cntxt__ xs))))
 
 prop_list0 = (length' ttPC list0) == (0 ^| ttPC)
 prop_list1 = (length' ttPC list1) == (1 ^| ttPC)
@@ -136,10 +134,10 @@ div' c = div ^| c
 
 zero c = (0 ^| c)
 one = (1 ^|)
- 
-safeDiv' :: Context -> Var Int -> Var Int -> Var Int
-safeDiv' cntxt a b = liftedCond ttPC (b ^== (zero cntxt)) (\c -> zero c) (\c -> (div' c) <*> a <*> b)
-divResult = safeDiv' ttPC w x
+
+safeDiv' :: Var Int -> Var Int -> Var Int
+safeDiv' a b = liftedCond (b ^== zero) (\__cntxt__ -> zero /^ __cntxt__) (\__cntxt__ -> div' (a /^ __cntxt__) (b /^ __cntxt__))
+divResult = safeDiv' w x
 
 prop_safeDiv = divResult == mkVars [(1,pq), (-1, p_q), (0,_p_q)]
 

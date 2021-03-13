@@ -33,10 +33,11 @@ executables:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
+    - -O2
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
-    - -fno-ignore-asserts
+
     dependencies:
     - TokenCount
     - vcpp

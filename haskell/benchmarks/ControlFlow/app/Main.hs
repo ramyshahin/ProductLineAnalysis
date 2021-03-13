@@ -1,64 +1,190 @@
-{-# LANGUAGE CPP #-}
-#define DEEP
+{-# LANGUAGE CPP, DeriveGeneric, DeriveAnyClass, BangPatterns #-}
+-- #define CASE_TERMINATION
+-- #define RETURN 
+-- #define RETURN_AVG
+-- #define GOTOS
+-- #define DANGLING_SWITCH
+#define CALL_DENSITY
 
 module Main where
 
 import CFG
+import qualified VCFG as V
 import CFGParser
-import CaseTermination
-import qualified CaseTerminationDeep as Deep
 import SPL
 import PresenceCondition 
 import Debug.Trace
 import Control.Exception
+import Criterion.Main
+import Criterion.Main.Options
+import Options.Applicative
+import GHC.Generics (Generic)
+import Control.DeepSeq
+import System.IO
+import System.Environment
 
-inputFileName = "/mnt/f/code/busybox-1.18.5/coreutils/head.cfg.dot"
+#ifdef CASE_TERMINATION
+import CaseTermination
+import qualified CaseTerminationDeep as Deep
+analysis = "CaseTermination"
+#endif
 
-{-
-getCntxtContents :: Text2Node -> Text2Cntxt -> Context T.Text -> IO VNode
-getCntxtContents txt2node txt2cntxt c = do
-    (n@(CFGNode i t nt ps ss), pc) <- getCntxtContents txt2node txt2cntxt c
-    putStrLn $ "Node: " ++ show t
-    putStrLn $ "\tID: " ++ show i
-    putStrLn $ "\tin-edges: " ++ show ps
-    putStrLn $ "\tout-edges: " ++ show ss
-    putStrLn $ "\tPC: " ++ show pc
-    return (n, pc)
--}
+#ifdef DANGLING_SWITCH
+import DanglingSwitch
+import qualified DanglingSwitchDeep as Deep
+analysis = "DanglingSwitch"
+#endif
 
-run :: Var CFG -> Var [CFGNode]
+#ifdef RETURN
+import Return
+import qualified ReturnDeep as Deep
+analysis = "Return"
+#endif
 
-#ifdef SHALLOW
-run = liftV analyze
+#ifdef RETURN_AVG
+import ReturnAvg
+import qualified ReturnAvgDeep as Deep
+analysis = "Return Average"
+#endif
+
+#ifdef GOTOS
+import Gotos
+import qualified GotosDeep as Deep
+analysis = "Goto Density"
+#endif
+
+#ifdef CALL_DENSITY
+import CallDensity
+import qualified CallDensityDeep as Deep
+analysis = "Call Density"
 #endif
 
 getFunctionNodes :: [CFGNode] -> [CFGNode]
 getFunctionNodes = filter (\n -> case n of 
-                                    (CFGNode _ _ (CFGFunc _) _ _)   -> True
-                                    _                               -> False)
+                                    (CFGNode _ _ _ (CFGFunc _) _ _)   -> True
+                                    _                                 -> False)
 getFunctionNodes' = liftV getFunctionNodes
 
-#ifdef BRUTE_FORCE
-run ns = 
-    let features = getFeatures ns
-        configs  = getAllConfigs features
-        inVecs   = zip (map (configIndex ns) configs) configs
-    in  mkVars $ map (\(input, pc) -> 
-                            (analyze input, pc)) 
+--bruteforce :: (Var CFG, [String]) -> Var [CFGNode]
+bruteforce (ns, features) = 
+    let configs  = getAllConfigs features
+        inVecs'   = zip (map (index ns) configs) configs
+        inVecs    = filter (\(i, _) -> not (null i)) inVecs'
+        --(Var ns') = ns
+    in  --trace (show (length ns')) $
+        mkVars $ map (\(input, pc) -> --trace (show pc) $
+                            (analyze (head input), pc)) 
                      inVecs
-#endif
 
-#ifdef DEEP
-run = Deep.analyze
-#endif
+shallow c = (liftV analyze) c
+
+deep c = Deep.analyze c
 
 nodes' = liftV nodes
 
-main :: IO ()
-main = do
-    cfg <- readGraph inputFileName
-    let features = trace ("Main: node counts: " ++ (show (length' (nodes' cfg)))) $ getFeatures cfg
-    let result = run cfg
-    putStrLn $ "Features: " ++ (show features)
+data Env = Env {
+    deepCFG     :: Var V.CFG,
+    shallowCFG  :: Var CFG,
+    fileName    :: String,
+    features    :: [String],
+    configs     :: Int,
+    nodeCount   :: Int,
+    hdr         :: String
+    } deriving (Generic, NFData)
+
+setupEnv filename = do
+    !cfg <- readCFG filename
+    let !nodes = (V._nodes cfg)
+    let !nodeCount = nodes `seq` length nodes
+    !features <- cfg `seq` getFeatures
+    let !deep = cfg ^| ttPC
+    let !shallow@(Var sh') = V.toShallowCFG cfg
+    let !featCount = deep `seq` shallow `seq` length features
+    let !configCount = length (getAllConfigs features)
+    let presentConfigs = length sh'
+    let hdr = foldr (\s t -> s ++ "," ++ t) "" 
+            [filename, show nodeCount, show featCount, show configCount, show presentConfigs]
+    let env = Env deep shallow filename features configCount nodeCount hdr
+    putStrLn $ "Analysis:        " ++ analysis
+    putStrLn $ "File:            " ++ filename
+    putStrLn $ "Node#:           " ++ (show $ nodeCount)
+    --putStrLn $ "Features:        " ++ (show features)
+    putStrLn $ "Feature#:        " ++ (show $ featCount)
+    putStrLn $ "Config#:         " ++ (show $ configCount)
+    putStrLn $ "Present config#: " ++ (show $ presentConfigs)
+    return env
+
+reportResults s cfg = do
+    let result = s cfg
     putStrLn $ show result
-    return ()
+
+data CustomArgs = CustomArgs {
+    filename :: String,
+    others   :: Mode
+}
+
+customParser :: Parser CustomArgs
+customParser = CustomArgs
+    <$> strOption (
+            long "filename"
+        <>  value "input file name"
+        <>  metavar "STR"
+        <>  help "Input CFG to process."
+    )
+    <*> parseWith defaultConfig
+
+--{-
+main = do  
+    --putStrLn $ "Analysis: " ++ analysis
+    --handle <- openFile "files.txt" ReadMode
+    --contents <- hGetContents handle
+    --let files = lines contents
+    as <- execParser $ describeWith customParser
+    --if (null as) then putStrLn "File name missing." else putStrLn $ "Processing: " ++ (filename as)
+    let file = filename as
+    --defaultMainWith c $
+    runMode (others as) 
+                        [ env (setupEnv file) $ \ env -> bgroup (hdr env)
+                                    [   bench "brute-force" $ nf bruteforce (shallowCFG env, features env),
+                                        bench "shallow"     $ nf shallow    (shallowCFG env),
+                                        bench "deep"        $ nf deep       (deepCFG env)
+                                    ]
+                        ]
+---}
+
+{-
+tBruteforce = do
+    env <- setupEnv
+    let result = bruteforce (shallowCFG env, features env)
+    putStrLn (show result)
+    return result
+
+tShallow = do
+    env <- setupEnv
+    let result = shallow (shallowCFG env)
+    putStrLn (show result)
+    return result
+
+tDeep = do
+    env <- setupEnv
+    let result = deep (deepCFG env)
+    --putStrLn (show result)
+    return result
+
+main = defaultMain [ bgroup "main"
+                        [   --bench "brute-force" $ nfIO tBruteforce, -- (cfg, feats),
+                            bench "shallow"     $ nfIO tShallow,    --cfg,
+                            bench "deep"        $ nfIO tDeep        --cfg
+                            ] ]
+-}
+{-
+fname = "head.cfg"
+
+main = do
+    env <- setupEnv fname
+    --putStrLn $ "Features: " ++ (show feats)
+    let result = deep $ deepCFG env
+    --let result = bruteforce (shallowCFG env, features env) 
+    putStrLn $ show result
+    putStrLn "Done."
+-}

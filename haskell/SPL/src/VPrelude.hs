@@ -8,28 +8,31 @@ import Prelude
 --(^.) f0 f1 x = f0 (f1 x) 
 --infixr 9 ^.
 
+{-
 map' :: (a -> b) -> [a] -> [b]
-map' f xs = 
-    case xs of
+map' _f _xs = 
+    case _xs of
         [] -> []
-        (y : ys) -> (f y) : (map' f ys)
+        (y : _ys) -> (_f y) : (map' _f _ys)
+-}
 
-filter' :: (a -> Bool) -> [a] -> [a]
-filter' p xs =
-    case xs of
-        [] -> []
-        (y : ys) -> if p y 
-                    then y : (filter' p ys) 
-                    else (filter' p ys)
-
+--filter' :: (a -> Bool) -> [a] -> [a]
+--filter' _p _xs =
+--    case _xs of
+--        [] -> []
+--        (y : _ys) -> if _p y 
+--                   then y : (filter' _p _ys) 
+--                    else (filter' _p _ys)
+{-
 foldr' :: (a -> b -> b) -> b -> [a] -> b
-foldr' f z xs = 
-    case xs of
+foldr' _f z _xs = 
+    case _xs of
         [] -> z
-        (y : ys) -> foldr' f (f y z) ys       
+        (y : _ys) -> foldr' _f (_f y z) _ys       
 
 foldl' :: (b -> a -> b) -> b -> [a] -> b
-foldl' f z xs = 
-    case xs of
+foldl' _f z _xs = 
+    case _xs of
         [] -> z
-        (y : ys) -> foldl' f (f z y) ys
+        (y : _ys) -> foldl' _f (_f z y) _ys
+-}

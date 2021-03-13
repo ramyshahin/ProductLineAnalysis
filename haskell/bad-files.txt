@@ -1,0 +1,10 @@
+/mnt/f/code/busybox-1.18.5/archival/libarchive/get_header_tar.cfg
+/mnt/f/code/busybox-1.18.5/findutils/grep.cfg
+/mnt/f/code/busybox-1.18.5/libbb/procps.cfg
+/mnt/f/code/busybox-1.18.5/miscutils/hdparm.cfg
+/mnt/f/code/busybox-1.18.5/networking/inetd.cfg
+/mnt/f/code/busybox-1.18.5/networking/libiproute/ipaddress.cfg
+/mnt/f/code/busybox-1.18.5/runit/svlogd.cfg
+/mnt/f/code/busybox-1.18.5/selinux/setfiles.cfg
+/mnt/f/code/busybox-1.18.5/findutils/find.cfg
+/mnt/f/code/busybox-1.18.5/miscutils/less.cfg
