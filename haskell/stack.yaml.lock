@@ -92,7 +92,7 @@ packages:
     hackage: QuickCheck-2.14@sha256:a1bac79e48b36d5bccd771e981058c44707f440156a0a411ebdcfec8cfccfda9,6982
     pantry-tree:
       size: 2203
-      sha256: 1c8b0f1ff061117c78ddb69cbed242faf313a427c03e5c84233aa33e7e58a5cb
+      sha256: 7067593c50ff2e5e83c637ac73009f4bd8f43c29ff256e976bbb14674033abe9
   original:
     hackage: QuickCheck-2.14
 - completed:

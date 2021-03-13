@@ -5,9 +5,12 @@ module SPL_prop where
 import Test.QuickCheck.All
 import SPL
 import PropBDD
+import PresenceCondition
 --import Shallow.VList as S
 --import Deep.VList as D
 import Control.Applicative
+
+import Debug.Trace
 
 p, q, r, s :: Prop
 univ@[p, q, r, s] = mkUniverse ["P", "Q", "R", "S"]
@@ -88,7 +91,7 @@ prop_eq1 = x0 == x
 prop_eq2 = x /= y
 prop_eq3 = y0 /= y
 
-list0 = mkVarT []
+list0 = mkVar ttPC []
 list1 = x ^: list0
 
 --null' = liftV null
@@ -99,11 +102,11 @@ length' xs = liftedCond (null' xs)
                         (\__cntxt__ -> (mkVar 0 __cntxt__))
                         (\__cntxt__ -> (mkVar 1 __cntxt__) ^+ (length' (tail' (restrict __cntxt__ xs))))
 
-prop_list0 = (length' list0) == (mkVarT 0)
-prop_list1 = (length' list1) == (mkVarT 1)
+prop_list0 = (length' ttPC list0) == (0 ^| ttPC)
+prop_list1 = (length' ttPC list1) == (1 ^| ttPC)
 
 xs' = mkVars [([1,2,3,4], p), ([3,2], _p)]
-prop_list2 = (length' xs') == mkVars [(4, p), (2, _p)]
+prop_list2 = (length' ttPC xs') == mkVars [(4, p), (2, _p)]
 
 -- unary function: abs
 abs' = pure abs
@@ -126,11 +129,12 @@ prop_plus2 = x_plus_y0 == x_plus_y2
 -- safe division and lifted conditionals
 safeDiv :: Int -> Int -> Int
 safeDiv a b = if b == 0 then 0 else (div a b)
-div' = liftV2 div
 
-zero = (mkVarT 0)
-one = (mkVarT 1)
- 
+div' c = div ^| c
+
+zero c = (0 ^| c)
+one = (1 ^|)
+
 safeDiv' :: Var Int -> Var Int -> Var Int
 safeDiv' a b = liftedCond (b ^== zero) (\__cntxt__ -> zero /^ __cntxt__) (\__cntxt__ -> div' (a /^ __cntxt__) (b /^ __cntxt__))
 divResult = safeDiv' w x

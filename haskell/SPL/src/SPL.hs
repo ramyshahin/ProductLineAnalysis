@@ -45,6 +45,8 @@ import Control.DeepSeq
 --type FeatureSet         = Universe
 type PresenceCondition  = Prop
 
+type Context = PresenceCondition
+
 --type Val a = (Maybe a, PresenceCondition)
 type Val a = (a, PresenceCondition)
 
@@ -105,11 +107,43 @@ instance Show a => Show (Var a) where
 
 instance Functor Var where
     fmap :: (a -> b) -> Var a -> Var b
-    fmap f = apply (mkVarT f)
+    fmap f = apply (f ^| ttPC)
 
 instance Applicative Var where
-    pure  = mkVarT
+    pure  = (^| ttPC)
     (<*>) = apply
+
+{-
+-- Var monad
+data VarM a =
+    VarM (Context -> (a, Context))
+
+instance Functor VarM where
+    fmap :: (a -> b) -> VarM a -> VarM b
+    fmap f (VarM t) = VarM (\c -> let (x, c') = t c in (f x, c'))
+
+instance Applicative VarM where
+    pure :: a -> VarM a
+    pure x = VarM (\c -> (x, c))
+    
+    (<*>) :: VarM (a -> b) -> VarM a -> VarM b
+    (VarM l) <*> (VarM r) = VarM (\c -> let (v, c')  = l c
+                                            (w, c'') = r c'
+                                        in (v w, c''))
+
+instance Monad VarM where
+    (>>=) :: VarM a -> (a -> VarM b) -> VarM b
+    VarM l >>= t = VarM
+        (\c -> let (v, c')  = l c
+                   (VarM y) = t v
+               in y c')
+    
+    (>>) :: VarM a -> VarM b -> VarM b
+    l >> r = r
+
+    return  = pure
+    fail    = error
+-}
 
 --type family Var t where
 --    Var ((t :: * -> * -> * -> *) (s1 :: *) (s2 :: *) (s3 :: *))      = Var' (t (Var' s1) (Var' s2) (Var' s3))
@@ -117,13 +151,17 @@ instance Applicative Var where
 --    Var ((t :: * -> *) (s :: *))      = Var' (t (Var' s))
 --    Var (t :: *)                      = Var' t
 
-mkVar :: t -> PresenceCondition -> Var t
+mkVar :: PresenceCondition -> t -> Var t
 {-# INLINE mkVar #-}
-mkVar v pc = Var [(v,pc)]
+mkVar pc v = Var [(v,pc)]
 
-mkVarT :: t -> Var t
+(^|) :: t -> PresenceCondition -> Var t
+x ^| pc = mkVar pc x
+infixl 9 ^|
+
+mkVarT :: a -> Var a
 {-# INLINE mkVarT #-}
-mkVarT v = mkVar v tt
+mkVarT v = v ^| tt
 
 mkVars :: [(t,PresenceCondition)] -> Var t
 mkVars vs = Var vs
@@ -329,8 +367,8 @@ liftedCond c'@(Var c) x y = --assert (disjInv c' && disjInv x && disjInv y) $
                       c
           agg = unions parts
 -}
-liftedNeg :: Num a => Var (a -> a)
-liftedNeg = mkVarT (\x -> -x)
+neg' :: Num a => Var a -> Var a
+neg' = liftV (\x -> -x)
 
 partitionInv :: Var a -> [Var a] -> Bool
 partitionInv x xs = (definedAt x) == cover

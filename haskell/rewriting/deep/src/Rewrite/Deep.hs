@@ -11,7 +11,8 @@ import Language.Haskell.Tools.PrettyPrint (prettyPrint)
 import Language.Haskell.Tools.Refactor
 import Language.Haskell.Tools.AST
 import Language.Haskell.Tools.AST.Ann 
-    
+import Language.Haskell.Tools.Rewrite.Match.Decls
+
 import Control.Reference -- ((.-), (.=), (^.) (&))
 import FastString
 import Debug.Trace
@@ -19,7 +20,8 @@ import Data.Char
 import qualified Data.Set as S 
 import qualified SPL as L
 
-type Declarations = S.Set String
+import Rewrite.Base
+import Rewrite.Decl
 
 deepRewrite :: RefactoringChoice
 deepRewrite = ModuleRefactoring "DeepRewrite" (localRefactoring deep)
@@ -30,10 +32,11 @@ run = tryRefactor (localRefactoring . (\_ -> deep))
 deep :: LocalRefactoring
 deep mod = do
     let decls = getModuleDeclarations mod
+    --let rwDecls = concatMap (rewriteDecl decls) (mod ^. modDecl & annList)
     return  $ filePragmas & annList     .- rewritePragma 
             $ modHead     & annMaybe    .- rewriteHeader
-            $               modImports  .- rewriteImports
-            $ modDecl     & annList     .- (rewriteDecl decls)
+            $ modImports                .- rewriteImports
+            $ modDecl     & annListElems .- (concatMap (rewriteDecl decls))
             $ mod 
     
 getBindLHSName :: ValueBind -> Name
@@ -137,12 +140,25 @@ rewriteTypeSig (TypeSignature ns t) =
     in  mkTypeSigDecl $ mkTypeSignature n (rewriteType t)
 
 rewriteDecl :: Declarations -> Decl -> Decl
+
 rewriteDecl decls d = 
      case d of
-        TypeSigDecl sig -> rewriteTypeSig sig
-        ValueBinding vb -> rewriteValueBind decls vb
+        TypeSigDecl sig -> [rewriteTypeSig sig]
+        ValueBinding vb -> [rewriteValueBind decls vb]
+        DataDecl newType ctxt hd cns drv -> 
+            let newDeclHead = rewriteDeclHead decls hd 
+                consNames   = map getConName (_annListElems cns) in 
+            [mkDataDecl newType (_annMaybe ctxt) newDeclHead
+                        (map rewriteConDecl (_annListElems cns)) 
+                        (_annListElems drv),
+            -- workaround because mkTypeDecl is buggy
+            --mkTypeDecl hd (mkTypeApp tyVar (mkVarType (getName newDeclHead)))
+            mkValueBinding $ mkFunctionBind 
+                [mkMatch (mkMatchLhs (mkName "type") [mkVarPat $ getName hd]) 
+                         (mkUnguardedRhs $ (mkApp (mkVar $ mkName "Var") (mkVar $ getName newDeclHead))) Nothing]
+            ] ++ map liftConstructor consNames
         -- TODO: other cases
-        _ -> trace ("Unhandled Decl " ++ prettyPrint d) $ d
+        _ -> [notSupported d]
 
 rewriteValueBind :: Declarations -> ValueBind -> Decl
 rewriteValueBind globals vb = mkValueBinding $ case vb of
@@ -164,7 +180,7 @@ rewriteMatch globals locals inBranch (Match lhs rhs binds) =
     mkMatch lhs (rewriteRhs globals locals inBranch rhs) (_annMaybe binds)
 
 liftedCond = mkVar (mkName "liftedCond")
-liftedNeg = mkVar (mkName "liftedNeg")
+liftedNeg = mkVar (mkName "neg\'")
 liftedCase = mkVar (mkName "liftedCase")
 
 liftOp (NormalOp o) inBranch = --trace ("liftOp: " ++ (prettyPrint o))
@@ -198,6 +214,9 @@ externalDecl globals locals x =
 
 getLiftedPrimitiveOp :: String -> Operator
 getLiftedPrimitiveOp o = mkUnqualOp ("^" ++ o)
+
+upOp :: Operator
+upOp = mkUnqualOp ("^|")
 
 isPrimitiveOp :: String -> Bool
 isPrimitiveOp n = S.member n L.primitiveOpNames
@@ -271,6 +290,7 @@ splitAlts index as =
             let rhs = mkCaseRhs $ mkLit (mkIntLit index)
             in  (mkAlt p rhs Nothing) : (splitAlts (index + 1) as')
 
+cntxtVar = "__cntxt__"
 dummyVar = "__dummy__"
 
 mkAltBinding :: Declarations -> Declarations -> Integer -> Alt -> LocalBind
@@ -294,6 +314,32 @@ rewriteLocalBind globals locals inBranch lb =
                 (mkLocalValBind (mkSimpleBind p (mkUnguardedRhs (rewriteExpr globals locals inBranch rhs)) (_annMaybe xs)), vbs)
             _ -> trace ("Unsupported Local Bind: " ++ prettyPrint lb) $ (lb, S.empty)
 
+cntxtExpr = mkVar (mkName cntxtVar)
+cntxtPat  = mkVarPat (mkName cntxtVar)
+
+mkV :: Expr -> Expr
+mkV e = mkParen (mkInfixApp e upOp $ cntxtExpr)
+
+rewriteApp :: Bool -> Declarations -> Declarations -> Expr -> Expr
+rewriteApp init globals locals (App fun arg) = 
+    let fun' = case fun of 
+                App _ _ -> rewriteApp True globals locals fun
+                _       -> rewriteExpr globals locals fun
+        arg' = case arg of
+                App _ _ -> rewriteApp False globals locals arg
+                _       -> rewriteExpr globals locals arg
+    in  case fun of 
+            Var n -> if     externalDecl globals locals n
+                     then   if isPrimitiveFunc (prettyPrint n)
+                            then mkApp (rewritePrimitiveFuncName (prettyPrint n)) arg'
+                            else mkInfixApp fun' appOp arg'
+                     else   if      init 
+                            then    mkApp (mkApp fun' cntxtExpr) arg'
+                            else    mkApp fun' arg'
+            _      -> case fun' of 
+                        App _ _ -> mkApp fun' arg'
+                        InfixApp _ op _ -> mkInfixApp fun' appOp arg' 
+                        _       -> mkInfixApp fun' appOp arg'
 -- lifting expressions 
 vCntxt      = "__cntxt__"
 vTT         = "ttPC"

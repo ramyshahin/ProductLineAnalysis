@@ -13,6 +13,9 @@ import Debug.Trace
 import Text.Parsec
 --import Data.String.Utils(strip, splitWs, replace)
 
+ttPC = tt
+ffPC = ff
+
 type CPPEnv = Stack Prop
 
 mkCPPEnv = stackNew
@@ -59,12 +62,12 @@ processPPCommand env ((t,p) : ts) =
 liftToken :: CToken -> PresenceCondition -> Var CToken
 liftToken t pc = 
     if pc == tt then 
-        mkVarT t
+        t ^| ttPC
     else let !pc' = notBDD pc
          in  mkVars [(t,pc), ((TNil, snd t), pc')]
 
 vcpp :: CPPEnv -> [CToken] -> Var [CToken]
-vcpp _ [] = mkVarT []
+vcpp _ [] = [] ^| ttPC
 vcpp env (t : ts) = 
     case fst t of
         TSharp      -> let  line = sourceLine $ snd t
