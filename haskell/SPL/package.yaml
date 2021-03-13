@@ -33,6 +33,7 @@ library:
     - hashable 
     - generic-deriving
     - z3
+    - deepseq
 
 tests:
   SPL-test:

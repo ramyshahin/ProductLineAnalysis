@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f7fb08395041f79808bcd6cdca8b0b7ea8454c4220c41519e9f30be142c0a025
+-- hash: 9c88a93449bc747e1608e2d939ba26d66214ab3e0703e0fd545104ba39dee6d2
 
 name:           SPL
 version:        0.1.0.0
@@ -42,6 +42,7 @@ library
       base >=4.7 && <5
     , containers
     , cudd
+    , deepseq
     , generic-deriving
     , hashable
     , hashtables

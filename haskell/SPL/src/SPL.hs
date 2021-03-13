@@ -151,12 +151,12 @@ instance Monad VarM where
 --    Var ((t :: * -> *) (s :: *))      = Var' (t (Var' s))
 --    Var (t :: *)                      = Var' t
 
-mkVar :: PresenceCondition -> t -> Var t
+mkVar :: t -> PresenceCondition -> Var t
 {-# INLINE mkVar #-}
-mkVar pc v = Var [(v,pc)]
+mkVar v pc = Var [(v,pc)]
 
 (^|) :: t -> PresenceCondition -> Var t
-x ^| pc = mkVar pc x
+x ^| pc = mkVar x pc
 infixl 9 ^|
 
 mkVarT :: a -> Var a
@@ -231,7 +231,6 @@ restrict pc v'@(Var v) =
     --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
                                     
 (/^) x pc = restrict pc x
-(^|) x pc = mkVar x pc
 
 --disjointnessInv :: Show t => Var t -> Var t -> Bool
 --disjointnessInv x@(Var a) y@(Var b) = 

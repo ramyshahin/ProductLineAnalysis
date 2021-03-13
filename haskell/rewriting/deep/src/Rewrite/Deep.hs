@@ -119,28 +119,7 @@ rewriteImports :: ImportDeclList  -> ImportDeclList
 --rewriteImports xs = (annListElems .= concat [[importSPL, importDeepPrelude], (imports xs)]) xs 
 rewriteImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs 
     
--- | Rewrite declarations
---
-rewriteType :: Type -> Type
-rewriteType t = case t of
-    FunctionType a b    -> mkFunctionType (rewriteType a) (rewriteType b)
-    --InfixTypeApp l op r -> mkInfixTypeApp (rewriteType l) op (rewriteType r)
-    ParenType t         -> mkParenType (rewriteType t)
-    TupleType ts        -> mkTupleType (map rewriteType (_annListElems ts))
-    ListType t          -> mkListType (rewriteType t)
-    -- TODO: handle other cases
-    _ -> mkTypeApp tyVar t
-
--- TODO
--- mkTypeSignature takes only one name, so a signature might map
--- to multiple declarations
-rewriteTypeSig :: TypeSignature -> Decl
-rewriteTypeSig (TypeSignature ns t) = 
-    let n = head $ _annListElems ns
-    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType t)
-
-rewriteDecl :: Declarations -> Decl -> Decl
-
+rewriteDecl :: Declarations -> Decl -> [Decl]
 rewriteDecl decls d = 
      case d of
         TypeSigDecl sig -> [rewriteTypeSig sig]
@@ -154,8 +133,8 @@ rewriteDecl decls d =
             -- workaround because mkTypeDecl is buggy
             --mkTypeDecl hd (mkTypeApp tyVar (mkVarType (getName newDeclHead)))
             mkValueBinding $ mkFunctionBind 
-                [mkMatch (mkMatchLhs (mkName "type") [mkVarPat $ getName hd]) 
-                         (mkUnguardedRhs $ (mkApp (mkVar $ mkName "Var") (mkVar $ getName newDeclHead))) Nothing]
+                [mkMatch (mkMatchLhs (mkName "type") [mkVarPat $ mkName $ getTypeName hd]) 
+                         (mkUnguardedRhs $ (mkApp (mkVar $ mkName "Var") (mkVar $ mkName $ getTypeName newDeclHead))) Nothing]
             ] ++ map liftConstructor consNames
         -- TODO: other cases
         _ -> [notSupported d]
@@ -178,10 +157,6 @@ rewriteRhs globals locals inBranch rhs = case rhs of
 rewriteMatch :: Declarations -> Declarations -> Bool -> Match -> Match
 rewriteMatch globals locals inBranch (Match lhs rhs binds) = 
     mkMatch lhs (rewriteRhs globals locals inBranch rhs) (_annMaybe binds)
-
-liftedCond = mkVar (mkName "liftedCond")
-liftedNeg = mkVar (mkName "neg\'")
-liftedCase = mkVar (mkName "liftedCase")
 
 liftOp (NormalOp o) inBranch = --trace ("liftOp: " ++ (prettyPrint o))
     let pc = if inBranch then cntxtExpr else ttExpr 
@@ -211,21 +186,6 @@ externalDecl globals locals x =
     let allDecls = S.union globals locals
         r = not $ S.member (prettyPrint x) allDecls
     in  trace (debugDecls allDecls ++ " External " ++ prettyPrint x ++ " ? " ++ show r) $ r
-
-getLiftedPrimitiveOp :: String -> Operator
-getLiftedPrimitiveOp o = mkUnqualOp ("^" ++ o)
-
-upOp :: Operator
-upOp = mkUnqualOp ("^|")
-
-isPrimitiveOp :: String -> Bool
-isPrimitiveOp n = S.member n L.primitiveOpNames
-
-isPrimitiveFunc :: String -> Bool
-isPrimitiveFunc f =  S.member f L.primitiveFuncNames
-
-isPrimitive :: String -> Bool
-isPrimitive s = isPrimitiveOp s || isPrimitiveFunc s
 
 rewriteInfixApp :: Declarations -> Declarations -> Bool -> Expr -> Operator -> Expr -> Expr
 rewriteInfixApp globals locals inBranch lhs op rhs =
@@ -290,9 +250,6 @@ splitAlts index as =
             let rhs = mkCaseRhs $ mkLit (mkIntLit index)
             in  (mkAlt p rhs Nothing) : (splitAlts (index + 1) as')
 
-cntxtVar = "__cntxt__"
-dummyVar = "__dummy__"
-
 mkAltBinding :: Declarations -> Declarations -> Integer -> Alt -> LocalBind
 mkAltBinding globals locals index (Alt p (CaseRhs rhs) _) = 
     let lhsName = mkName $ "case" ++ (show index)
@@ -313,13 +270,7 @@ rewriteLocalBind globals locals inBranch lb =
             LocalValBind (SimpleBind p (UnguardedRhs rhs) xs) -> 
                 (mkLocalValBind (mkSimpleBind p (mkUnguardedRhs (rewriteExpr globals locals inBranch rhs)) (_annMaybe xs)), vbs)
             _ -> trace ("Unsupported Local Bind: " ++ prettyPrint lb) $ (lb, S.empty)
-
-cntxtExpr = mkVar (mkName cntxtVar)
-cntxtPat  = mkVarPat (mkName cntxtVar)
-
-mkV :: Expr -> Expr
-mkV e = mkParen (mkInfixApp e upOp $ cntxtExpr)
-
+{-
 rewriteApp :: Bool -> Declarations -> Declarations -> Expr -> Expr
 rewriteApp init globals locals (App fun arg) = 
     let fun' = case fun of 
@@ -340,14 +291,8 @@ rewriteApp init globals locals (App fun arg) =
                         App _ _ -> mkApp fun' arg'
                         InfixApp _ op _ -> mkInfixApp fun' appOp arg' 
                         _       -> mkInfixApp fun' appOp arg'
+-}
 -- lifting expressions 
-vCntxt      = "__cntxt__"
-vTT         = "ttPC"
-cntxtPat    = mkVarPat (mkName vCntxt)
-cntxtExpr   = mkVar $ mkName vCntxt
-ttExpr      = mkVar $ mkName vTT
-restrictOp  = mkUnqualOp "/^"
-upOp        = mkUnqualOp "^|"
 
 rewriteBranch :: Declarations -> Declarations -> Expr -> Expr
 rewriteBranch globals locals e = 
