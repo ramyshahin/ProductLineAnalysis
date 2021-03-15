@@ -5,6 +5,10 @@ module VPreludeDeep where
 import SPL
 import Prelude
 
+type Int_    = Var Int
+type String_ = Var String
+type Bool_   = Var Bool
+
 --(^.) :: (b -> c) -> (a -> b) -> a -> c
 --(^.) f0 f1 x = f0 (f1 x) 
 --infixr 9 ^.

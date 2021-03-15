@@ -31,10 +31,13 @@ notSupported x = trace ("Not supported: " ++ prettyPrint x) x
 type Declarations = S.Set String
 
 innerName :: Name -> Name
-innerName n = mkName (prettyPrint n ++ "_")
+innerName n = n 
+
+liftedTypeName :: Name -> Name
+liftedTypeName n = mkName (prettyPrint n ++ "_")
 
 consName :: Name -> Name
-consName n = mkName ("_" ++ prettyPrint n)
+consName n = mkName ("C_" ++ prettyPrint n)
 
 mkVarTOp = mkVar (mkName "mkVarT")
 compOp   = mkUnqualOp "."
@@ -55,3 +58,12 @@ isPrimitiveFunc f =  S.member f L.primitiveFuncNames
 
 isPrimitive :: String -> Bool
 isPrimitive s = isPrimitiveOp s || isPrimitiveFunc s
+
+debugDecls :: Declarations -> String
+debugDecls ns = foldl (\r s -> r ++ " " ++ s) "Declarations: " $ ns
+
+externalDecl :: Declarations -> Declarations -> Name -> Bool
+externalDecl globals locals x = 
+    let allDecls = S.union globals locals
+        r = not $ S.member (prettyPrint x) allDecls
+    in  trace (debugDecls allDecls ++ " External " ++ prettyPrint x ++ " ? " ++ show r) $ r

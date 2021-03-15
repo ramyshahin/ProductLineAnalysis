@@ -9,38 +9,121 @@ import Language.Haskell.Tools.Rewrite.Match.Decls
 
 import Control.Reference -- ((.-), (.=), (^.) (&))
 import FastString
-import Debug.Trace 
+import Debug.Trace
+import Data.Char
 import qualified Data.Set as S 
 import qualified SPL as L
 
 import Rewrite.Base
 
+{-
+getDeclaredName :: Decl -> String
+getDeclaredName d = 
+     case d of
+        TypeSigDecl sig -> ""
+        ValueBinding vb -> [rewriteValueBind globals vb]
+        DataDecl newType ctxt hd cns drv -> 
+            let newDeclHead = rewriteDeclHead globals hd 
+                consNames   = map getConName (_annListElems cns) in 
+            [mkDataDecl newType (_annMaybe ctxt) newDeclHead
+                        (map (rewriteConDecl globals hd) (_annListElems cns)) 
+                        (_annListElems drv),
+            -- workaround because mkTypeDecl is buggy
+            --mkTypeDecl hd (mkTypeApp tyVar (mkVarType (getName newDeclHead)))
+            mkValueBinding $ mkFunctionBind 
+                [mkMatch (mkMatchLhs (mkName "type") [mkVarPat $ mkName $ getTypeName hd]) 
+                         (mkUnguardedRhs $ (mkApp (mkVar $ mkName "Var") (mkVar $ mkName $ getTypeName newDeclHead))) Nothing]
+            ] ++ map liftConstructor consNames
+        -- TODO: other cases
+        _ -> [notSupported d]
+-}
+
 -- | Rewrite declarations
 --
-rewriteType :: Type -> Type
-rewriteType t = case t of
-    FunctionType a b    -> mkFunctionType (rewriteType a) (rewriteType b)
-    --InfixTypeApp l op r -> mkInfixTypeApp (rewriteType l) op (rewriteType r)
-    ParenType t         -> mkParenType (rewriteType t)
-    TupleType ts        -> mkTupleType (map rewriteType (_annListElems ts))
-    ListType t          -> mkListType (rewriteType t)
+isTypeVar :: Name -> Bool
+isTypeVar n = isLower $ head $ prettyPrint n
+
+rewriteType :: Declarations -> Type -> Type
+rewriteType globals t = case t of
+    FunctionType a b    -> 
+        mkFunctionType (rewriteType globals a) (rewriteType globals b)
+    ParenType t         -> mkParenType (rewriteType globals t)
+    TupleType ts        -> 
+        mkTupleType (map (rewriteType globals) (_annListElems ts))
+    ListType t          -> mkListType (rewriteType globals t)
+    VarType  n          -> 
+        if isTypeVar n then mkParenType $ mkTypeApp tyVar t
+        else mkVarType (liftedTypeName n)
+                --if S.member (prettyPrint n) globals 
+                --then mkVarType (innerName n)  
+                --else mkParenType $ mkTypeApp tyVar t
+    TypeApp t1 t2       -> 
+        mkTypeApp (rewriteType globals t1) t2
     -- TODO: handle other cases
-    _ -> mkParenType $ mkTypeApp tyVar t
+    _ -> notSupported t
 
 -- TODO
 -- mkTypeSignature takes only one name, so a signature might map
 -- to multiple declarations
-rewriteTypeSig :: TypeSignature -> Decl
-rewriteTypeSig (TypeSignature ns t) = 
+rewriteTypeSig :: Declarations -> TypeSignature -> Decl
+rewriteTypeSig globals (TypeSignature ns t) = 
     let n = head $ _annListElems ns
-    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType t)
+    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType globals t)
+
+recursive :: DeclHead -> Type -> Bool
+recursive hd t =
+    getTypeName False True hd == prettyPrint t
+
+{-
+typeToLiftedType :: Type -> Type
+typeToLiftedType t =
+    case t of
+        ParenType t         -> mkParenType (typeToLiftedType t)
+        VarType   n         -> mkVarType $
+            if isTypeVar n 
+            then n 
+            else liftedTypeName n
+        TypeApp t1 t2       -> mkTypeApp (typeToLiftedType t1) (typeToLiftedType t2)
+        --TupleType ts        -> mkTupleType (map rewriteType (_annListElems ts))
+        --ListType t          -> mkListType (rewriteType t)
+        -- TODO: handle other cases
+        _ -> notSupported t
+-}
+
+renameDeclHead :: DeclHead -> Name -> DeclHead
+renameDeclHead dh n =
+    case dh of
+        NameDeclHead _   -> mkNameDeclHead n
+        ParenDeclHead  b -> mkParenDeclHead (renameDeclHead b n)
+        DeclHeadApp f op -> mkDeclHeadApp (renameDeclHead f n) op
+        InfixDeclHead l op r -> notSupported dh
+
+cons2innerType :: Declarations -> DeclHead -> ConDecl -> (Decl, DeclHead)
+cons2innerType globals dh c = 
+    case c of
+        ConDecl n ts ->
+            let name    = consName n 
+                newCons = mkConDecl name $ map (rewriteType globals) (_annListElems ts)
+                declHead = renameDeclHead dh name 
+            in  (mkDataDecl mkDataKeyword Nothing declHead [newCons] [], declHead) 
+
+mkProdCons :: DeclHead -> [Name] -> ConDecl
+mkProdCons dh ns =
+    let tname = getTypeName True False dh
+        argTypes = map (mkVarType) ns
+    in mkConDecl (mkName tname) argTypes
 
 -- rewrite constructor declaration
-rewriteConDecl :: ConDecl -> ConDecl
-rewriteConDecl d = 
+rewriteConDecl :: Declarations -> DeclHead -> ConDecl -> ConDecl
+rewriteConDecl globals hd d = 
     case d of
-        ConDecl n ts -> mkConDecl n $ 
-                        (map rewriteType (_annListElems ts))
+        ConDecl n ts -> 
+            mkConDecl n $ 
+                (map (\t -> if recursive hd t 
+                            then t -- typeToLiftedType t 
+                            else 
+                                rewriteType globals t)
+                     (_annListElems ts))
         _ -> notSupported d
 
 rewriteDeclHead :: Declarations -> DeclHead -> DeclHead
@@ -51,13 +134,16 @@ rewriteDeclHead decls dh =
         DeclHeadApp f op -> mkDeclHeadApp (rewriteDeclHead decls f) op
         InfixDeclHead l op r -> notSupported dh
 
-getTypeName :: DeclHead -> String
-getTypeName dh =
+getTypeName :: Bool -> Bool -> DeclHead -> String
+getTypeName lifted full dh =
     case dh of
-        NameDeclHead n -> prettyPrint n
-        ParenDeclHead  b -> getTypeName b
-        DeclHeadApp f op -> "(" ++ (getTypeName f) ++ " " 
-                            ++ (prettyPrint op) ++ ")"
+        NameDeclHead n -> prettyPrint n ++ 
+                          if lifted && not (isTypeVar n) then "_" else ""
+        ParenDeclHead  b -> getTypeName lifted full b
+        DeclHeadApp f op -> 
+            if full 
+            then "(" ++ (getTypeName lifted full f) ++ " " ++ (prettyPrint op) ++ ")"
+            else getTypeName lifted full f
         InfixDeclHead l op r -> ""
 
 getConName :: ConDecl -> Name

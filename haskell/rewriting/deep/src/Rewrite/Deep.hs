@@ -116,26 +116,30 @@ moduleNameDeepPrelude = mkModuleName "VPreludeDeep"
 importDeepPrelude = mkImportDecl False False False Nothing moduleNameDeepPrelude Nothing Nothing
 
 rewriteImports :: ImportDeclList  -> ImportDeclList 
---rewriteImports xs = (annListElems .= concat [[importSPL, importDeepPrelude], (imports xs)]) xs 
-rewriteImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs 
+rewriteImports xs = (annListElems .= concat [[importSPL, importDeepPrelude], (imports xs)]) xs 
+--rewriteImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs 
     
 rewriteDecl :: Declarations -> Decl -> [Decl]
-rewriteDecl decls d = 
+rewriteDecl globals d = 
      case d of
-        TypeSigDecl sig -> [rewriteTypeSig sig]
-        ValueBinding vb -> [rewriteValueBind decls vb]
+        TypeSigDecl sig -> [rewriteTypeSig globals sig]
+        ValueBinding vb -> [rewriteValueBind globals vb]
         DataDecl newType ctxt hd cns drv -> 
-            let newDeclHead = rewriteDeclHead decls hd 
-                consNames   = map getConName (_annListElems cns) in 
+            let newDeclHead = rewriteDeclHead globals hd
+                consNames   = map getConName (_annListElems cns) 
+                (innerTypes, dhs) = unzip $ map (cons2innerType globals hd) (_annListElems cns)
+                prodCons    = mkProdCons hd $ map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
+            in 
             [mkDataDecl newType (_annMaybe ctxt) newDeclHead
-                        (map rewriteConDecl (_annListElems cns)) 
+                        --(map (rewriteConDecl globals hd) (_annListElems cns)) 
+                        [prodCons]
                         (_annListElems drv),
             -- workaround because mkTypeDecl is buggy
             --mkTypeDecl hd (mkTypeApp tyVar (mkVarType (getName newDeclHead)))
             mkValueBinding $ mkFunctionBind 
-                [mkMatch (mkMatchLhs (mkName "type") [mkVarPat $ mkName $ getTypeName hd]) 
-                         (mkUnguardedRhs $ (mkApp (mkVar $ mkName "Var") (mkVar $ mkName $ getTypeName newDeclHead))) Nothing]
-            ] ++ map liftConstructor consNames
+                [mkMatch (mkMatchLhs (mkName "type") [mkVarPat $ mkName $ getTypeName True True hd]) 
+                         (mkUnguardedRhs $ (mkApp (mkVar $ mkName "Var") (mkVar $ mkName $ getTypeName False True newDeclHead))) Nothing]
+            ] ++ innerTypes -- liftConstructor consNames
         -- TODO: other cases
         _ -> [notSupported d]
 
@@ -177,15 +181,6 @@ rewriteVar globals locals inBranch vn =
         else    if      externalDecl globals locals vn
                 then    liftExpr globals locals (inBranch) e
                 else    if inBranch && r then restrictExpr e else e
-
-debugDecls :: Declarations -> String
-debugDecls ns = foldl (\r s -> r ++ " " ++ s) "Declarations: " $ ns
-
-externalDecl :: Declarations -> Declarations -> Name -> Bool
-externalDecl globals locals x = 
-    let allDecls = S.union globals locals
-        r = not $ S.member (prettyPrint x) allDecls
-    in  trace (debugDecls allDecls ++ " External " ++ prettyPrint x ++ " ? " ++ show r) $ r
 
 rewriteInfixApp :: Declarations -> Declarations -> Bool -> Expr -> Operator -> Expr -> Expr
 rewriteInfixApp globals locals inBranch lhs op rhs =
