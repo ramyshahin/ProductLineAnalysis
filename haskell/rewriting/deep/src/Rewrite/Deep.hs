@@ -126,20 +126,17 @@ rewriteDecl globals d =
         ValueBinding vb -> [rewriteValueBind globals vb]
         DataDecl newType ctxt hd cns drv -> 
             let newDeclHead = rewriteDeclHead globals hd
+                cns'        = (_annListElems cns)
+                conss       = length cns'
                 consNames   = map getConName (_annListElems cns) 
-                (innerTypes, dhs) = unzip $ map (cons2innerType globals hd) (_annListElems cns)
-                prodCons    = mkProdCons hd $ map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
+                (innerTypes', dhs) = unzip $ map (cons2innerType globals hd) (_annListElems cns)
+                (innerTypes, defObjs) = unzip innerTypes'
+                prodCons    = mkProdCons hd dhs -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
+                tname       = mkName $ getTypeName False False hd
             in 
             [mkDataDecl newType (_annMaybe ctxt) newDeclHead
-                        --(map (rewriteConDecl globals hd) (_annListElems cns)) 
-                        [prodCons]
-                        (_annListElems drv),
-            -- workaround because mkTypeDecl is buggy
-            --mkTypeDecl hd (mkTypeApp tyVar (mkVarType (getName newDeclHead)))
-            mkValueBinding $ mkFunctionBind 
-                [mkMatch (mkMatchLhs (mkName "type") [mkVarPat $ mkName $ getTypeName True True hd]) 
-                         (mkUnguardedRhs $ (mkApp (mkVar $ mkName "Var") (mkVar $ mkName $ getTypeName False True newDeclHead))) Nothing]
-            ] ++ innerTypes -- liftConstructor consNames
+                        [prodCons] (_annListElems drv)] 
+            ++ innerTypes ++ defObjs ++ map (liftConstructor tname cns') (zip cns' [0..])
         -- TODO: other cases
         _ -> [notSupported d]
 
@@ -218,6 +215,7 @@ rewritePattern p =
         TuplePat _  -> trace ("Tuple pattern: " ++ (prettyPrint p)) p -}
         _ -> trace ("Unknown pattern: " ++ (prettyPrint p)) p
 
+{-
 rewriteAlt :: Declarations -> Declarations -> (Integer, Alt) -> Expr
 rewriteAlt globals locals (index, Alt p (CaseRhs e) _) =
     let vCase   = mkVar $ mkName ("case" ++ show index)
@@ -229,6 +227,7 @@ rewriteAlt globals locals (index, Alt p (CaseRhs e) _) =
         c       = mkParen $ mkApp vUncurry (mkParen (mkApp vCase cntxtExpr))
         s       = mkParen $ mkApp vLiftV vSplit
     in  mkLambda [cntxtPat] $ mkInfixApp c dotOp s
+-}
 
 rewriteAlt' :: Declarations -> Declarations -> Bool -> Alt -> Alt
 rewriteAlt' globals locals inBranch (Alt p (CaseRhs e) xs) =
@@ -309,6 +308,33 @@ isDeepExpr e =
                  in (h == '_')
         _     -> False
 
+rewriteCasePattern :: Pattern -> Pattern
+rewriteCasePattern p = mkParenPat $ 
+    case p of
+        VarPat n      -> mkVarPat $ innerName n
+        AppPat c args -> mkAppPat (innerName c) (_annListElems args)
+        _             -> notSupported p
+
+getPatternName :: Pattern -> Name
+getPatternName p =
+    case p of
+        VarPat n -> n
+        AppPat n _ -> n
+        _          -> notSupported (mkName "")
+
+rewriteAlt :: Declarations -> Declarations -> Expr -> Alt -> Expr
+rewriteAlt globals locals c (Alt p (CaseRhs e) _) =
+    let e' = rewriteExpr globals locals False e
+        p' = rewriteCasePattern p
+        accessor = Rewrite.Base.fieldName $ getPatternName p 
+        field = mkParen $ mkApp (mkVar (accessor)) (mkParen c) 
+    in  mkApp (mkParen (mkLambda [p'] e'))field 
+
+rewriteCase :: Declarations -> Declarations -> Expr -> [Alt] -> Expr
+rewriteCase globals locals c alts =
+    mkApp symUnions $
+    mkList $ map (rewriteAlt globals locals c) alts
+
 rewriteExpr :: Declarations -> Declarations -> Bool -> Expr -> Expr
 rewriteExpr globals locals inBranch e = 
     case e of 
@@ -332,7 +358,9 @@ rewriteExpr globals locals inBranch e =
                         (mkApp  liftedCond  (mkParen (rewriteExpr globals locals inBranch c)))
                         (mkParen $ mkLambda [cntxtPat] (rewriteBranch globals locals t)))
                         (mkParen $ mkLambda [cntxtPat] (rewriteBranch globals locals e))
-        Case v alts -> if isDeepExpr v then mkCase v $ map (rewriteAlt' globals locals inBranch) $ _annListElems alts
+        Case v alts -> rewriteCase globals locals v (_annListElems alts) 
+            {-
+            if isDeepExpr v then mkCase v $ map (rewriteAlt' globals locals inBranch) $ _annListElems alts
             else
             let dummy    = mkName dummyVar
                 arg      = mkVarPat $ dummy
@@ -341,6 +369,7 @@ rewriteExpr globals locals inBranch e =
                 v'       = mkParen (rewriteExpr globals locals inBranch v)
             in  mkLet (map (\(a,i) -> mkAltBinding globals locals a i) (zip [0..] (_annListElems alts)))
                       (mkApp (mkApp (mkApp liftedCase v') splitter) (mkList as))
+            -}
         MultiIf alts -> trace "Unhandled MultiIf" e 
         Lambda b e -> let vbs = foldr S.union S.empty (map getPatternVars (_annListElems b))
                           locals' = S.union locals vbs 

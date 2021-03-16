@@ -62,6 +62,13 @@ rewriteType globals t = case t of
     -- TODO: handle other cases
     _ -> notSupported t
 
+getHeadTypeName :: Type -> Name
+getHeadTypeName t =
+    case t of
+        VarType n -> n
+        TypeApp t1 t2 -> getHeadTypeName t1
+        _ -> mkName ""
+
 -- TODO
 -- mkTypeSignature takes only one name, so a signature might map
 -- to multiple declarations
@@ -98,20 +105,36 @@ renameDeclHead dh n =
         DeclHeadApp f op -> mkDeclHeadApp (renameDeclHead f n) op
         InfixDeclHead l op r -> notSupported dh
 
-cons2innerType :: Declarations -> DeclHead -> ConDecl -> (Decl, DeclHead)
+cons2innerType :: Declarations -> DeclHead -> ConDecl -> ((Decl, Decl), DeclHead)
 cons2innerType globals dh c = 
     case c of
         ConDecl n ts ->
-            let name    = consName n 
-                newCons = mkConDecl name $ map (rewriteType globals) (_annListElems ts)
+            let name     = innerName n 
+                ts'      = _annListElems ts
+                newCons  = mkConDecl name $ map (rewriteType globals) ts'
                 declHead = renameDeclHead dh name 
-            in  (mkDataDecl mkDataKeyword Nothing declHead [newCons] [], declHead) 
+                dObj     = mkDefObj n (length ts')
+            in  ((mkDataDecl mkDataKeyword Nothing declHead [newCons] [], dObj), declHead) 
 
-mkProdCons :: DeclHead -> [Name] -> ConDecl
-mkProdCons dh ns =
-    let tname = getTypeName True False dh
-        argTypes = map (mkVarType) ns
-    in mkConDecl (mkName tname) argTypes
+emptyVar :: Expr
+emptyVar = mkParen $ mkApp (mkVar $ mkName "Var") (mkList [])
+
+mkDefObj :: Name -> Int -> Decl
+mkDefObj consName argCount =
+    let objName = defaultName consName
+        cons    = mkVar $ innerName consName
+        args    = replicate argCount emptyVar
+    in  mkValueBinding $
+            mkSimpleBind (mkVarPat objName) (mkUnguardedRhs $ foldl mkApp cons args) Nothing
+
+mkProdCons :: DeclHead -> [DeclHead] -> ConDecl
+mkProdCons dh dhs =
+    let toField dh = let x = getTypeName False False dh
+                     in  mkName $ 'f' : tail x
+        toType  = mkVarType . mkName . (getTypeName False True)
+        tname  = getTypeName True False dh
+        fields = map (\dh -> mkFieldDecl [toField dh] $ toType dh) dhs
+    in mkRecordConDecl (mkName tname) fields
 
 -- rewrite constructor declaration
 rewriteConDecl :: Declarations -> DeclHead -> ConDecl -> ConDecl
@@ -129,7 +152,7 @@ rewriteConDecl globals hd d =
 rewriteDeclHead :: Declarations -> DeclHead -> DeclHead
 rewriteDeclHead decls dh =
     case dh of
-        NameDeclHead n -> mkNameDeclHead (innerName n)
+        NameDeclHead n -> mkNameDeclHead (liftedTypeName n)
         ParenDeclHead  b -> mkParenDeclHead (rewriteDeclHead decls b)
         DeclHeadApp f op -> mkDeclHeadApp (rewriteDeclHead decls f) op
         InfixDeclHead l op r -> notSupported dh
@@ -152,9 +175,19 @@ getConName c =
         ConDecl n ts -> n
         _ -> notSupported (mkName "")
 
-liftConstructor :: Name -> Decl
-liftConstructor n =
-    mkValueBinding $ mkFunctionBind 
-        [mkMatch (mkMatchLhs (consName n) []) 
-          (mkUnguardedRhs (mkInfixApp mkVarTOp dollarOp (mkVar n)))
+liftConstructor :: Name -> [ConDecl] -> (ConDecl, Int) -> Decl
+liftConstructor tname conss (cdecl, index) =
+    let (name, args) = case cdecl of 
+                            ConDecl n ts -> (n, _annListElems ts)
+                            _ -> (mkName "", [])
+        argCount     = length args
+        consCount    = length conss
+        argList      = map (\i -> mkVar $ mkName $ "v" ++ show i) [0..argCount-1]
+        argListP     = map (\i -> mkVarPat $ mkName $ "v" ++ show i) [0..argCount-1]
+        consArgs     = mkParen $ foldl mkApp (mkVar $ innerName name) argList
+        def i        = mkVar $ defaultName $ getConName (conss !! i)
+        allArgs      = map (\i -> if i == index then consArgs else def i) [0..consCount-1]
+    in mkValueBinding $ mkFunctionBind 
+        [mkMatch (mkMatchLhs (consName name) argListP) 
+          (mkUnguardedRhs $ foldl mkApp (mkVar (liftedTypeName tname)) allArgs)
           Nothing] 

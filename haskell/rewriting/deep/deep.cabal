@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0f852c55426562388d43685b805c3ccbdbf9932d2d6ee85dd10eed2cf4c86033
+-- hash: 04337994b89d98a744dc3801c546406a26dec7fb8579228c8f06816d68500e72
 
 name:           deep
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Rewrite.Base
+      Rewrite.Case
       Rewrite.Decl
       Rewrite.Deep
   other-modules:

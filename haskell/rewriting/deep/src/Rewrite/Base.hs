@@ -27,17 +27,24 @@ restrictOp  = mkUnqualOp "/^"
 upOp        = mkUnqualOp "^|"
 --notSupported :: a -> a
 notSupported x = trace ("Not supported: " ++ prettyPrint x) x
+symUnions = mkVar $ mkName "unions"
 
 type Declarations = S.Set String
 
 innerName :: Name -> Name
-innerName n = n 
+innerName n = mkName $ "I_" ++ prettyPrint n 
 
 liftedTypeName :: Name -> Name
 liftedTypeName n = mkName (prettyPrint n ++ "_")
 
 consName :: Name -> Name
-consName n = mkName ("C_" ++ prettyPrint n)
+consName n = mkName ("c_" ++ prettyPrint n)
+
+defaultName :: Name -> Name
+defaultName n = mkName ("d_" ++ prettyPrint n)
+
+fieldName :: Name -> Name
+fieldName n = mkName $ "f_" ++ prettyPrint n
 
 mkVarTOp = mkVar (mkName "mkVarT")
 compOp   = mkUnqualOp "."
