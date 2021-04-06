@@ -9,7 +9,9 @@ import Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token as Token 
 import qualified Data.Set as S
 
-type PCExpr = Prop
+type PresenceCondition  = Prop
+type Context            = PresenceCondition
+type PCExpr             = Prop
 
 {-# INLINE (/\) #-}
 (/\) = andBDD

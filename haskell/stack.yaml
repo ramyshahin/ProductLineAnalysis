@@ -39,7 +39,7 @@ extra-lib-dirs: [/usr/local/lib]
 packages:
 - SPL
 - rewriting/common
-#- rewriting/shallow
+- rewriting/shallow
 - rewriting/deep
 # - vcpp
 #- benchmarks/TokenCount
@@ -79,6 +79,8 @@ extra-deps:
 - more-containers-0.2.2.0
 - optparse-applicative-0.14.3.0
 - Unique-0.4.7.7
+- generics-sop-0.5.0.0
+- sop-core-0.5.0.1@sha256:ad0f34a1a6cb26dd5ed8bf820f40dc4b6aac90cd696d48dc886a5748f3539ab4,2896
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

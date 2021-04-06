@@ -34,7 +34,7 @@ library:
     - generic-deriving
     - z3
     - deepseq
-
+    - generics-sop
 tests:
   SPL-test:
     main:                Spec.hs

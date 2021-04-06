@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9c88a93449bc747e1608e2d939ba26d66214ab3e0703e0fd545104ba39dee6d2
+-- hash: 2f331189fd6050001ea9774f9a2bc1b9fae1ff1d9054a3cccd76c0fe226fa5a0
 
 name:           SPL
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 library
   exposed-modules:
       DeepTypes
+      Gen
       PresenceCondition
       Prop
       PropBDD
@@ -44,6 +45,7 @@ library
     , cudd
     , deepseq
     , generic-deriving
+    , generics-sop
     , hashable
     , hashtables
     , parallel

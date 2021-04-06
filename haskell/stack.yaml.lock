@@ -158,6 +158,20 @@ packages:
       sha256: 65b9779a0d9502efffea5c93c44d260edc97f8efeaa21e6a302e0fc94f4ff5c7
   original:
     hackage: Unique-0.4.7.7
+- completed:
+    hackage: generics-sop-0.5.0.0@sha256:d5f3c4b0d3a68dc42f87d7b3b38b724e8db9115b475331bafbe7d41b1994ee83,5552
+    pantry-tree:
+      size: 1571
+      sha256: 58482dcf8209bc45878b19ab7a2ed268d40ae19081cfb93cde0830426a63254c
+  original:
+    hackage: generics-sop-0.5.0.0
+- completed:
+    hackage: sop-core-0.5.0.1@sha256:ad0f34a1a6cb26dd5ed8bf820f40dc4b6aac90cd696d48dc886a5748f3539ab4,2896
+    pantry-tree:
+      size: 766
+      sha256: f6e9f8344d82ef53d3588536f60bd0ab44ef04fdd305af4b1432d8b5766346f9
+  original:
+    hackage: sop-core-0.5.0.1@sha256:ad0f34a1a6cb26dd5ed8bf820f40dc4b6aac90cd696d48dc886a5748f3539ab4,2896
 snapshots:
 - completed:
     size: 524154

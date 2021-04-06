@@ -129,13 +129,17 @@ rewriteDecl globals d =
                 cns'        = (_annListElems cns)
                 conss       = length cns'
                 consNames   = map getConName (_annListElems cns) 
-                (innerTypes', dhs) = unzip $ map (cons2innerType globals hd) (_annListElems cns)
+                (innerTypes', dhs') = unzip $ map (cons2innerType globals hd) (_annListElems cns)
                 (innerTypes, defObjs) = unzip innerTypes'
-                prodCons    = mkProdCons hd dhs -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
-                tname       = mkName $ getTypeName False False hd
+                (names,dhss)= unzip dhs'
+                prodCons    = mkProdCons hd dhss -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
+                tname       = mkName $ getTypeName' False False hd
+                tname'      = liftedTypeName tname
+                def         = mkDefObj (defaultName tname') tname' names 
             in 
             [mkDataDecl newType (_annMaybe ctxt) newDeclHead
-                        [prodCons] (_annListElems drv)] 
+                        [prodCons] (_annListElems drv),
+             def] 
             ++ innerTypes ++ defObjs ++ map (liftConstructor tname cns') (zip cns' [0..])
         -- TODO: other cases
         _ -> [notSupported d]
@@ -339,7 +343,7 @@ rewriteExpr :: Declarations -> Declarations -> Bool -> Expr -> Expr
 rewriteExpr globals locals inBranch e = 
     case e of 
         Lit l -> liftExpr globals locals inBranch e
-        Var n -> rewriteVar globals locals inBranch n 
+        Var n -> mkVar n -- rewriteVar globals locals inBranch n 
         InfixApp arg1 op arg2 -> rewriteInfixApp globals locals inBranch arg1 op arg2
         PrefixApp op arg -> mkInfixApp liftedNeg appOp arg
         App fun arg ->  let fun' = rewriteExpr globals locals inBranch fun

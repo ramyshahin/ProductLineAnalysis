@@ -13,7 +13,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, FlexibleInstances, ExplicitForAll #-}
 
-module SPL where
+module SPL (module SPL, module GHC.Generics, module Gen) where
 
 import PropBDD
 import PresenceCondition
@@ -31,6 +31,7 @@ import System.IO.Unsafe
 import Debug.Trace
 import GHC.Generics (Generic, Generic1)
 import Control.DeepSeq
+import Gen
 
 {-# INLINE (===) #-}
 (===) :: a -> a -> Bool
@@ -43,9 +44,6 @@ import Control.DeepSeq
 (====) x y = x === y || x == y
 
 --type FeatureSet         = Universe
-type PresenceCondition  = Prop
-
-type Context = PresenceCondition
 
 --type Val a = (Maybe a, PresenceCondition)
 type Val a = (a, PresenceCondition)
@@ -222,15 +220,15 @@ definedAt (Var xs) = disj(pcs)
 undefinedAt :: Var t -> PresenceCondition
 undefinedAt = neg . definedAt
 
-{-# INLINE restrict #-}
-restrict :: PresenceCondition -> Var t -> Var t
-restrict pc v'@(Var v) =
+instance Lifted (Var a) where
+  {-# INLINE restrict #-}
+  restrict pc v'@(Var v) =
     if      pc == ttPC then v'
     else if pc == ffPC then Var []
     else    Var [(x, p) | (x, pc') <- v, let p = pc' /\ pc, sat p]
     --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
                                     
-(/^) x pc = restrict pc x
+(/^) x pc = Gen.restrict pc x
 
 --disjointnessInv :: Show t => Var t -> Var t -> Bool
 --disjointnessInv x@(Var a) y@(Var b) = 

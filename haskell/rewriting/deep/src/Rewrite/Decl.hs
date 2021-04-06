@@ -62,12 +62,14 @@ rewriteType globals t = case t of
     -- TODO: handle other cases
     _ -> notSupported t
 
+{-
 getHeadTypeName :: Type -> Name
 getHeadTypeName t =
     case t of
         VarType n -> n
         TypeApp t1 t2 -> getHeadTypeName t1
         _ -> mkName ""
+-}
 
 -- TODO
 -- mkTypeSignature takes only one name, so a signature might map
@@ -79,7 +81,7 @@ rewriteTypeSig globals (TypeSignature ns t) =
 
 recursive :: DeclHead -> Type -> Bool
 recursive hd t =
-    getTypeName False True hd == prettyPrint t
+    getTypeName' False True hd == prettyPrint t
 
 {-
 typeToLiftedType :: Type -> Type
@@ -105,34 +107,46 @@ renameDeclHead dh n =
         DeclHeadApp f op -> mkDeclHeadApp (renameDeclHead f n) op
         InfixDeclHead l op r -> notSupported dh
 
-cons2innerType :: Declarations -> DeclHead -> ConDecl -> ((Decl, Decl), DeclHead)
+getTypeName :: Type -> Name
+getTypeName t =
+    case t of
+        VarType n -> n
+        TypeApp t1 t2 -> getTypeName t1
+        ParenType t -> getTypeName t
+        _ -> notSupported $ mkName "getTypeName"
+
+cons2innerType :: Declarations -> DeclHead -> ConDecl -> ((Decl, Decl), (Name, DeclHead))
 cons2innerType globals dh c = 
     case c of
         ConDecl n ts ->
             let name     = innerName n 
                 ts'      = _annListElems ts
-                newCons  = mkConDecl name $ map (rewriteType globals) ts'
+                ts''     = map (rewriteType globals) ts'
+                newCons  = mkConDecl name ts'' 
                 declHead = renameDeclHead dh name 
-                dObj     = mkDefObj n (length ts')
-            in  ((mkDataDecl mkDataKeyword Nothing declHead [newCons] [], dObj), declHead) 
+                dObj     = mkDefObj (defaultName n) (innerName n) (map getTypeName ts'')
+            in  ((mkDataDecl mkDataKeyword Nothing declHead [newCons] [], dObj), (n,declHead)) 
 
-emptyVar :: Expr
-emptyVar = mkParen $ mkApp (mkVar $ mkName "Var") (mkList [])
+emptyVar :: Name -> Expr
+emptyVar n = 
+    if   isTypeVar n 
+    then mkParen $ mkApp (mkVar $ mkName "Var") (mkList [])
+    else mkVar $ defaultName n
 
-mkDefObj :: Name -> Int -> Decl
-mkDefObj consName argCount =
-    let objName = defaultName consName
-        cons    = mkVar $ innerName consName
-        args    = replicate argCount emptyVar
+mkDefObj :: Name -> Name -> [Name] -> Decl
+mkDefObj objName consName args =
+    let --objName = defaultName consName
+        cons    = mkVar consName
+        args'   = map emptyVar args
     in  mkValueBinding $
-            mkSimpleBind (mkVarPat objName) (mkUnguardedRhs $ foldl mkApp cons args) Nothing
+            mkSimpleBind (mkVarPat objName) (mkUnguardedRhs $ foldl mkApp cons args') Nothing
 
 mkProdCons :: DeclHead -> [DeclHead] -> ConDecl
 mkProdCons dh dhs =
-    let toField dh = let x = getTypeName False False dh
+    let toField dh = let x = getTypeName' False False dh
                      in  mkName $ 'f' : tail x
-        toType  = mkVarType . mkName . (getTypeName False True)
-        tname  = getTypeName True False dh
+        toType  = mkVarType . mkName . (getTypeName' False True)
+        tname  = getTypeName' True False dh
         fields = map (\dh -> mkFieldDecl [toField dh] $ toType dh) dhs
     in mkRecordConDecl (mkName tname) fields
 
@@ -157,16 +171,16 @@ rewriteDeclHead decls dh =
         DeclHeadApp f op -> mkDeclHeadApp (rewriteDeclHead decls f) op
         InfixDeclHead l op r -> notSupported dh
 
-getTypeName :: Bool -> Bool -> DeclHead -> String
-getTypeName lifted full dh =
+getTypeName' :: Bool -> Bool -> DeclHead -> String
+getTypeName' lifted full dh =
     case dh of
         NameDeclHead n -> prettyPrint n ++ 
                           if lifted && not (isTypeVar n) then "_" else ""
-        ParenDeclHead  b -> getTypeName lifted full b
+        ParenDeclHead  b -> getTypeName' lifted full b
         DeclHeadApp f op -> 
             if full 
-            then "(" ++ (getTypeName lifted full f) ++ " " ++ (prettyPrint op) ++ ")"
-            else getTypeName lifted full f
+            then "(" ++ (getTypeName' lifted full f) ++ " " ++ (prettyPrint op) ++ ")"
+            else getTypeName' lifted full f
         InfixDeclHead l op r -> ""
 
 getConName :: ConDecl -> Name
