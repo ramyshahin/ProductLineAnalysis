@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2f331189fd6050001ea9774f9a2bc1b9fae1ff1d9054a3cccd76c0fe226fa5a0
+-- hash: e0de54c598027269053ab90f60a3bed55507dd104aa39463108af1eb6aabad47
 
 name:           SPL
 version:        0.1.0.0
@@ -29,7 +29,6 @@ library
       DeepTypes
       Gen
       PresenceCondition
-      Prop
       PropBDD
       ShallowTypes
       SPL
@@ -51,7 +50,6 @@ library
     , parallel
     , parsec
     , vector
-    , z3
   default-language: Haskell2010
 
 test-suite SPL-test

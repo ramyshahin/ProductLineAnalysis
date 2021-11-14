@@ -220,7 +220,9 @@ definedAt (Var xs) = disj(pcs)
 undefinedAt :: Var t -> PresenceCondition
 undefinedAt = neg . definedAt
 
-instance Lifted (Var a) where
+instance Lifted Var where
+  single x = Var [(x,ttPC)]
+  mult xs  = Var xs 
   {-# INLINE restrict #-}
   restrict pc v'@(Var v) =
     if      pc == ttPC then v'

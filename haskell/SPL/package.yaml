@@ -32,7 +32,7 @@ library:
     - hashtables 
     - hashable 
     - generic-deriving
-    - z3
+#    - z3
     - deepseq
     - generics-sop
 tests:
