@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 04337994b89d98a744dc3801c546406a26dec7fb8579228c8f06816d68500e72
+-- hash: 4df493338268ef9d32d8af76404cb32a1e3bc059b1a6d7472150230eb2d663dc
 
 name:           deep
 version:        0.1.0.0
@@ -66,15 +66,15 @@ test-suite rewriter-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      List
-      ListDeep
-      Main
-      Test
+      Test0
+      Test1
       TestApp
       TestAppDeep
       TestCase
       TestCaseDeep
       TestDeep
+      TestDFS
+      TestList
       TestVal
       TestValDeep
       Paths_deep
