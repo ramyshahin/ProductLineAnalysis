@@ -26,19 +26,12 @@
 *.bbl
 *.blg
 
-#ocaml
-_build
-*.native
-*.byte
-*.docdir
-
 setup.data
 setup.log
 
-# scala
-target/
-.idea/
-project/
-
 # VS Code
 .vscode
+
+#cudd
+cudd
+

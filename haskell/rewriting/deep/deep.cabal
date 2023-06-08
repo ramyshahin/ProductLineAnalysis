@@ -1,10 +1,8 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.35.1.
 --
 -- see: https://github.com/sol/hpack
---
--- hash: 4df493338268ef9d32d8af76404cb32a1e3bc059b1a6d7472150230eb2d663dc
 
 name:           deep
 version:        0.1.0.0
@@ -27,10 +25,18 @@ source-repository head
 
 library
   exposed-modules:
+      Rewrite.Alt
+      Rewrite.App
       Rewrite.Base
+      Rewrite.Bind
       Rewrite.Case
       Rewrite.Decl
       Rewrite.Deep
+      Rewrite.Expr
+      Rewrite.Match
+      Rewrite.Pattern
+      Rewrite.Rhs
+      Rewrite.ValueBind
   other-modules:
       Paths_deep
   hs-source-dirs:
@@ -75,6 +81,7 @@ test-suite rewriter-test
       TestDeep
       TestDFS
       TestList
+      TestListDeep
       TestVal
       TestValDeep
       Paths_deep

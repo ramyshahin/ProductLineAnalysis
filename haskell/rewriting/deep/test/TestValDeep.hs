@@ -3,17 +3,18 @@
 
 module TestValDeep where
 import SPL
+import VPreludeDeep
 import Data.List
 
-x :: Var Int
-x = (mkVarT 7)
+x :: Int_
+x = (7 ^| ttPC)
 
-xs :: Var [Int]
-xs = mkVarT [3,6,11]
+xs :: [Int_]
+xs = [(3 ^| ttPC), (6 ^| ttPC), (11 ^| ttPC)]
 
-foo :: Var [a] -> Var a
-foo = mkVarT head
+foo :: [(Var a)] -> (Var a)
+foo = head
 
-foo' :: Var [a] -> Var a
-foo' = mkVarT foo
+foo' :: [(Var a)] -> (Var a)
+foo' = foo
 

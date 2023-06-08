@@ -1,11 +1,9 @@
 module Rewrite.Decl where
 
-import Rewrite.Common
-import Language.Haskell.Tools.PrettyPrint (prettyPrint)
-import Language.Haskell.Tools.Refactor
-import Language.Haskell.Tools.AST
-import Language.Haskell.Tools.AST.Ann 
-import Language.Haskell.Tools.Rewrite.Match.Decls
+import Rewrite.Expr 
+import Rewrite.Match
+import Rewrite.Pattern
+import Rewrite.ValueBind
 
 import Control.Reference -- ((.-), (.=), (^.) (&))
 import FastString
@@ -16,6 +14,12 @@ import qualified SPL as L
 
 import Rewrite.Base
 
+getLHSName :: Decl -> Name
+getLHSName d =
+    case d of
+        ValueBinding vb -> getBindLHSName vb
+        _ -> trace ("Decl empty: " ++ prettyPrint d) $ mkName ""
+        
 {-
 getDeclaredName :: Decl -> String
 getDeclaredName d = 
@@ -205,3 +209,38 @@ liftConstructor tname conss (cdecl, index) =
         [mkMatch (mkMatchLhs (consName name) argListP) 
           (mkUnguardedRhs $ foldl mkApp (mkVar (liftedTypeName tname)) allArgs)
           Nothing] 
+
+rewriteValueBind :: Declarations -> ValueBind -> Decl
+rewriteValueBind globals vb = mkValueBinding $ case vb of
+    SimpleBind p rhs bs -> 
+        let locals = getPatternVars p
+        in  mkSimpleBind p (rewriteRhs globals locals False rhs) (_annMaybe bs)
+    FunctionBind ms -> 
+        mkFunctionBind (
+            map (\m -> rewriteMatch globals (getMatchVars m) False m) (_annListElems ms)) 
+    _ -> trace ("Unhandled Value Bind " ++ prettyPrint vb) $ vb
+
+rewriteDecl :: Declarations -> Decl -> [Decl]
+rewriteDecl globals d = 
+     case d of
+        TypeSigDecl sig -> [rewriteTypeSig globals sig]
+        ValueBinding vb -> [rewriteValueBind globals vb]
+        DataDecl newType ctxt hd cns drv -> 
+            let newDeclHead = rewriteDeclHead globals hd
+                cns'        = (_annListElems cns)
+                conss       = length cns'
+                consNames   = map getConName (_annListElems cns) 
+                (innerTypes', dhs') = unzip $ map (cons2innerType globals hd) (_annListElems cns)
+                (innerTypes, defObjs) = unzip innerTypes'
+                (names,dhss)= unzip dhs'
+                prodCons    = mkProdCons hd dhss -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
+                tname       = mkName $ getTypeName' False False hd
+                tname'      = liftedTypeName tname
+                def         = mkDefObj (defaultName tname') tname' names 
+            in 
+            [mkDataDecl newType (_annMaybe ctxt) newDeclHead
+                        [prodCons] (_annListElems drv),
+             def] 
+            ++ innerTypes ++ defObjs ++ map (liftConstructor tname cns') (zip cns' [0..])
+        -- TODO: other cases
+        _ -> [notSupported d]
