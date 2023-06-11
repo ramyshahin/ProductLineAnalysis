@@ -1,41 +1,39 @@
-{-# LANGUAGE LambdaCase #-}
-
-module Test0Deep where
+{-# LANGUAGE NoImplicitPrelude #-}module Test0Deep where
 import SPL
+import VPrelude
 import Data.List
 
-x :: Var Int
-x = (mkVarT 3)
+x :: Int
+x = (3 ^| ttPC)
 
-y :: Var Int
-y = (mkVarT 7)
+y :: Int
+y = (7 ^| ttPC)
 
-z :: Var Int
-z = (mkVarT 9)
+z :: Int
+z = (9 ^| ttPC)
 
-foo :: Var Int -> Var Int -> Var Int -> Var Int
-foo x y z  = (mkVarT (+)) <*> (bar x y) <*> (baz z)
+foo :: Int -> Int -> Int -> Int
+foo x y z  = ((+) ^| ttPC) <*> ((bar x y)) <*> ((baz z))
 
-bar :: Var Int -> Var Int -> Var Int
-bar x y  = (mkVarT (+)) <*> x <*> y
+bar :: Int -> Int -> Int
+bar x y  = ((+) ^| ttPC) <*> (x) <*> (y)
 
-baz :: Var Int -> Var Int
-baz x  = liftedNeg <*> (x)
+baz :: Int -> Int
+baz x  = neg' <*> (x)
 
 f = baz
 g = baz
 
-x' = f (f (g (mkVarT 2)))
+x' = f (f (g (2 ^| ttPC)))
 
 --xs :: [Int]
 --xs = [3]
 
-c a b  = (liftedCond ((mkVarT (>)) <*> a <*> b) (bar a b) ((mkVarT (-)) <*> b <*> a))
+c a b  = liftedCond ((((>) ^| ttPC) <*> (a) <*> (b))) (\__cntxt__ -> bar a b) (\__cntxt__ -> ((-) ^| __cntxt__) <*> (b) <*> (a))
 
--- testing ADTs
-data MaybeInt =
-   None
- | Some Int
+data MaybeInt = MaybeInt_ { fone :: None, fome :: Some }
+
+MaybeInt = MaybeInt None Some
  
 -- testing recursive Algebraic types
 --data ListInt =

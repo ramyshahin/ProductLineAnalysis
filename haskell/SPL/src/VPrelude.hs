@@ -1,8 +1,23 @@
 --{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module VPrelude where
 
-import Prelude
+import qualified Prelude as P
+import SPL 
+
+--
+-- Integers
+--
+type Int = Var P.Int 
+
+instance P.Num Int where
+    x + y = ((P.+) ^| ttPC) P.<*> x P.<*> y
+    x * y = ((P.*) ^| ttPC) P.<*> x P.<*> y
+    x - y = ((P.-) ^| ttPC) P.<*> x P.<*> y  
+    abs x = (P.abs ^| ttPC) P.<*> x
+    signum x = (P.signum ^| ttPC) P.<*> x
+    fromInteger x = (P.fromInteger ^| ttPC) P.<*> (x ^| ttPC)
 
 --(^.) :: (b -> c) -> (a -> b) -> a -> c
 --(^.) f0 f1 x = f0 (f1 x) 

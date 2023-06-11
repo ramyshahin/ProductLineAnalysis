@@ -33,9 +33,9 @@ deep :: LocalRefactoring
 deep mod = do
     let decls = getModuleDeclarations mod
     --let rwDecls = concatMap (rewriteDecl decls) (mod ^. modDecl & annList)
-    return  $ filePragmas & annList     .- rewritePragma 
-            $ modHead     & annMaybe    .- rewriteHeader
-            $ modImports                .- rewriteImports
+    return  $ filePragmas & annListElems .- rewritePragma 
+            $ modHead     & annMaybe     .- rewriteHeader
+            $ modImports                 .- rewriteImports
             $ modDecl     & annListElems .- (concatMap (rewriteDecl decls))
             $ mod 
     
@@ -50,7 +50,10 @@ getModuleDeclarations mod = do
 --
 imports xs = map snd (zipWithSeparators xs)
     
-rewritePragma = id
+noImplicitPrelude :: FilePragma
+noImplicitPrelude = mkLanguagePragma ["NoImplicitPrelude"]
+rewritePragma :: [FilePragma] -> [FilePragma] 
+rewritePragma ps = noImplicitPrelude : ps
 
 rewriteHeader :: Maybe ModuleHead -> Maybe ModuleHead 
 rewriteHeader header =
@@ -58,11 +61,11 @@ rewriteHeader header =
         Nothing -> Nothing
         Just h  -> Just $ mhName .- (appendModName "Deep") $ h
 
-moduleNameDeepPrelude = mkModuleName "VPreludeDeep"
-importDeepPrelude = mkImportDecl False False False Nothing moduleNameDeepPrelude Nothing Nothing
+moduleNamePrelude = mkModuleName "VPrelude"
+importPrelude = mkImportDecl False False False Nothing moduleNamePrelude Nothing Nothing
 
 rewriteImports :: ImportDeclList  -> ImportDeclList 
-rewriteImports xs = (annListElems .= concat [[importSPL, importDeepPrelude], (imports xs)]) xs 
+rewriteImports xs = (annListElems .= concat [[importSPL, importPrelude], (imports xs)]) xs 
 --rewriteImports xs = (annListElems .= concat [[importSPL], (imports xs)]) xs 
     
 {-

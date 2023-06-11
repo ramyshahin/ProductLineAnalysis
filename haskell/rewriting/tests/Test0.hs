@@ -1,5 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
-
 module Test0 where
 import Data.List
 

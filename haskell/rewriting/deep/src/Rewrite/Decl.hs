@@ -218,7 +218,7 @@ rewriteValueBind globals vb = mkValueBinding $ case vb of
     FunctionBind ms -> 
         mkFunctionBind (
             map (\m -> rewriteMatch globals (getMatchVars m) False m) (_annListElems ms)) 
-    _ -> trace ("Unhandled Value Bind " ++ prettyPrint vb) $ vb
+    _ -> notSupported vb --trace ("Unhandled Value Bind " ++ prettyPrint vb) $ vb
 
 rewriteDecl :: Declarations -> Decl -> [Decl]
 rewriteDecl globals d = 
@@ -237,10 +237,10 @@ rewriteDecl globals d =
                 tname       = mkName $ getTypeName' False False hd
                 tname'      = liftedTypeName tname
                 def         = mkDefObj (defaultName tname') tname' names 
-            in 
-            [mkDataDecl newType (_annMaybe ctxt) newDeclHead
-                        [prodCons] (_annListElems drv),
-             def] 
-            ++ innerTypes ++ defObjs ++ map (liftConstructor tname cns') (zip cns' [0..])
+            in [mkDataDecl newType (_annMaybe ctxt) newDeclHead
+                    [prodCons] (_annListElems drv), def] -- ++ 
+                    --innerTypes ++ 
+                    --defObjs ++ 
+                    --map (liftConstructor tname cns') (zip cns' [0..])
         -- TODO: other cases
         _ -> [notSupported d]
