@@ -3,23 +3,23 @@ import SPL
 import VPrelude
 import Data.List
 
-x :: Int
+x :: VInt
 x = (3 ^| ttPC)
 
-y :: Int
+y :: VInt
 y = (7 ^| ttPC)
 
-z :: Int
+z :: VInt
 z = (9 ^| ttPC)
 
-foo :: Int -> Int -> Int -> Int
-foo x y z  = ((+) ^| ttPC) <*> ((bar x y)) <*> ((baz z))
+foo :: VInt -> VInt -> VInt -> VInt
+foo x y z  = (bar x y) + (baz z)
 
-bar :: Int -> Int -> Int
-bar x y  = ((+) ^| ttPC) <*> (x) <*> (y)
+bar :: VInt -> VInt -> VInt
+bar x y  = x + y
 
-baz :: Int -> Int
-baz x  = neg' <*> (x)
+baz :: VInt -> VInt
+baz x  = negate x
 
 f = baz
 g = baz
@@ -29,11 +29,13 @@ x' = f (f (g (2 ^| ttPC)))
 --xs :: [Int]
 --xs = [3]
 
-c a b  = liftedCond ((((>) ^| ttPC) <*> (a) <*> (b))) (\__cntxt__ -> bar a b) (\__cntxt__ -> ((-) ^| __cntxt__) <*> (b) <*> (a))
+c a b  = liftedCond ((a > b)) (\__cntxt__ -> bar a b) (\__cntxt__ -> b - a)
 
-data MaybeInt = MaybeInt_ { fone :: None, fome :: Some }
+data None = None
 
-MaybeInt = MaybeInt None Some
+data Some = Some VInt
+
+data VMaybeInt = MaybeInt_ { fone :: None, fome :: Some }
  
 -- testing recursive Algebraic types
 --data ListInt =

@@ -38,7 +38,7 @@ mkAltBinding globals locals index (Alt p (CaseRhs rhs) _) =
                                          mkMatch splitLhs (mkUnguardedRhs (mkCase (mkVar dummy) [splitAlt])) Nothing]
 
 rewritePrimitiveFuncName :: String -> Expr
-rewritePrimitiveFuncName s = mkVar $ mkName (s ++ "\'")
+rewritePrimitiveFuncName s = mkVar $ mkName (s) -- ++ "\'")
 
 rewriteVar :: Declarations -> Declarations -> Bool -> Name -> Expr
 rewriteVar globals locals inBranch vn = 
@@ -57,6 +57,7 @@ rewriteBranch :: Declarations -> Declarations -> Expr -> Expr
 rewriteBranch globals locals e = 
      rewriteExpr globals locals True e
 
+{-
 rewriteInfixApp :: Declarations -> Declarations -> Bool -> Expr -> Operator -> Expr -> Expr
 rewriteInfixApp globals locals inBranch lhs op rhs =
     let lhs' = rewriteExpr globals locals inBranch lhs
@@ -70,6 +71,7 @@ rewriteInfixApp globals locals inBranch lhs op rhs =
                 then    mkInfixApp lhs' (getLiftedPrimitiveOp (prettyPrint n)) rhs'
                 else    rewriteIt
             _           -> rewriteIt
+-}
 
 rewriteAlt' :: Declarations -> Declarations -> Bool -> Alt -> Alt
 rewriteAlt' globals locals inBranch (Alt p (CaseRhs e) xs) =
@@ -113,11 +115,16 @@ rewriteExpr globals locals inBranch e =
     case e of 
         Lit l -> liftExpr globals locals inBranch e
         Var n -> mkVar n -- rewriteVar globals locals inBranch n 
-        InfixApp arg1 op arg2 -> rewriteInfixApp globals locals inBranch arg1 op arg2
-        PrefixApp op arg -> mkInfixApp liftedNeg appOp arg
+        -- assuming all infix operators have been lifted, either in 
+        -- VPrelude or in the module being lifted
+        InfixApp arg1 op arg2 -> mkInfixApp arg1 op arg2 --rewriteInfixApp globals locals inBranch arg1 op arg2
+        PrefixApp op arg -> mkPrefixApp op arg -- mkInfixApp liftedNeg appOp arg
         App fun arg ->  let fun' = rewriteExpr globals locals inBranch fun
                             arg' = rewriteExpr globals locals inBranch arg
-                        in  case fun of 
+                        in  mkApp fun' arg'
+                            {-
+                            case fun of
+                             
                                 Var n -> if (externalDecl globals locals n)
                                          then   if isPrimitiveFunc (prettyPrint n)
                                                 then mkApp (rewritePrimitiveFuncName (prettyPrint n)) arg'
@@ -127,6 +134,7 @@ rewriteExpr globals locals inBranch e =
                                             App _ _ -> mkApp fun' arg'
                                             InfixApp _ op _ -> mkInfixApp fun' appOp arg' 
                                             _       -> mkInfixApp fun' appOp arg'
+                                            -}
         If c t e -> mkApp   (mkApp  
                         (mkApp  liftedCond  (mkParen (rewriteExpr globals locals inBranch c)))
                         (mkParen $ mkLambda [cntxtPat] (rewriteBranch globals locals t)))

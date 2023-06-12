@@ -17,7 +17,7 @@ bar :: Int -> Int -> Int
 bar x y = x + y
 
 baz :: Int -> Int
-baz x = -(x)
+baz x = negate x
 
 f = baz
 g = baz

@@ -45,7 +45,7 @@ innerName :: Name -> Name
 innerName n = n --mkName $ "I_" ++ prettyPrint n 
 
 liftedTypeName :: Name -> Name
-liftedTypeName n = n --mkName (prettyPrint n ++ "_")
+liftedTypeName n = mkName ("V" ++ prettyPrint n)
 
 consName :: Name -> Name
 consName n = n --mkName ("c_" ++ prettyPrint n)

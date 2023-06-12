@@ -1,4 +1,4 @@
---{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances #-}
 
 module VPrelude where
@@ -7,17 +7,87 @@ import qualified Prelude as P
 import SPL 
 
 --
+-- Booleans
+--
+type VBool = Var P.Bool 
+
+(&&) :: VBool -> VBool -> VBool
+a && b = ((P.&&) ^| ttPC) P.<*> a P.<*> b 
+
+(||) :: VBool -> VBool -> VBool
+a || b = ((P.||) ^| ttPC) P.<*> a P.<*> b 
+
+not :: VBool -> VBool
+not a = (P.not ^| ttPC) P.<*> a 
+
+class P.Eq a => VEq a where
+    (==) :: Var a -> Var a -> VBool
+    a == b = ((P.==) ^| ttPC) P.<*> a P.<*> b 
+
+    (/=) :: Var a -> Var a -> VBool
+    a /= b = ((P./=) ^| ttPC) P.<*> a P.<*> b 
+
+type VOrdering = Var P.Ordering 
+
+class P.Ord a => VOrd a where 
+    compare :: Var a -> Var a -> VOrdering
+    compare x y = (P.compare ^| ttPC) P.<*> x P.<*> y
+
+    (<) :: Var a -> Var a -> VBool
+    a < b = ((P.<) ^| ttPC) P.<*> a P.<*> b
+
+    (<=) :: Var a -> Var a -> VBool
+    a <= b = ((P.<=) ^| ttPC) P.<*> a P.<*> b
+
+    (>)  :: Var a -> Var a -> VBool
+    a > b = ((P.>) ^| ttPC) P.<*> a P.<*> b
+
+    (>=) :: Var a -> Var a -> VBool
+    a >= b = ((P.>=) ^| ttPC) P.<*> a P.<*> b 
+
+    max :: Var a -> Var a -> Var a
+    max a b = (P.max ^| ttPC) P.<*> a P.<*> b
+
+    min :: Var a -> Var a -> Var a 
+    min a b = (P.min ^| ttPC) P.<*> a P.<*> b
+
+infix 4 <
+infix 4 <=
+infix 4 >
+infix 4 >= 
+
+--
 -- Integers
 --
-type Int = Var P.Int 
+type VInt = Var P.Int 
 
-instance P.Num Int where
+class P.Num a => VNum a where
+    (+) :: Var a -> Var a -> Var a 
     x + y = ((P.+) ^| ttPC) P.<*> x P.<*> y
+
+    (*) :: Var a -> Var a -> Var a 
     x * y = ((P.*) ^| ttPC) P.<*> x P.<*> y
+
+    (-) :: Var a -> Var a -> Var a 
     x - y = ((P.-) ^| ttPC) P.<*> x P.<*> y  
+
+    negate :: Var a -> Var a
+    negate x = (P.negate ^| ttPC) P.<*> x
+
+    abs :: Var a -> Var a
     abs x = (P.abs ^| ttPC) P.<*> x
+
+    signum :: Var a -> Var a
     signum x = (P.signum ^| ttPC) P.<*> x
-    fromInteger x = (P.fromInteger ^| ttPC) P.<*> (x ^| ttPC)
+
+    fromInteger :: Var P.Integer -> Var a 
+    fromInteger x = (P.fromInteger ^| ttPC) P.<*> x
+
+instance VNum P.Int
+
+instance VEq P.Int
+
+instance VOrd P.Int 
 
 --(^.) :: (b -> c) -> (a -> b) -> a -> c
 --(^.) f0 f1 x = f0 (f1 x) 
