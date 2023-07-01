@@ -13,7 +13,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, FlexibleInstances, ExplicitForAll #-}
 
-module SPL (module SPL, module GHC.Generics, module Gen) where
+module SPL where
 
 import PropBDD
 import PresenceCondition
@@ -31,7 +31,6 @@ import System.IO.Unsafe
 import Debug.Trace
 import GHC.Generics (Generic, Generic1)
 import Control.DeepSeq
-import Gen
 
 {-# INLINE (===) #-}
 (===) :: a -> a -> Bool
@@ -44,6 +43,9 @@ import Gen
 (====) x y = x === y || x == y
 
 --type FeatureSet         = Universe
+--type PresenceCondition  = Prop
+
+type Context = PresenceCondition
 
 --type Val a = (Maybe a, PresenceCondition)
 type Val a = (a, PresenceCondition)
@@ -220,18 +222,6 @@ definedAt (Var xs) = disj(pcs)
 undefinedAt :: Var t -> PresenceCondition
 undefinedAt = neg . definedAt
 
-instance Lifted Var where
-  single x = Var [(x,ttPC)]
-  mult xs  = Var xs 
-  {-# INLINE restrict #-}
-  restrict pc v'@(Var v) =
-    if      pc == ttPC then v'
-    else if pc == ffPC then Var []
-    else    Var [(x, p) | (x, pc') <- v, let p = pc' /\ pc, sat p]
-    --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
-                                    
-(/^) x pc = Gen.restrict pc x
-
 --disjointnessInv :: Show t => Var t -> Var t -> Bool
 --disjointnessInv x@(Var a) y@(Var b) = 
 --    let conjunctions = [andBDD pc1 pc2 | (_,pc1) <- a, (_,pc2) <- b]
@@ -288,6 +278,7 @@ class VClass a where
     caseSplitter :: a b -> (b -> Int) -> Int -> [a b] 
     combs :: [a b] -> a b
     combs = foldr comb nil
+    restrict :: PresenceCondition -> a b -> a b
 
 --instance Foldable Var where
 --    foldMap f (Var xs) = foldMap (\(x,pc) -> (f x, pc)) xs
@@ -310,6 +301,14 @@ instance VClass Var where
             ret = V.toList xs
         in  --trace (foldl (++) "splits:\t" (map showPCs ret)) $ 
             assert (partitionInv i ret) ret
+
+    restrict pc v'@(Var v) =
+        if      pc == ttPC then v'
+        else if pc == ffPC then Var []
+        else    Var [(x, p) | (x, pc') <- v, let p = pc' /\ pc, sat p]
+        --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
+
+(/^) x pc = restrict pc x
 
 --newtype VDeep a = VDeep a
 
@@ -354,18 +353,8 @@ liftedCond c x y =
     let (t,f) = evalCond c
     in  if t == ffPC then (y f)
         else if f == ffPC then (x t)
-        else comb (x t) (y f)
+        else comb ((x t) /^ t) ((y f) /^ f)
 
-{-
-liftedCond c'@(Var c) x y = --assert (disjInv c' && disjInv x && disjInv y) $ 
-    --liftV3 cond
-    compact agg
-    where parts = map (\c' -> case c' of
-                                    (True, pc)  -> (mkVar id pc) <*> (subst pc x)
-                                    (False, pc) -> (mkVar id pc) <*> (subst pc y))
-                      c
-          agg = unions parts
--}
 neg' :: Num a => Var a -> Var a
 neg' = liftV (\x -> -x)
 
@@ -373,20 +362,6 @@ partitionInv :: Var a -> [Var a] -> Bool
 partitionInv x xs = (definedAt x) == cover
     where cover = foldr (\/) ffPC (map definedAt xs)
 
-    {-
-caseSplitter :: Var a -> (a -> Int) -> Int -> [Var a]
-caseSplitter i@(Var input) splitter range = --assert (compInv i) $
-    let initV = V.replicate range (Var [])
-        xs = foldl 
-                (\vec (v, pc) -> let index = splitter v 
-                                     (Var item)  = vec V.! index
-                                     item' = Var $ (v,pc) : item
-                                  in  vec V.// [(index, item')]) 
-                initV input 
-        ret = V.toList xs
-    in  --trace (foldl (++) "splits:\t" (map showPCs ret)) $ 
-        assert (partitionInv i ret) ret
--}
 isNilVar :: Var a -> Bool
 isNilVar (Var xs) = null xs 
 
@@ -398,7 +373,7 @@ liftedCase input splitter alts = --assert (not (isNilVar input)) $
     --assert (disjInv agg) $ 
     agg
     where   split = caseSplitter input splitter (length alts) 
-            parts  = map (\(l,r) -> let ret = if (isNil r) then nil else l (at r) r
+            parts  = map (\(l,r) -> let ret = if (isNil r) then nil else (l (at r) r) /^ (at r)
                                     in  --trace ((show (definedAt r)) ++ "\t" ++ (show (definedAt ret))) $ 
                                         --assert (definedAt ret == definedAt r) $ 
                                         ret) (zip alts split) 

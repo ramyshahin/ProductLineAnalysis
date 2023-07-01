@@ -1,10 +1,10 @@
 {-# LANGUAGE CPP, DeriveGeneric, DeriveAnyClass, BangPatterns #-}
 -- #define CASE_TERMINATION
--- #define RETURN 
+#define RETURN 
 -- #define RETURN_AVG
 -- #define GOTOS
 -- #define DANGLING_SWITCH
-#define CALL_DENSITY
+-- #define CALL_DENSITY
 
 module Main where
 
@@ -133,7 +133,7 @@ customParser = CustomArgs
     )
     <*> parseWith defaultConfig
 
---{-
+{-
 main = do  
     --putStrLn $ "Analysis: " ++ analysis
     --handle <- openFile "files.txt" ReadMode
@@ -177,8 +177,8 @@ main = defaultMain [ bgroup "main"
                             bench "deep"        $ nfIO tDeep        --cfg
                             ] ]
 -}
-{-
-fname = "head.cfg"
+--{-
+fname = "xyz.cfg"
 
 main = do
     env <- setupEnv fname
@@ -187,4 +187,4 @@ main = do
     --let result = bruteforce (shallowCFG env, features env) 
     putStrLn $ show result
     putStrLn "Done."
--}
+-- -}
