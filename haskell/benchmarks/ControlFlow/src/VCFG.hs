@@ -86,7 +86,8 @@ _succs' (Var ((cfg, pc) : ss)) n'@(Var n) =
                                                 in  assert (not (null ys)) $ head ys)
                                     (filter (\(n, pc) -> n /= 0) xs)
                   ) ss'
-    in  zs -- map (fixCompleteness dummyNode) zs 
+    in  --zs 
+        map (fixCompleteness dummyNode) zs
 _succs' (Var []) _ = []
 
 {-
@@ -115,7 +116,8 @@ _nodes' (Var ((cfg, pc) : ss)) =
     assert (null ss) $
     assert (pc == ttPC) $
     let ns = (snd . unzip . M.toList) $ nodes cfg
-    in  map (\x -> Var [x]) ns --  map (\v -> mkV dummyNode v) ns
+    in  --map (\x -> Var [x]) ns
+        map (\v -> mkV dummyNode v) ns
 
 _nID' :: Var CFGNode -> Var Int
 _nID' (Var n) = foldr union (Var []) $ map (\(n', pc) -> (_nID n') ^| pc) n
