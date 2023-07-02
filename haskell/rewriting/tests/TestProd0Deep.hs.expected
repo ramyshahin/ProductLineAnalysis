@@ -1,0 +1,7 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+module TestProd0Deep 
+where
+import SPL
+import VPrelude
+
+data VCoordinate2D = Coord2D VInt VInt

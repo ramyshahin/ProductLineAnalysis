@@ -42,19 +42,19 @@ symUnions = mkVar $ mkName "unions"
 type Declarations = S.Set String
 
 innerName :: Name -> Name
-innerName n = n --mkName $ "I_" ++ prettyPrint n 
+innerName n = mkName $ "I_" ++ prettyPrint n 
 
 liftedTypeName :: Name -> Name
 liftedTypeName n = mkName ("V" ++ prettyPrint n)
 
 consName :: Name -> Name
-consName n = n --mkName ("c_" ++ prettyPrint n)
+consName n = mkName ("c_" ++ prettyPrint n)
 
 defaultName :: Name -> Name
-defaultName n = n --mkName ("d_" ++ prettyPrint n)
+defaultName n = mkName ("d_" ++ prettyPrint n)
 
 attributeName :: Name -> Name
-attributeName n = n --mkName $ "f_" ++ prettyPrint n
+attributeName n = mkName $ "f_" ++ prettyPrint n
 
 mkVarTOp = mkVar (mkName "mkVarT")
 compOp   = mkUnqualOp "."

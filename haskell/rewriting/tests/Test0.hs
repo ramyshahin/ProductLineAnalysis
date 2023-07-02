@@ -1,5 +1,6 @@
-module Test0 where
-import Data.List
+
+module Test0 
+where
 
 x :: Int
 x = 3
@@ -29,6 +30,15 @@ x' = f (f (g 2))
 
 -- testing conditionals
 c a b = if (a > b) then bar a b else b - a
+
+--
+-- Testing simple (0-ary constructor) sum types
+--
+data Direction =
+   North
+ | South
+ | East
+ | West 
 
 -- testing ADTs
 data MaybeInt =

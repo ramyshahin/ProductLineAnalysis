@@ -33,7 +33,7 @@ deep :: LocalRefactoring
 deep mod = do
     let decls = getModuleDeclarations mod
     --let rwDecls = concatMap (rewriteDecl decls) (mod ^. modDecl & annList)
-    return  $ filePragmas & annListElems .- rewritePragma 
+    return  $ filePragmas & annListElems .- rewritePragma
             $ modHead     & annMaybe     .- rewriteHeader
             $ modImports                 .- rewriteImports
             $ modDecl     & annListElems .- (concatMap (rewriteDecl decls))
@@ -52,6 +52,7 @@ imports xs = map snd (zipWithSeparators xs)
     
 noImplicitPrelude :: FilePragma
 noImplicitPrelude = mkLanguagePragma ["NoImplicitPrelude"]
+
 rewritePragma :: [FilePragma] -> [FilePragma] 
 rewritePragma ps = noImplicitPrelude : ps
 
