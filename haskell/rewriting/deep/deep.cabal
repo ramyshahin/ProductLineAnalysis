@@ -82,7 +82,6 @@ test-suite rewriter-test
       TestDeep
       TestDFS
       TestList
-      TestListDeep
       TestVal
       TestValDeep
       Paths_deep

@@ -19,7 +19,6 @@ getLHSName d =
     case d of
         ValueBinding vb -> getBindLHSName vb
         _ -> trace ("Decl empty: " ++ prettyPrint d) $ mkName ""
-        
 {-
 getDeclaredName :: Decl -> String
 getDeclaredName d = 
@@ -44,8 +43,10 @@ getDeclaredName d =
 
 -- | Rewrite declarations
 --
+{-
 isTypeVar :: Name -> Bool
 isTypeVar n = isLower $ head $ prettyPrint n
+-}
 
 rewriteType :: Declarations -> Type -> Type
 rewriteType globals t = case t of
@@ -83,11 +84,11 @@ rewriteTypeSig :: Declarations -> TypeSignature -> Decl
 rewriteTypeSig globals (TypeSignature ns t) = 
     let n = head $ _annListElems ns
     in  mkTypeSigDecl $ mkTypeSignature n (rewriteType globals t)
-
+{-
 recursive :: DeclHead -> Type -> Bool
 recursive hd t =
     getTypeName' False True hd == prettyPrint t
-
+-}
 {-
 typeToLiftedType :: Type -> Type
 typeToLiftedType t =
@@ -103,7 +104,7 @@ typeToLiftedType t =
         -- TODO: handle other cases
         _ -> notSupported t
 -}
-
+{-
 renameDeclHead :: DeclHead -> Name -> DeclHead
 renameDeclHead dh n =
     case dh of
@@ -154,8 +155,9 @@ mkProdCons dh dhs =
         tname  = getTypeName' True False dh
         fields = map (\dh -> mkFieldDecl [toField dh] $ toType dh) dhs
     in mkRecordConDecl (mkName tname) fields
-
+-}
 -- rewrite constructor declaration
+{-
 rewriteConDecl :: Declarations -> DeclHead -> ConDecl -> ConDecl
 rewriteConDecl globals hd d = 
     case d of
@@ -196,7 +198,7 @@ getConName c =
     case c of
         ConDecl n ts -> n
         _ -> notSupported (mkName "")
-
+-}
 {-
 liftConstructor :: Name -> [ConDecl] -> (ConDecl, Int) -> Decl
 liftConstructor tname conss (cdecl, index) =
@@ -215,7 +217,6 @@ liftConstructor tname conss (cdecl, index) =
           (mkUnguardedRhs $ foldl mkApp (mkVar (liftedTypeName tname)) allArgs)
           Nothing] 
 -}
-
 rewriteValueBind :: Declarations -> ValueBind -> Decl
 rewriteValueBind globals vb = mkValueBinding $ case vb of
     SimpleBind p rhs bs -> 
@@ -229,8 +230,9 @@ rewriteValueBind globals vb = mkValueBinding $ case vb of
 rewriteDecl :: Declarations -> Decl -> [Decl]
 rewriteDecl globals d = 
      case d of
-        --TypeSigDecl sig -> [rewriteTypeSig globals sig]
-        --ValueBinding vb -> [rewriteValueBind globals vb]
+        TypeSigDecl sig -> [rewriteTypeSig globals sig]
+        ValueBinding vb -> [rewriteValueBind globals vb]
+        {-
         DataDecl newType ctxt hd cns drv -> 
             let newDeclHead = rewriteDeclHead globals hd
                 cns'        = (_annListElems cns)
@@ -251,4 +253,5 @@ rewriteDecl globals d =
                     --innerTypes ++ 
                     --defObjs ++ 
                     --map (liftConstructor tname cns') (zip cns' [0..])
+        -}
         _ -> [notSupported d]
