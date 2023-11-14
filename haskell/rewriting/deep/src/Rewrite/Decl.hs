@@ -50,19 +50,19 @@ isTypeVar n = isLower $ head $ prettyPrint n
 
 rewriteType :: Declarations -> Type -> Type
 rewriteType globals t = case t of
-    --FunctionType a b    -> 
-    --    mkFunctionType (rewriteType globals a) (rewriteType globals b)
-    --ParenType t         -> mkParenType (rewriteType globals t)
-    --TupleType ts        -> 
-    --    mkTupleType (map (rewriteType globals) (_annListElems ts))
-    --ListType t          -> mkListType (rewriteType globals t)
-    VarType  n          -> 
-        --if isTypeVar n then mkParenType $ mkTypeApp tyVar t
-        --else 
-            mkVarType (liftedTypeName n)
-                --if S.member (prettyPrint n) globals 
-                --then mkVarType (innerName n)  
-                --else mkParenType $ mkTypeApp tyVar t
+    -- arrow types (e.g., Int -> Int)
+    FunctionType a b    -> 
+        mkFunctionType (rewriteType globals a) (rewriteType globals b)
+    -- parenthesized type application (e.g., (Int), Maybe (Maybe Int))
+    ParenType t         -> mkParenType (rewriteType globals t)
+    -- tuple notation (e.g., (Int, Int))
+    TupleType ts        -> 
+        mkTupleType (map (rewriteType globals) (_annListElems ts))
+    -- list notation (e.g., [Int])
+    -- TODO: we only lift the element type for now
+    ListType t          -> mkListType (rewriteType globals t)
+    -- first-order types (e.g., Int, String)
+    VarType  n          -> mkVarType (liftedTypeName n)
     --TypeApp t1 t2       -> 
     --    mkTypeApp (rewriteType globals t1) t2
     -- TODO: handle other cases
