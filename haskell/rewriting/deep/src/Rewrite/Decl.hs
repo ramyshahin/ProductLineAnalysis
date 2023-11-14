@@ -157,7 +157,6 @@ mkProdCons dh dhs =
     in mkRecordConDecl (mkName tname) fields
 -}
 -- rewrite constructor declaration
-{-
 rewriteConDecl :: Declarations -> DeclHead -> ConDecl -> ConDecl
 rewriteConDecl globals hd d = 
     case d of
@@ -180,7 +179,7 @@ rewriteDeclHead decls dh =
         InfixDeclHead l op r -> notSupported dh
         -}
         _ -> notSupported dh
-
+{-
 getTypeName' :: Bool -> Bool -> DeclHead -> String
 getTypeName' lifted full dh =
     case dh of
@@ -232,10 +231,9 @@ rewriteDecl globals d =
      case d of
         TypeSigDecl sig -> [rewriteTypeSig globals sig]
         ValueBinding vb -> [rewriteValueBind globals vb]
-        {-
         DataDecl newType ctxt hd cns drv -> 
             let newDeclHead = rewriteDeclHead globals hd
-                cns'        = (_annListElems cns)
+                cns'        = _annListElems cns
                 --conss       = length cns'
                 --consNames   = map getConName (_annListElems cns) 
                 --(innerTypes', dhs') = unzip $ map (cons2innerType globals hd) (_annListElems cns)
@@ -243,8 +241,8 @@ rewriteDecl globals d =
                 --(names,dhss)= unzip dhs'
                 --prodCons    = mkProdCons hd dhss -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
                 liftdConss  = map (rewriteConDecl globals hd) cns'
-                tname       = mkName $ getTypeName' False False hd
-                tname'      = liftedTypeName tname
+                --tname       = mkName $ getTypeName' False False hd
+                --tname'      = liftedTypeName tname
                 --def         = mkDefObj (defaultName tname') tname' names 
             in  --innerTypes ++ 
                 [mkDataDecl newType (_annMaybe ctxt) newDeclHead liftdConss
@@ -253,5 +251,4 @@ rewriteDecl globals d =
                     --innerTypes ++ 
                     --defObjs ++ 
                     --map (liftConstructor tname cns') (zip cns' [0..])
-        -}
         _ -> [notSupported d]
