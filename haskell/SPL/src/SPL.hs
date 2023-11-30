@@ -15,8 +15,8 @@
 
 module SPL where
 
-import PropBDD
-import PresenceCondition
+--import PropBDD
+import PresenceCondition as PC
 import Control.Applicative
 import Control.Monad
 import Data.List 
@@ -47,6 +47,29 @@ import Control.DeepSeq
 
 type Context = PresenceCondition
 
+type Partition = [PresenceCondition]
+
+cover :: [PresenceCondition] -> PresenceCondition
+cover = foldr (PC.\/) noConfigs  
+
+-- mkPartition' left partialPartition -> fullPartition
+--  takes a list of PCs to process (left) and a partial partition
+--  being constructed, and checks if the PCs to be added are disjoint
+--  with the partial partition. If they are, they are added. If not,
+--  an exception is thrown. 
+mkPartition' :: [PresenceCondition] -> [PresenceCondition] -> Partition
+mkPartition' pcs partialPartition = 
+    let c = cover partialPartition
+    in case pcs of
+        []      -> if (c == allConfigs) then partialPartition else (negPC c):partialPartition  
+        (x:xs)  -> 
+            if   (x /\ c == noConfigs) 
+            then mkPartition' xs (x:partialPartition)
+            else error "Invalid Partition"
+
+mkPartition :: [PresenceCondition] -> Partition
+mkPartition pcs = reverse (mkPartition' pcs [])
+
 --type Val a = (Maybe a, PresenceCondition)
 type Val a = (a, PresenceCondition)
 
@@ -70,19 +93,19 @@ newtype Var t = Var [(Val t)]
 
 disjInv :: Var t -> Bool
 disjInv v'@(Var v) =
-    let ret = all (\((_, pc1),(_, pc2)) -> unsat (pc1 /\ pc2)) (pairs v)
+    let ret = all (\((_, pc1),(_, pc2)) -> PC.empty (pc1 /\ pc2)) (pairs v)
     in  if (not ret) then trace (showPCs v') ret else ret
 
 compInv :: Var t -> Bool
 compInv (Var v) =
-    (foldr (\(_,pc) pc' -> pc \/ pc') ffPC v) == ttPC
+    (foldr (\(_,pc) pc' -> pc \/ pc') noConfigs v) == allConfigs
 
 inv :: Var t -> Bool
 inv v = (disjInv v) && (compInv v)
 
 exists :: Eq t => Val t -> Var t -> Bool
 exists (x, xpc) ys' =
-    or [(x == y) && (implies xpc ypc) | (y,ypc) <- ys]
+    or [(x == y) && (contains xpc ypc) | (y,ypc) <- ys]
     where (Var ys) = compactEq ys'
 
 isSubsetOf :: Eq t => Var t -> Var t -> Bool
@@ -105,12 +128,15 @@ instance Show a => Show (Var a) where
 --    (==) x y = (isSubsetOf x y) && (isSubsetOf y x)
 --    (/=) x y = not (x == y)
 
+v :: a -> Var a
+v = (^| allConfigs)
+
 instance Functor Var where
     fmap :: (a -> b) -> Var a -> Var b
-    fmap f = apply (f ^| ttPC)
+    fmap f = apply (f ^| allConfigs)
 
 instance Applicative Var where
-    pure  = (^| ttPC)
+    pure  = v
     (<*>) = apply
 
 {-
@@ -161,7 +187,7 @@ infixl 9 ^|
 
 mkVarT :: a -> Var a
 {-# INLINE mkVarT #-}
-mkVarT v = v ^| tt
+mkVarT v = v ^| allConfigs
 
 mkVars :: [(t,PresenceCondition)] -> Var t
 mkVars vs = Var vs
@@ -182,7 +208,7 @@ groupVals_ [] _ _ = []
 groupVals_ ((x,xpc):xs) ds cmp = 
     if phelem x ds cmp then rest else 
         let ms = findVal x xs cmp
-            pc = disj(xpc:(snd . unzip) ms)
+            pc = PC.intersect(xpc:(snd . unzip) ms)
         in  (x,pc) : rest
     where rest = groupVals_ xs (x:ds) cmp
 
@@ -204,7 +230,7 @@ valIndex (Var v) x =
 
 index :: Var t -> PresenceCondition -> [t]
 index (Var v) pc = fst $ unzip v' 
-    where   v' = filter (\(x',pc') -> sat (pc /\ pc')) v
+    where   v' = filter (\(x',pc') -> (not . PC.empty) (pc /\ pc')) v
 
 configIndex :: Var t -> PresenceCondition -> t
 configIndex v pc = 
@@ -213,14 +239,14 @@ configIndex v pc =
 
 subst :: PresenceCondition -> Var t -> Var t
 subst pc (Var v) =
-    Var (filter (\(_,pc') -> sat (pc /\ pc')) v)
+    Var (filter (\(_,pc') -> (not . PC.empty) (pc /\ pc')) v)
 
 definedAt :: Var t -> PresenceCondition
-definedAt (Var xs) = disj(pcs)
+definedAt (Var xs) = PC.intersect pcs
     where   pcs     = map snd xs
 
 undefinedAt :: Var t -> PresenceCondition
-undefinedAt = neg . definedAt
+undefinedAt = negPC . definedAt
 
 --disjointnessInv :: Show t => Var t -> Var t -> Bool
 --disjointnessInv x@(Var a) y@(Var b) = 
@@ -236,10 +262,12 @@ getFeatures' (Var vs) =
     foldr S.union S.empty (map (getPCFeatures' . p . snd) vs)
 -}
 
+{-
 getFeatures :: IO [String]
 getFeatures = do 
-    !vs <- getVars ttPC
+    !vs <- getVars allConfigs
     return $ (fst . unzip) vs
+-}
 
 union :: Var t -> Var t -> Var t
 union x@(Var a) y@(Var b) =
@@ -259,7 +287,7 @@ pairs xs = zip xs (tail xs)
 {-# INLINE apply_ #-}
 apply_ :: Val (a -> b) -> Var a -> Var b
 apply_ (fn, !fnpc) x'@(Var x)  = --localCtxt fnpc $
-    mkVars $ [(fn v, pc') | (v, !pc) <- x, let !pc' = fnpc /\ pc, sat pc'] --map (\(v, pc) -> ) xs
+    mkVars $ [(fn v, pc') | (v, !pc) <- x, let !pc' = fnpc /\ pc, (not . PC.empty) pc'] --map (\(v, pc) -> ) xs
         --xs = filter (\(_, pc) -> sat (fnpc /\ pc)) x in 
     
 
@@ -303,9 +331,9 @@ instance VClass Var where
             assert (partitionInv i ret) ret
 
     restrict pc v'@(Var v) =
-        if      pc == ttPC then v'
-        else if pc == ffPC then Var []
-        else    Var [(x, p) | (x, pc') <- v, let p = pc' /\ pc, sat p]
+        if      pc == allConfigs then v'
+        else if pc == noConfigs then Var []
+        else    Var [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p]
         --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
 
 (/^) x pc = restrict pc x
@@ -313,18 +341,18 @@ instance VClass Var where
 --newtype VDeep a = VDeep a
 
 --instance Foldable VList where
---    foldMap f (VList l) = f (l, ttPC)
+--    foldMap f (VList l) = f (l, allConfigs)
 
 {-
 instance VClass [a] where -- VList where
     nil  = VDeep []
     isNil _ = False
-    at _ = ttPC 
+    at _ = allConfigs 
     --cons x pc (VList xs) = VList $ (x ^| pc) : xs
     comb (VDeep xs) (VDeep ys) = VDeep (xs ++ ys) -- (VList a) (VList b) = VList (a ++ b)
 
     --caseSplitter i splitter range = -- BUGBUG
-    --    let r = caseSplitter (Var [(i,ttPC)]) (\x -> splitter [x]) range
+    --    let r = caseSplitter (Var [(i,allConfigs)]) (\x -> splitter [x]) range
     --    in  map (\(Var vs) -> (fst . unzip) vs) r 
         --let initV = V.replicate range nil
         --    index = splitter input
@@ -340,19 +368,19 @@ evalCond :: Var Bool -> (PresenceCondition, PresenceCondition)
 evalCond c'@(Var c) = 
     let t = filter (\(v,pc) -> v == True) c
         f = filter (\(v,pc) -> v == False) c
-        tPC = foldr (\(_, pc) x -> x \/ pc) ffPC t
-        fPC = foldr (\(_, pc) x -> x \/ pc) ffPC f
+        tPC = foldr (\(_, pc) x -> x \/ pc) noConfigs t
+        fPC = foldr (\(_, pc) x -> x \/ pc) noConfigs f
     in  --trace ("tPC: " ++ (show tPC)) $ 
         --trace ("fPC: " ++ (show fPC)) $
-        assert (tPC /\ fPC == ffPC) $
+        assert (tPC /\ fPC == noConfigs) $
         assert (tPC \/ fPC == definedAt c') $
         (tPC, fPC)
 
 liftedCond :: VClass a => Var Bool -> (PresenceCondition -> a b) -> (PresenceCondition -> a b) -> a b
 liftedCond c x y = 
     let (t,f) = evalCond c
-    in  if t == ffPC then (y f)
-        else if f == ffPC then (x t)
+    in  if t == noConfigs then (y f)
+        else if f == noConfigs then (x t)
         else comb ((x t) /^ t) ((y f) /^ f)
 
 neg' :: Num a => Var a -> Var a
@@ -360,7 +388,7 @@ neg' = liftV (\x -> -x)
 
 partitionInv :: Var a -> [Var a] -> Bool
 partitionInv x xs = (definedAt x) == cover
-    where cover = foldr (\/) ffPC (map definedAt xs)
+    where cover = foldr (\/) noConfigs (map definedAt xs)
 
 isNilVar :: Var a -> Bool
 isNilVar (Var xs) = null xs 
@@ -382,7 +410,7 @@ liftedCase input splitter alts = --assert (not (isNilVar input)) $
 fixCompleteness :: a -> Var a -> Var a
 fixCompleteness dummy v =
     let r = undefinedAt v
-    in  if r == ffPC then v else SPL.union v $ mkVar dummy r
+    in  if r == noConfigs then v else SPL.union v $ mkVar dummy r
 
 -- lifting higher-order functions
 mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
@@ -476,9 +504,6 @@ primitiveFuncNames :: S.Set String
 primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "map", "filter", "foldr", "foldl", "length",
                                     "_succs", "_nodes", "_nID"]
 
-ttPC = tt
-ffPC = ff
-
 -- lifted primitive functions
 not' :: Var Bool -> Var Bool
 not' = liftV not
@@ -516,14 +541,14 @@ filter' p (x : xs) =
 foldr' :: (Var a -> Var b -> Var b) -> Var b -> [Var a] -> Var b
 foldr' f z xs = 
     let ret = foldr f z xs
-    in  if definedAt ret == ttPC then ret
+    in  if definedAt ret == allConfigs then ret
         else SPL.union ret (z /^ (undefinedAt ret))
 
 foldl' :: (Var b -> Var a -> Var b) -> Var b -> [Var a] -> Var b
 foldl' = foldl
 
 length' :: [Var a] -> Var Integer
-length' [] = (0 ^| ttPC)
+length' [] = (0 ^| allConfigs)
 length' (x : xs) = 
     (Var [(1, definedAt x), (0, undefinedAt x)]) ^+ length' xs
 

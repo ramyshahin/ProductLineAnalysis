@@ -13,8 +13,9 @@ restrictExpr e = mkParen $ mkInfixApp e restrictOp cntxtExpr
 
 liftExpr :: Declarations -> Declarations -> Bool -> Expr -> Expr
 liftExpr globals locals inBranch e = mkParen $ 
-    let pc = if inBranch then cntxtExpr else ttExpr
-    in  mkInfixApp e upOp pc  
+    --let pc = if inBranch then cntxtExpr else cntxtExpr --ttExpr
+    --in  mkInfixApp e upOp pc  
+    mkV e 
 
 isDeepExpr :: Expr -> Bool
 isDeepExpr e = 

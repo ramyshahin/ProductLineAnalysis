@@ -4,7 +4,18 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 
-module PropBDD where
+module PropBDD(
+    Prop,
+    unsat,
+    mkBDDVar,
+    andBDD,
+    orBDD,
+    notBDD,
+    implies,
+    tt,
+    ff,
+    disj
+) where
 
 import Cudd.Cudd
 import Data.Hashable

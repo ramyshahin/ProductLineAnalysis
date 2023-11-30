@@ -43,10 +43,8 @@ getDeclaredName d =
 
 -- | Rewrite declarations
 --
-{-
 isTypeVar :: Name -> Bool
 isTypeVar n = isLower $ head $ prettyPrint n
--}
 
 rewriteType :: Declarations -> Type -> Type
 rewriteType globals t = case t of
@@ -104,7 +102,7 @@ typeToLiftedType t =
         -- TODO: handle other cases
         _ -> notSupported t
 -}
-{-
+
 renameDeclHead :: DeclHead -> Name -> DeclHead
 renameDeclHead dh n =
     case dh of
@@ -155,7 +153,7 @@ mkProdCons dh dhs =
         tname  = getTypeName' True False dh
         fields = map (\dh -> mkFieldDecl [toField dh] $ toType dh) dhs
     in mkRecordConDecl (mkName tname) fields
--}
+
 -- rewrite constructor declaration
 rewriteConDecl :: Declarations -> DeclHead -> ConDecl -> ConDecl
 rewriteConDecl globals hd d = 
@@ -179,7 +177,7 @@ rewriteDeclHead decls dh =
         InfixDeclHead l op r -> notSupported dh
         -}
         _ -> notSupported dh
-{-
+
 getTypeName' :: Bool -> Bool -> DeclHead -> String
 getTypeName' lifted full dh =
     case dh of
@@ -191,7 +189,7 @@ getTypeName' lifted full dh =
             then "(" ++ (getTypeName' lifted full f) ++ " " ++ (prettyPrint op) ++ ")"
             else getTypeName' lifted full f
         InfixDeclHead l op r -> ""
-
+{-
 getConName :: ConDecl -> Name
 getConName c =
     case c of
@@ -236,17 +234,17 @@ rewriteDecl globals d =
                 cns'        = _annListElems cns
                 --conss       = length cns'
                 --consNames   = map getConName (_annListElems cns) 
-                --(innerTypes', dhs') = unzip $ map (cons2innerType globals hd) (_annListElems cns)
-                --(innerTypes, defObjs) = unzip innerTypes'
-                --(names,dhss)= unzip dhs'
-                --prodCons    = mkProdCons hd dhss -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
+                (innerTypes', dhs') = unzip $ map (cons2innerType globals hd) (_annListElems cns)
+                (innerTypes, defObjs) = unzip innerTypes'
+                (names,dhss)= unzip dhs'
+                prodCons    = mkProdCons hd dhss -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
                 liftdConss  = map (rewriteConDecl globals hd) cns'
                 --tname       = mkName $ getTypeName' False False hd
                 --tname'      = liftedTypeName tname
                 --def         = mkDefObj (defaultName tname') tname' names 
-            in  --innerTypes ++ 
-                [mkDataDecl newType (_annMaybe ctxt) newDeclHead liftdConss
-                    --[prodCons] 
+            in  innerTypes ++ 
+                [mkDataDecl newType (_annMaybe ctxt) newDeclHead --liftdConss
+                    [prodCons]
                     (_annListElems drv)] -- , def] -- ++ 
                     --innerTypes ++ 
                     --defObjs ++ 

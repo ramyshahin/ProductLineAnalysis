@@ -12,44 +12,44 @@ import SPL
 type VBool = Var P.Bool 
 
 (&&) :: VBool -> VBool -> VBool
-a && b = ((P.&&) ^| ttPC) P.<*> a P.<*> b 
+a && b = (P.pure (P.&&)) P.<*> a P.<*> b 
 
 (||) :: VBool -> VBool -> VBool
-a || b = ((P.||) ^| ttPC) P.<*> a P.<*> b 
+a || b = (P.pure (P.||)) P.<*> a P.<*> b 
 
 not :: VBool -> VBool
-not a = (P.not ^| ttPC) P.<*> a 
+not a = (P.pure P.not) P.<*> a 
 
 class P.Eq a => VEq a where
     (==) :: Var a -> Var a -> VBool
-    a == b = ((P.==) ^| ttPC) P.<*> a P.<*> b 
+    a == b = (P.pure (P.==)) P.<*> a P.<*> b 
 
     (/=) :: Var a -> Var a -> VBool
-    a /= b = ((P./=) ^| ttPC) P.<*> a P.<*> b 
+    a /= b = (P.pure (P./=)) P.<*> a P.<*> b 
 
 type VOrdering = Var P.Ordering 
 
 class P.Ord a => VOrd a where 
     compare :: Var a -> Var a -> VOrdering
-    compare x y = (P.compare ^| ttPC) P.<*> x P.<*> y
+    compare x y = (P.pure P.compare) P.<*> x P.<*> y
 
     (<) :: Var a -> Var a -> VBool
-    a < b = ((P.<) ^| ttPC) P.<*> a P.<*> b
+    a < b = (P.pure (P.<)) P.<*> a P.<*> b
 
     (<=) :: Var a -> Var a -> VBool
-    a <= b = ((P.<=) ^| ttPC) P.<*> a P.<*> b
+    a <= b = (P.pure (P.<=)) P.<*> a P.<*> b
 
     (>)  :: Var a -> Var a -> VBool
-    a > b = ((P.>) ^| ttPC) P.<*> a P.<*> b
+    a > b = (P.pure (P.>)) P.<*> a P.<*> b
 
     (>=) :: Var a -> Var a -> VBool
-    a >= b = ((P.>=) ^| ttPC) P.<*> a P.<*> b 
+    a >= b = (P.pure (P.>=)) P.<*> a P.<*> b 
 
     max :: Var a -> Var a -> Var a
-    max a b = (P.max ^| ttPC) P.<*> a P.<*> b
+    max a b = (P.pure P.max) P.<*> a P.<*> b
 
     min :: Var a -> Var a -> Var a 
-    min a b = (P.min ^| ttPC) P.<*> a P.<*> b
+    min a b = (P.pure P.min) P.<*> a P.<*> b
 
 infix 4 <
 infix 4 <=
@@ -63,25 +63,25 @@ type VInt = Var P.Int
 
 class P.Num a => VNum a where
     (+) :: Var a -> Var a -> Var a 
-    x + y = ((P.+) ^| ttPC) P.<*> x P.<*> y
+    x + y = (P.pure (P.+)) P.<*> x P.<*> y
 
     (*) :: Var a -> Var a -> Var a 
-    x * y = ((P.*) ^| ttPC) P.<*> x P.<*> y
+    x * y = (P.pure (P.*)) P.<*> x P.<*> y
 
     (-) :: Var a -> Var a -> Var a 
-    x - y = ((P.-) ^| ttPC) P.<*> x P.<*> y  
+    x - y = (P.pure (P.-)) P.<*> x P.<*> y  
 
     negate :: Var a -> Var a
-    negate x = (P.negate ^| ttPC) P.<*> x
+    negate x = (P.pure P.negate) P.<*> x
 
     abs :: Var a -> Var a
-    abs x = (P.abs ^| ttPC) P.<*> x
+    abs x = (P.pure P.abs) P.<*> x
 
     signum :: Var a -> Var a
-    signum x = (P.signum ^| ttPC) P.<*> x
+    signum x = (P.pure P.signum) P.<*> x
 
     fromInteger :: Var P.Integer -> Var a 
-    fromInteger x = (P.fromInteger ^| ttPC) P.<*> x
+    fromInteger x = (P.pure P.fromInteger) P.<*> x
 
 instance VNum P.Int
 

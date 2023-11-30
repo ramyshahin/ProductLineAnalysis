@@ -26,13 +26,15 @@ cntxtVar = "__cntxt__"
 dummyVar = "__dummy__"
 
 mkV :: Expr -> Expr
-mkV e = mkParen (mkInfixApp e upOp $ cntxtExpr)
+mkV e = mkParen $ --(mkInfixApp e upOp $ cntxtExpr)
+            mkApp defaultLift e
 
 vCntxt      = "__cntxt__"
-vTT         = "ttPC"
+--vTT         = "ttPC"
+defaultLift = mkVar (mkName "v")
 cntxtPat    = mkVarPat (mkName vCntxt)
 cntxtExpr   = mkVar $ mkName vCntxt
-ttExpr      = mkVar $ mkName vTT
+--ttExpr      = mkVar $ mkName vTT
 restrictOp  = mkUnqualOp "/^"
 upOp        = mkUnqualOp "^|"
 --notSupported :: a -> a
@@ -85,6 +87,8 @@ externalDecl globals locals x =
         r = not $ S.member (prettyPrint x) allDecls
     in  trace (debugDecls allDecls ++ " External " ++ prettyPrint x ++ " ? " ++ show r) $ r
 
+{-
 liftOp (NormalOp o) inBranch = --trace ("liftOp: " ++ (prettyPrint o))
     let pc = if inBranch then cntxtExpr else ttExpr 
     in  mkParen (mkInfixApp (mkVar (mkParenName o)) upOp pc)
+    -}

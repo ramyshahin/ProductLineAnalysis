@@ -1,4 +1,14 @@
-module PresenceCondition where
+module PresenceCondition(
+    PresenceCondition,
+    (/\),
+    (\/),
+    negPC,
+    contains,
+    intersect,
+    empty,
+    allConfigs,
+    noConfigs
+) where
 
 import PropBDD
 import System.IO 
@@ -21,6 +31,15 @@ type PCExpr             = Prop
 
 {-# INLINE negPC #-}
 negPC = notBDD
+
+{-# INLINE empty #-}
+empty = unsat
+
+{-# INLINE contains #-}
+contains = implies
+
+{-# INLINE intersect #-}
+intersect = disj
 
 languageDef = 
     emptyDef {
@@ -53,7 +72,7 @@ whiteSpace = Token.whiteSpace lexer -- parses whitespace
 --pc = parens pc
 
 -- parsing subexpressions
-bOperators = [ [ Prefix (reservedOp "!"   >> return negPC) ],
+bOperators = [ [ Prefix (reservedOp "!"   >> return (negPC)) ],
                [ Infix  (reservedOp "/\\" >> return (/\)) AssocLeft],
                [ Infix  (reservedOp "\\/" >> return (\/))  AssocLeft],
                [ Infix  (reservedOp "&&" >> return (/\)) AssocLeft],
@@ -123,3 +142,6 @@ getAllConfigs (f:fs) = fPos ++ fNeg
 --getValidConfigs :: [String] -> PCExpr -> [PCExpr]
 --getValidConfigs univ featModel = filter (\c -> sat (conj[c,featModel])) cs 
 --    where cs = getAllConfigs univ
+
+allConfigs = tt
+noConfigs = ff
