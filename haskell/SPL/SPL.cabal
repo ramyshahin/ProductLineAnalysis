@@ -31,7 +31,6 @@ library
       ShallowTypes
       SPL
       VPrelude
-      VPreludeDeep
   other-modules:
       Paths_SPL
   hs-source-dirs:

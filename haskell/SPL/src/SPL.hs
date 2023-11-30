@@ -13,22 +13,28 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, FlexibleInstances, ExplicitForAll #-}
 
-module SPL where
+module SPL(
+    Var,
+    v,
+    liftedCond
+) where
+
 
 --import PropBDD
 import PresenceCondition as PC
 import Control.Applicative
+import Control.Exception
+import qualified Data.List      as L
+import qualified Data.Vector    as V
+import Debug.Trace
+{-
 import Control.Monad
 import Data.List 
-import Data.Maybe
-import qualified Data.Vector    as V 
+import Data.Maybe 
 import qualified Data.Set       as S  
-import qualified Data.List      as L
-import Control.Exception
 import Control.Parallel.Strategies
 import System.Mem.StableName
 import System.IO.Unsafe
-import Debug.Trace
 import GHC.Generics (Generic, Generic1)
 import Control.DeepSeq
 
@@ -70,6 +76,8 @@ mkPartition' pcs partialPartition =
 mkPartition :: [PresenceCondition] -> Partition
 mkPartition pcs = reverse (mkPartition' pcs [])
 
+-}
+
 --type Val a = (Maybe a, PresenceCondition)
 type Val a = (a, PresenceCondition)
 
@@ -86,7 +94,7 @@ type Val a = (a, PresenceCondition)
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
 newtype Var t = Var [(Val t)]
-    deriving (Generic, NFData)
+    --deriving (Generic, NFData)
 
 --instance NFData (Var a) where
 --    rnf (Var !xs) = xs `seq` (map (\(!x,!pc) -> x `seq` pc `seq` ()) xs) `seq` ()
@@ -96,6 +104,10 @@ disjInv v'@(Var v) =
     let ret = all (\((_, pc1),(_, pc2)) -> PC.empty (pc1 /\ pc2)) (pairs v)
     in  if (not ret) then trace (showPCs v') ret else ret
 
+showPCs :: Var a -> String
+showPCs (Var v) = "{" ++ (L.intercalate ", " (map (\(_,pc) -> show pc) v)) ++ "}"
+
+{-
 compInv :: Var t -> Bool
 compInv (Var v) =
     (foldr (\(_,pc) pc' -> pc \/ pc') noConfigs v) == allConfigs
@@ -111,9 +123,6 @@ exists (x, xpc) ys' =
 isSubsetOf :: Eq t => Var t -> Var t -> Bool
 isSubsetOf (Var x) y' = and (map (`exists` y') x)
 
-showPCs :: Var a -> String
-showPCs (Var v) = "{" ++ (L.intercalate ", " (map (\(_,pc) -> show pc) v)) ++ "}"
-
 instance Show a => Show (Var a) where
     show v' = 
         let (Var v) = compact v' 
@@ -127,7 +136,7 @@ instance Show a => Show (Var a) where
 --instance Eq a => Eq (Var a) where
 --    (==) x y = (isSubsetOf x y) && (isSubsetOf y x)
 --    (/=) x y = not (x == y)
-
+-}
 v :: a -> Var a
 v = (^| allConfigs)
 
@@ -138,7 +147,7 @@ instance Functor Var where
 instance Applicative Var where
     pure  = v
     (<*>) = apply
-
+{-
 {-
 -- Var monad
 data VarM a =
@@ -177,6 +186,7 @@ instance Monad VarM where
 --    Var ((t :: * -> *) (s :: *))      = Var' (t (Var' s))
 --    Var (t :: *)                      = Var' t
 
+-}
 mkVar :: t -> PresenceCondition -> Var t
 {-# INLINE mkVar #-}
 mkVar v pc = Var [(v,pc)]
@@ -185,12 +195,20 @@ mkVar v pc = Var [(v,pc)]
 x ^| pc = mkVar x pc
 infixl 9 ^|
 
+mkVars :: [(t,PresenceCondition)] -> Var t
+mkVars vs = Var vs
+
+definedAt :: Var t -> PresenceCondition
+definedAt (Var xs) = PC.intersect pcs
+    where   pcs     = map snd xs
+
+undefinedAt :: Var t -> PresenceCondition
+undefinedAt = negPC . definedAt
+
+{-
 mkVarT :: a -> Var a
 {-# INLINE mkVarT #-}
 mkVarT v = v ^| allConfigs
-
-mkVars :: [(t,PresenceCondition)] -> Var t
-mkVars vs = Var vs
 
 {-# INLINE findVal #-}
 findVal :: t -> [Val t] -> (t -> t -> Bool) -> [Val t]
@@ -241,13 +259,6 @@ subst :: PresenceCondition -> Var t -> Var t
 subst pc (Var v) =
     Var (filter (\(_,pc') -> (not . PC.empty) (pc /\ pc')) v)
 
-definedAt :: Var t -> PresenceCondition
-definedAt (Var xs) = PC.intersect pcs
-    where   pcs     = map snd xs
-
-undefinedAt :: Var t -> PresenceCondition
-undefinedAt = negPC . definedAt
-
 --disjointnessInv :: Show t => Var t -> Var t -> Bool
 --disjointnessInv x@(Var a) y@(Var b) = 
 --    let conjunctions = [andBDD pc1 pc2 | (_,pc1) <- a, (_,pc2) <- b]
@@ -269,6 +280,10 @@ getFeatures = do
     return $ (fst . unzip) vs
 -}
 
+--union2 :: Var (Var t) -> Var t 
+--union2 (Var xs') = unions (map (\(x,pc) -> (restrict pc x)) xs')
+-}
+
 union :: Var t -> Var t -> Var t
 union x@(Var a) y@(Var b) =
     let result = Var (a ++ b)
@@ -276,9 +291,6 @@ union x@(Var a) y@(Var b) =
 
 unions :: [Var t] -> Var t 
 unions xs = foldr SPL.union (Var []) xs
-
---union2 :: Var (Var t) -> Var t 
---union2 (Var xs') = unions (map (\(x,pc) -> (restrict pc x)) xs')
 
 pairs :: [t] -> [(t,t)]
 pairs [] = []
@@ -297,6 +309,21 @@ apply f@(Var fn) x = assert (disjInv f) $
      assert (disjInv x) $ --compact $
      unions [apply_ f x | f <- fn] 
 
+(/^) x pc = restrict pc x
+{-
+
+--instance Foldable Var where
+--    foldMap f (Var xs) = foldMap (\(x,pc) -> (f x, pc)) xs
+
+--newtype VDeep a = VDeep a
+
+--instance Foldable VList where
+--    foldMap f (VList l) = f (l, allConfigs)
+
+-- lifting conditional expression
+cond :: Bool -> a -> a -> a
+cond p a b = if p then a else b
+-}
 -- VClass type class
 class VClass a where
     nil  :: a b
@@ -307,9 +334,6 @@ class VClass a where
     combs :: [a b] -> a b
     combs = foldr comb nil
     restrict :: PresenceCondition -> a b -> a b
-
---instance Foldable Var where
---    foldMap f (Var xs) = foldMap (\(x,pc) -> (f x, pc)) xs
 
 instance VClass Var where
     nil  = Var []
@@ -336,13 +360,6 @@ instance VClass Var where
         else    Var [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p]
         --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
 
-(/^) x pc = restrict pc x
-
---newtype VDeep a = VDeep a
-
---instance Foldable VList where
---    foldMap f (VList l) = f (l, allConfigs)
-
 {-
 instance VClass [a] where -- VList where
     nil  = VDeep []
@@ -359,10 +376,6 @@ instance VClass [a] where -- VList where
         --    v'    = initV V.// [(index, i)]
         --in  V.toList v'
 -}
-
--- lifting conditional expression
-cond :: Bool -> a -> a -> a
-cond p a b = if p then a else b
 
 evalCond :: Var Bool -> (PresenceCondition, PresenceCondition)
 evalCond c'@(Var c) = 
@@ -383,12 +396,13 @@ liftedCond c x y =
         else if f == noConfigs then (x t)
         else comb ((x t) /^ t) ((y f) /^ f)
 
-neg' :: Num a => Var a -> Var a
-neg' = liftV (\x -> -x)
-
 partitionInv :: Var a -> [Var a] -> Bool
 partitionInv x xs = (definedAt x) == cover
     where cover = foldr (\/) noConfigs (map definedAt xs)
+
+{-
+neg' :: Num a => Var a -> Var a
+neg' = liftV (\x -> -x)
 
 isNilVar :: Var a -> Bool
 isNilVar (Var xs) = null xs 
@@ -496,14 +510,6 @@ infixr 2 ^||
 (^++) = (++)
 infixr 5 ^++
 
-primitiveOpNames :: S.Set String
---primitiveOpNames = S.fromList [":", "+", "-", "*", "/", "==", "/=", "&&", "||", "."]
-primitiveOpNames = S.fromList [".", ":", "++"]
-
-primitiveFuncNames :: S.Set String
-primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "map", "filter", "foldr", "foldl", "length",
-                                    "_succs", "_nodes", "_nID"]
-
 -- lifted primitive functions
 not' :: Var Bool -> Var Bool
 not' = liftV not
@@ -606,4 +612,6 @@ xs = mkVars [([1,2,3,4], p), ([3,2], _p)]
 
 list0 = mkVarT []
 list1 = x ^: list0
+-}
+
 -}

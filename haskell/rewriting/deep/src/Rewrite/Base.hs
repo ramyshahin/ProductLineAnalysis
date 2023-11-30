@@ -29,6 +29,14 @@ mkV :: Expr -> Expr
 mkV e = mkParen $ --(mkInfixApp e upOp $ cntxtExpr)
             mkApp defaultLift e
 
+primitiveOpNames :: S.Set String
+--primitiveOpNames = S.fromList [":", "+", "-", "*", "/", "==", "/=", "&&", "||", "."]
+primitiveOpNames = S.fromList [".", ":", "++"]
+
+primitiveFuncNames :: S.Set String
+primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "map", "filter", "foldr", "foldl", "length",
+                                    "_succs", "_nodes", "_nID"]
+
 vCntxt      = "__cntxt__"
 --vTT         = "ttPC"
 defaultLift = mkVar (mkName "v")
@@ -70,10 +78,10 @@ getLiftedPrimitiveOp :: String -> Operator
 getLiftedPrimitiveOp o = mkUnqualOp ("^" ++ o)
 
 isPrimitiveOp :: String -> Bool
-isPrimitiveOp n = S.member n L.primitiveOpNames
+isPrimitiveOp n = S.member n primitiveOpNames
 
 isPrimitiveFunc :: String -> Bool
-isPrimitiveFunc f =  S.member f L.primitiveFuncNames
+isPrimitiveFunc f =  S.member f primitiveFuncNames
 
 isPrimitive :: String -> Bool
 isPrimitive s = isPrimitiveOp s || isPrimitiveFunc s
