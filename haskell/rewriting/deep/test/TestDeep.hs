@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 module TestDeep where
+{-
 import SPL
 import Data.List
 
@@ -46,3 +47,5 @@ data MaybeInt =
 --head xs = case xs of
 --     Nil -> 0
 --     Cons x xs -> x
+
+-}

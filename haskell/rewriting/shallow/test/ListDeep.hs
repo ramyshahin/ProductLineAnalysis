@@ -1,6 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 module ListDeep where
-
+{-
 import SPL
 import qualified Prelude as P
 
@@ -19,3 +19,4 @@ tail (Cons x xs) = xs
 
 length :: Var Var List Var a -> Var Int
 length xs = if ((mkVarT (==)) <*> xs <*> Nil) then (mkVarT 0) else (mkVarT (+)) <*> (mkVarT 1) <*> length (tail xs)
+-}

@@ -1,3 +1,5 @@
+module C where 
+{-
 import Control.Monad.ST
 import Control.Monad.Trans
 import Cudd.Imperative
@@ -11,3 +13,4 @@ main = do
         deref manager conj
         return implies
     print res
+-}

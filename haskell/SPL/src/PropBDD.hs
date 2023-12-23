@@ -181,5 +181,5 @@ sat p = p /= ff
 unsat :: Prop -> Bool
 unsat p = p == ff
 
-implies :: Prop -> Prop -> Bool
-implies p q = tautology (impl p q)
+implies :: Prop -> Prop -> Prop 
+implies p q = (impl p q)

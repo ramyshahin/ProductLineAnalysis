@@ -1,11 +1,11 @@
 module Main where
-
+{-
 import TestDeep
 import SPL
 import PropBDD
 
-p, q, r, s :: Prop
-univ@[p, q, r, s] = mkUniverse ["P", "Q", "R", "S"]
+p, q, r, s :: PresenceCondition
+[p, q, r, s] = map mkFeature ["P", "Q", "R", "S"]
 
 pq = conj[p,q]
 p_q = conj[p, neg q]
@@ -24,7 +24,8 @@ w = mkVars [(12, pq), (2, p_q), (3, _p_q)]
 result = foo v1 v2 w 
 
 result2 = c v1 v2 
-
+-}
 main = do
-    putStr $ show result
-    putStr $ show result2
+    putStrLn "Done."
+    --putStr $ show result
+    --putStr $ show result2

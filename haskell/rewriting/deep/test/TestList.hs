@@ -1,6 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
-module List where
-
+module TestList where
+{-
 import qualified Prelude as P
 
 type Int = P.Int
@@ -18,3 +18,4 @@ tail (Cons x xs) = xs
 
 length :: List a -> Int
 length xs = if (xs == Nil) then 0 else 1 + length (tail xs)
+-}

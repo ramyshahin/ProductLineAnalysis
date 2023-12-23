@@ -1,6 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Test where
+module Test1 where
 import Data.List
 
 x :: Int

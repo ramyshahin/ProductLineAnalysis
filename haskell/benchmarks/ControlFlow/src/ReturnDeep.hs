@@ -2,7 +2,7 @@
 -- Adapted from a similar analysis in TypeChef/CRewrite
 -- Checking whether a non-void function has a return statement
 module ReturnDeep where
-
+{-
 import SPL
 import VCFG
 import Language.C.Syntax.AST
@@ -61,3 +61,4 @@ analyze :: Var CFG -> [Var CFGNode]
 analyze cfg  = let _ns = _nodes' cfg
                    fns = filter' isFnRoot _ns in filter' (not' ^. (hasReturn cfg)) fns
 
+-}

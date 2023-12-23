@@ -1,3 +1,5 @@
+module Tokens where
+{-
 import SPL
 import PropBDD
 import Control.Applicative
@@ -87,3 +89,4 @@ seg7 = _mkVar (words "b ) ; }") notA
 
 fullSeq :: TokenSeq' 
 fullSeq = foldConcat (map mkTokenSeq' [seg_, seg0, seg1, seg2, seg3, seg4, seg5, seg6, seg7])
+-}

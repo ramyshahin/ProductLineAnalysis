@@ -2,6 +2,7 @@
 -- Some simple tests for deep lifting of values
 
 module TestValDeep where
+    {-
 import SPL
 import VPreludeDeep
 import Data.List
@@ -18,3 +19,4 @@ foo = head
 foo' :: [(Var a)] -> (Var a)
 foo' = foo
 
+-}

@@ -1,7 +1,7 @@
 -- Call density code analysis
 -- Returning the average number of function calls per function
 module CallDensityDeep where
-
+{-
 import SPL
 import VCFG
 import Language.C.Syntax.AST
@@ -48,3 +48,4 @@ analyze cfg  = let _ns = _nodes' cfg
                    fnCount = length' _fns
                    total = foldr' (\a b -> ((+) ^| ttPC) <*> (a) <*> (b)) (0 ^| ttPC) (map' (callDensity cfg) _fns) in ((%) ^| ttPC) <*> (total) <*> (((toInteger ^| ttPC) <*> fnCount))
 
+-}

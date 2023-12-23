@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings, BangPatterns #-}
 
 module CFGParser where
-
+{-
 import VCFG
 import Language.C.Parser
 import Language.C.Data.InputStream
@@ -17,7 +17,7 @@ import qualified Data.Multimap      as MM
 import SPL
 import PresenceCondition 
 
-type VNode = Var CFGNode
+type VNode = V CFGNode
 
 --dummyNode = CFGNode 0 T.empty (CFGDummy T.empty) [] []
 
@@ -137,3 +137,4 @@ parseNode t lineNum nodeType = --trace "parseNode" $
                                 !pc                     = foldr (/\) ttPC pcs
                             in  (T.concat cs, pc, t0'')
           --isCPPDirective = T.isPrefixOf (T.pack "#")
+-}

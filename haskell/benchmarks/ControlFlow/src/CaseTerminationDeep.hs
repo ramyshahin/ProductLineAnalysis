@@ -2,7 +2,7 @@
 -- Adapted from a similar analysis in TypeChef/CRewrite
 -- Details at // https://www.securecoding.cert.org/confluence/display/seccode/MSC17-C.+Finish+every+set+of+statements+associated+with+a+case+label+with+a+break+statement
 module CaseTerminationDeep where
-
+{-
 import SPL
 import VCFG
 import Language.C.Syntax.AST
@@ -87,3 +87,4 @@ analyze cfg  = --trace "analyze" $
                let _ns = _nodes' cfg
                    cases = filter' isCase _ns in filter' (not' ^. (terminatedCase cfg)) cases
 
+-}

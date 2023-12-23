@@ -1,7 +1,7 @@
 -- Return Average code analysis
 -- Returning the average number of return statements per function
 module ReturnAvgDeep where
-
+{-
 import SPL
 import VCFG
 import Language.C.Syntax.AST
@@ -54,4 +54,4 @@ analyze cfg  = let _ns = _nodes' cfg
                    _fns = filter' isFnRoot _ns
                    fnCount = length' _fns
                    total = foldr' (\a b -> ((+) ^| ttPC) <*> (a) <*> (b)) (0 ^| ttPC) (map' (returnAvg cfg) _fns) in ((%) ^| ttPC) <*> (total) <*> (((toInteger ^| ttPC) <*> fnCount))
-
+-}

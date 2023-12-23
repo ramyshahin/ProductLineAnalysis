@@ -1,4 +1,5 @@
-module dfs where
+module TestDFS where
+{-
 import Data.List
 
 post :: [(Int,Int)] -> Int -> [Int]
@@ -9,4 +10,4 @@ post edges v =
        if   fst h == v
        then fst h :: post (tail edges) v
        else          post (tail edges) v
-
+-}

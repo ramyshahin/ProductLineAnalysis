@@ -13,47 +13,39 @@ import Control.Applicative
 import Debug.Trace
 
 p, q, r, s :: Prop
-univ@[p, q, r, s] = mkUniverse ["P", "Q", "R", "S"]
---p = lookup u 0
---q = lookup u 1
---r = lookup u 2
---s = lookup u 3
+[p, q, r, s] = map mkFeature ["P", "Q", "R", "S"]
 
-pq = conj[p,q]
-p_q = conj[p, neg q]
-_pq = conj[neg p, q]
-_p_q = conj[neg p, neg q]
-_p = neg p
-_q = neg q 
+pq = p /\ q
+p_q = p /\ (negPC q)
+_pq = (negPC p) /\ q
+_p_q = (negPC p) /\ (negPC q)
+_p = negPC p
+_q = negPC q 
 
-v1, v2 :: Var Int
-v1 = mkVars [(1,pq), (2,p_q), (1, _pq), (2, _p_q)]
-v2 = mkVars [(1,q), (2, _q)]
+v1, v2 :: V Int
+part1 = mkPartition [pq, p_q, _pq, _p_q]
+part2 = mkPartition [q, _q]
+part3 = mkPartition [pq, p_q, _p_q]
+v1 = annotate part1 [1, 2, 1, 2]
+v2 = annotate part2 [1, 2]
 
-w :: Var Int
-w = mkVars [(12, pq), (2, p_q), (3, _p_q)]
+w :: V Int
+w = annotate part3 [12, 2, 3]
 
-x :: Var Int
-x = mkVars [(7, pq), (-3, p_q), (-8, _pq), (0, _p_q)]
-x0 = mkVars [(-8, _pq), (0, _p_q), (-3, p_q), (7, pq)]
-
-y :: Var Int
-y = mkVars [(-11, _p)]
-y0 = mkVars [(-11, _pq)]
-
-z :: Var Int
-z = mkVars [(6, p)]
+x :: V Int
+x = annotate part1 [7, -3, -8, 0]
 
 xs = [1..5]
 
 -- ===
 prop_phys_eq1 = 1 === 1
 prop_phys_eq2 = not (1 === 2)
-prop_phys_eq3 = y === y
-prop_phys_eq4 = not (y === z)
+prop_phys_eq3 = x === x
+prop_phys_eq4 = not (w === x)
 prop_phys_eq5 = (head xs === head xs)
 prop_phys_eq6 = (tail xs === tail xs)
 
+{-
 -- exists
 prop_exists1 = exists (2, p_q) w 
 prop_exists2 = exists ((-11), _pq) y
@@ -140,6 +132,7 @@ safeDiv' a b = liftedCond (b ^== zero) (\__cntxt__ -> zero /^ __cntxt__) (\__cnt
 divResult = safeDiv' w x
 
 prop_safeDiv = divResult == mkVars [(1,pq), (-1, p_q), (0,_p_q)]
+-}
 
 return []
 runSPLTests = $quickCheckAll

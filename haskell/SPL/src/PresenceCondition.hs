@@ -1,5 +1,7 @@
 module PresenceCondition(
     PresenceCondition,
+    Partition,
+    mkFeature,
     (/\),
     (\/),
     negPC,
@@ -7,7 +9,8 @@ module PresenceCondition(
     intersect,
     empty,
     allConfigs,
-    noConfigs
+    noConfigs,
+    mkPartition
 ) where
 
 import PropBDD
@@ -145,3 +148,29 @@ getAllConfigs (f:fs) = fPos ++ fNeg
 
 allConfigs = tt
 noConfigs = ff
+
+--
+-- partitions
+--
+type Partition = [PresenceCondition]
+
+cover :: [PresenceCondition] -> PresenceCondition
+cover = foldr (\/) noConfigs  
+
+-- mkPartition' left partialPartition -> fullPartition
+--  takes a list of PCs to process (left) and a partial partition
+--  being constructed, and checks if the PCs to be added are disjoint
+--  with the partial partition. If they are, they are added. If not,
+--  an exception is thrown. 
+mkPartition' :: [PresenceCondition] -> [PresenceCondition] -> Partition
+mkPartition' pcs partialPartition = 
+    let c = cover partialPartition
+    in case pcs of
+        []      -> if (c == allConfigs) then partialPartition else (negPC c):partialPartition  
+        (x:xs)  -> 
+            if   (x /\ c == noConfigs) 
+            then mkPartition' xs (x:partialPartition)
+            else error "Invalid Partition"
+
+mkPartition :: [PresenceCondition] -> Partition
+mkPartition pcs = reverse (mkPartition' pcs [])

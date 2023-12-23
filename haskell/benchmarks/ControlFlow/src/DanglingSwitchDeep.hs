@@ -2,7 +2,7 @@
 -- Adapted from a similar analysis in TypeChef/CRewrite
 -- Details at // https://www.securecoding.cert.org/confluence/display/seccode/MSC17-C.+Finish+every+set+of+statements+associated+with+a+case+label+with+a+break+statement
 module DanglingSwitchDeep where
-
+{-
 import SPL
 import VCFG
 import Language.C.Syntax.AST
@@ -64,3 +64,4 @@ analyze :: Var CFG -> [Var CFGNode]
 analyze cfg  = let _ns = _nodes' cfg
                    switches = filter' isSwitch _ns in filter' (not' ^. (danglingSwitch cfg)) switches
 
+-}

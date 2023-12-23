@@ -1,10 +1,12 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass, BangPatterns #-}
+--{-# LANGUAGE DeriveGeneric, DeriveAnyClass, BangPatterns #-}
 module VCFG 
-    ( module VCFG
-    , module NodeTypes
-    ) where
-
+--    ( module VCFG
+--    , module NodeTypes
+--    ) 
+    where
+{-
 import Control.Exception
+import Control.Applicative
 import Language.C.Syntax.AST
 import qualified CFG as C
 import qualified Data.Text as T
@@ -16,8 +18,13 @@ import PresenceCondition
 import Debug.Trace
 import NodeTypes
 
-lv2vl :: [Var a] -> Var [a]
-lv2vl = foldr (|:|) (mkVarT [])
+{-# INLINE (|:|) #-}
+(|:|) :: V a -> V [a] -> V [a]
+(|:|) = liftA2 (:)
+infixr 5 |:|
+
+lv2vl :: [V a] -> V [a]
+lv2vl = foldr (|:|) (v [])
 
 {-
 data NodeType =
@@ -36,13 +43,13 @@ data CFGNode = CFGNode {
     _fname :: T.Text,
     text :: T.Text,
     ast :: C.NodeType,
-    _preds :: [Var Int],
-    __succs :: [Var Int]
-    } deriving (Show, Generic, NFData)
+    _preds :: [V Int],
+    __succs :: [V Int]
+    } deriving (Show, Generic)
 
 dummyCNode = C.CFGNode 0 (T.pack "") (T.pack "") (CFGDummy (T.pack "")) [] []
 
-toShallowNode :: (CFGNode, PresenceCondition) -> Var C.CFGNode
+toShallowNode :: (CFGNode, PresenceCondition) -> V C.CFGNode
 toShallowNode (n, pc) = 
     let ps = lv2vl $ _preds n
         ss = lv2vl $ __succs n
@@ -63,33 +70,34 @@ _nodes cfg = (snd . unzip . M.toList) $ nodes cfg
 mkShallowCFG :: [C.CFGNode] -> C.CFG
 mkShallowCFG  ns = C.CFG $! foldr (\n m -> M.append (C._nID n) n m) M.empty ns
 
-mkShallowCFG' ns@(Var ns') = --trace ("Variants: " ++ (show (length ns'))) $ 
-    (liftV mkShallowCFG) ns
+mkShallowCFG' = --trace ("Variants: " ++ (show (length ns'))) $ 
+    apply $ v mkShallowCFG
 
-toShallowCFG :: CFG -> Var C.CFG
+toShallowCFG :: CFG -> V C.CFG
 toShallowCFG c =
     let !ns = _nodes c
         !ns' = map toShallowNode ns
-        !vl@(Var vl') = lv2vl ns'
+        !vl  = lv2vl ns'
         !ret = mkShallowCFG' vl
     in  --trace ("Var Node count: " ++ (show (length vl'))) $
         ret
 
-_succs' :: Var CFG -> Var CFGNode -> [Var CFGNode]
-_succs' (Var ((cfg, pc) : ss)) n'@(Var n) = 
-    assert (null ss) $
-    let ss' = foldr (++) [] $ map (\(n',_) -> if (_nID n') == 0 then [] else __succs n') n
-        zs  = map (\(Var xs) -> Var $ 
+_succs' :: V CFG -> V CFGNode -> [V CFGNode]
+_succs' vs n = 
+    case vs of 
+        ((cfg, pc) : ss) -> 
+            assert (null ss) $
+            let ss' = foldr (++) [] $ map (\(n',_) -> if (_nID n') == 0 then [] else __succs n') n
+                zs  = map (\xs -> Var $ 
                                   map 
                                     (\(n,pc) -> let ys = --trace (show n) $ 
                                                         (nodes cfg) M.! n
                                                 in  assert (not (null ys)) $ head ys)
                                     (filter (\(n, pc) -> n /= 0) xs)
-                  ) ss'
-    in  --zs 
-        map (fixCompleteness dummyNode) zs 
-        
-_succs' (Var []) _ = []
+                      ) ss'
+            in  --zs 
+                map (fixCompleteness dummyNode) zs 
+        [] -> []
 
 {-
 fixCompleteness :: Var a -> Var a
@@ -106,19 +114,21 @@ dummyNode = CFGNode 0 T.empty T.empty (C.CFGDummy T.empty) [] []
 --    let (Var ids) = _nID n
 --    in  Var $ map (\(id, pc) -> if id == 0 then (dummyNode, pc) else (n, pc)) ids
 
-mkV :: a -> (a, PresenceCondition) -> Var a
+mkV :: a -> (a, PresenceCondition) -> V a
 mkV dummy (v, pc) = 
     if   pc == ttPC
     then mkVarT v
     else mkVars [(v, pc), (dummy, negPC pc)]
 
-_nodes' :: Var CFG -> [Var CFGNode]
-_nodes' (Var ((cfg, pc) : ss)) = 
-    assert (null ss) $
-    assert (pc == ttPC) $
-    let ns = (snd . unzip . M.toList) $ nodes cfg
-    in  --map (\x -> Var [x]) ns 
-        map (\v -> mkV dummyNode v) ns
+_nodes' :: V CFG -> [V CFGNode]
+_nodes' vs = 
+    case vs of 
+        ((cfg, pc) : ss) -> 
+            assert (null ss) $ assert (pc == ttPC) $
+            let ns = (snd . unzip . M.toList) $ nodes cfg
+            in  --map (\x -> Var [x]) ns 
+                map (\v -> mkV dummyNode v) ns
 
-_nID' :: Var CFGNode -> Var Int
-_nID' (Var n) = foldr union (Var []) $ map (\(n', pc) -> (_nID n') ^| pc) n
+_nID' :: V CFGNode -> V Int
+_nID' n = foldr union (Var []) $ map (\(n', pc) -> (_nID n') ^| pc) n
+-}

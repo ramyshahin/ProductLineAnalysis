@@ -1,7 +1,7 @@
 -- Return Average code analysis
 -- Returning the average number of goto statements per label
 module GotosDeep where
-
+{-
 import SPL
 import VCFG
 import Language.C.Syntax.AST
@@ -70,3 +70,4 @@ analyze cfg  = let _ns = _nodes' cfg
                    labelCount = length' _ls
                    gotoCount = length' _gs in liftedCond (((==) ^| ttPC) <*> (labelCount) <*> ((0 ^| ttPC))) (\__cntxt__ -> (0 ^| __cntxt__)) (\__cntxt__ -> ((%) ^| __cntxt__) <*> (((toInteger ^| __cntxt__) <*> (gotoCount /^ __cntxt__))) <*> (((toInteger ^| __cntxt__) <*> (labelCount /^ __cntxt__))))
 
+-}

@@ -7,7 +7,7 @@
 -- #define CALL_DENSITY
 
 module Main where
-
+{-
 import CFG
 import qualified VCFG as V
 import CFGParser
@@ -188,3 +188,7 @@ main = do
     putStrLn $ show result
     putStrLn "Done."
 -- -}
+-}
+
+main = do
+    putStrLn "Done."

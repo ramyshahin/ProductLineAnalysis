@@ -14,8 +14,12 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, FlexibleInstances, ExplicitForAll #-}
 
 module SPL(
-    Var,
+    V,
     v,
+    apply,
+    annotate,
+    (^|),
+    (===),
     liftedCond
 ) where
 
@@ -27,16 +31,17 @@ import Control.Exception
 import qualified Data.List      as L
 import qualified Data.Vector    as V
 import Debug.Trace
+import System.Mem.StableName
+import System.IO.Unsafe
+import GHC.Generics (Generic, Generic1)
 {-
 import Control.Monad
 import Data.List 
 import Data.Maybe 
 import qualified Data.Set       as S  
 import Control.Parallel.Strategies
-import System.Mem.StableName
-import System.IO.Unsafe
-import GHC.Generics (Generic, Generic1)
 import Control.DeepSeq
+-}
 
 {-# INLINE (===) #-}
 (===) :: a -> a -> Bool
@@ -45,6 +50,7 @@ import Control.DeepSeq
     ny <- makeStableName $! y 
     return (nx == ny)
 
+{-
 (====) :: Eq a => a -> a -> Bool
 (====) x y = x === y || x == y
 
@@ -52,29 +58,6 @@ import Control.DeepSeq
 --type PresenceCondition  = Prop
 
 type Context = PresenceCondition
-
-type Partition = [PresenceCondition]
-
-cover :: [PresenceCondition] -> PresenceCondition
-cover = foldr (PC.\/) noConfigs  
-
--- mkPartition' left partialPartition -> fullPartition
---  takes a list of PCs to process (left) and a partial partition
---  being constructed, and checks if the PCs to be added are disjoint
---  with the partial partition. If they are, they are added. If not,
---  an exception is thrown. 
-mkPartition' :: [PresenceCondition] -> [PresenceCondition] -> Partition
-mkPartition' pcs partialPartition = 
-    let c = cover partialPartition
-    in case pcs of
-        []      -> if (c == allConfigs) then partialPartition else (negPC c):partialPartition  
-        (x:xs)  -> 
-            if   (x /\ c == noConfigs) 
-            then mkPartition' xs (x:partialPartition)
-            else error "Invalid Partition"
-
-mkPartition :: [PresenceCondition] -> Partition
-mkPartition pcs = reverse (mkPartition' pcs [])
 
 -}
 
@@ -93,19 +76,19 @@ type Val a = (a, PresenceCondition)
 -- to the same set of products). This does not affect correctness, but severely
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
-newtype Var t = Var [(Val t)]
-    --deriving (Generic, NFData)
+newtype V t = V [(Val t)]
+    deriving (Generic)
 
---instance NFData (Var a) where
+--instance NFData (V a) where
 --    rnf (Var !xs) = xs `seq` (map (\(!x,!pc) -> x `seq` pc `seq` ()) xs) `seq` ()
 
-disjInv :: Var t -> Bool
-disjInv v'@(Var v) =
+disjInv :: V t -> Bool
+disjInv v'@(V v) =
     let ret = all (\((_, pc1),(_, pc2)) -> PC.empty (pc1 /\ pc2)) (pairs v)
     in  if (not ret) then trace (showPCs v') ret else ret
 
-showPCs :: Var a -> String
-showPCs (Var v) = "{" ++ (L.intercalate ", " (map (\(_,pc) -> show pc) v)) ++ "}"
+showPCs :: V a -> String
+showPCs (V v) = "{" ++ (L.intercalate ", " (map (\(_,pc) -> show pc) v)) ++ "}"
 
 {-
 compInv :: Var t -> Bool
@@ -122,12 +105,13 @@ exists (x, xpc) ys' =
 
 isSubsetOf :: Eq t => Var t -> Var t -> Bool
 isSubsetOf (Var x) y' = and (map (`exists` y') x)
+-}
 
-instance Show a => Show (Var a) where
+instance Show a => Show (V a) where
     show v' = 
-        let (Var v) = compact v' 
+        let (V v) = compact v' 
         in "{" ++ (L.intercalate ", " (map show v)) ++ "}" 
-
+{-
 -- a < b means that a is a subset of b in terms of products
 --instance Eq a => Ord (Var a) where
 --    (<) x' y' = (isSubsetOf x' y') && not (isSubsetOf y' x')
@@ -137,14 +121,14 @@ instance Show a => Show (Var a) where
 --    (==) x y = (isSubsetOf x y) && (isSubsetOf y x)
 --    (/=) x y = not (x == y)
 -}
-v :: a -> Var a
+v :: a -> V a
 v = (^| allConfigs)
 
-instance Functor Var where
-    fmap :: (a -> b) -> Var a -> Var b
+instance Functor V where
+    fmap :: (a -> b) -> V a -> V b
     fmap f = apply (f ^| allConfigs)
 
-instance Applicative Var where
+instance Applicative V where
     pure  = v
     (<*>) = apply
 {-
@@ -187,28 +171,32 @@ instance Monad VarM where
 --    Var (t :: *)                      = Var' t
 
 -}
-mkVar :: t -> PresenceCondition -> Var t
+mkVar :: t -> PresenceCondition -> V t
 {-# INLINE mkVar #-}
-mkVar v pc = Var [(v,pc)]
+mkVar v pc = V [(v,pc)]
 
-(^|) :: t -> PresenceCondition -> Var t
+(^|) :: t -> PresenceCondition -> V t
 x ^| pc = mkVar x pc
 infixl 9 ^|
 
-mkVars :: [(t,PresenceCondition)] -> Var t
-mkVars vs = Var vs
+mkVars :: [(t,PresenceCondition)] -> V t
+mkVars vs = V vs
 
-definedAt :: Var t -> PresenceCondition
-definedAt (Var xs) = PC.intersect pcs
+annotate :: Partition -> [t] -> V t
+annotate p xs = mkVars $ zip xs p
+
+definedAt :: V t -> PresenceCondition
+definedAt (V xs) = PC.intersect pcs
     where   pcs     = map snd xs
 
-undefinedAt :: Var t -> PresenceCondition
+undefinedAt :: V t -> PresenceCondition
 undefinedAt = negPC . definedAt
 
 {-
 mkVarT :: a -> Var a
 {-# INLINE mkVarT #-}
 mkVarT v = v ^| allConfigs
+-}
 
 {-# INLINE findVal #-}
 findVal :: t -> [Val t] -> (t -> t -> Bool) -> [Val t]
@@ -221,23 +209,25 @@ phelem :: t -> [t] -> (t -> t -> Bool) -> Bool
 phelem v xs cmp = any (\x -> cmp v x) xs
 
 {-# INLINE groupVals_ #-}
-groupVals_ :: [Val t] -> [t] -> (t -> t -> Bool) -> [Val t]
-groupVals_ [] _ _ = []
+groupVals_ :: [Val t] -> [t] -> (t -> t -> Bool) -> V t
+groupVals_ [] _ _ = V []
 groupVals_ ((x,xpc):xs) ds cmp = 
-    if phelem x ds cmp then rest else 
+    if phelem x ds cmp then V rest else 
         let ms = findVal x xs cmp
             pc = PC.intersect(xpc:(snd . unzip) ms)
-        in  (x,pc) : rest
-    where rest = groupVals_ xs (x:ds) cmp
+        in  V $ (x,pc) : rest
+    where (V rest) = groupVals_ xs (x:ds) cmp
 
 {-# INLINE groupVals #-}
-groupVals :: [Val t] -> (t -> t -> Bool) -> [Val t]
+groupVals :: [Val t] -> (t -> t -> Bool) -> V t
 groupVals xs cmp = groupVals_ xs [] cmp
 
-{-# INLINE compact #-}
-compact :: Var t -> Var t
-compact (Var v) = Var (groupVals v (===))
 
+{-# INLINE compact #-}
+compact :: V t -> V t
+compact (V vs) = (groupVals vs (===))
+
+{-
 compactEq :: Eq t => Var t -> Var t
 --compactEq (Var v) = Var (groupVals v (====))
 compactEq = id
@@ -284,28 +274,28 @@ getFeatures = do
 --union2 (Var xs') = unions (map (\(x,pc) -> (restrict pc x)) xs')
 -}
 
-union :: Var t -> Var t -> Var t
-union x@(Var a) y@(Var b) =
-    let result = Var (a ++ b)
+union :: V t -> V t -> V t
+union x@(V a) y@(V b) =
+    let result = V (a ++ b)
     in {-trace (tracePCs x) $ trace (tracePCs y) $ assert (inv result)-} result
 
-unions :: [Var t] -> Var t 
-unions xs = foldr SPL.union (Var []) xs
+unions :: [V t] -> V t 
+unions xs = foldr SPL.union (V []) xs
 
 pairs :: [t] -> [(t,t)]
 pairs [] = []
 pairs xs = zip xs (tail xs)
 
 {-# INLINE apply_ #-}
-apply_ :: Val (a -> b) -> Var a -> Var b
-apply_ (fn, !fnpc) x'@(Var x)  = --localCtxt fnpc $
+apply_ :: Val (a -> b) -> V a -> V b
+apply_ (fn, !fnpc) x'@(V x)  = --localCtxt fnpc $
     mkVars $ [(fn v, pc') | (v, !pc) <- x, let !pc' = fnpc /\ pc, (not . PC.empty) pc'] --map (\(v, pc) -> ) xs
         --xs = filter (\(_, pc) -> sat (fnpc /\ pc)) x in 
     
 
 {-# INLINE apply #-}
-apply :: Var (a -> b) -> Var a -> Var b
-apply f@(Var fn) x = assert (disjInv f) $
+apply :: V (a -> b) -> V a -> V b
+apply f@(V fn) x = assert (disjInv f) $
      assert (disjInv x) $ --compact $
      unions [apply_ f x | f <- fn] 
 
@@ -335,29 +325,29 @@ class VClass a where
     combs = foldr comb nil
     restrict :: PresenceCondition -> a b -> a b
 
-instance VClass Var where
-    nil  = Var []
-    isNil (Var xs) = null xs 
+instance VClass V where
+    nil  = V []
+    isNil (V xs) = null xs 
     at   = definedAt
     --cons v pc (Var vs) = Var $ (v,pc) : vs
     comb = SPL.union
 
-    caseSplitter i@(Var input) splitter range = --assert (compInv i) $
+    caseSplitter i@(V input) splitter range = --assert (compInv i) $
         let initV = V.replicate range nil
             xs = foldl 
                     (\vec (v, pc) -> let index = splitter v 
-                                         (Var item)  = vec V.! index
-                                         item' = Var $ (v,pc) : item
+                                         (V item)  = vec V.! index
+                                         item' = V $ (v,pc) : item
                                      in  vec V.// [(index, item')]) 
                  initV input 
             ret = V.toList xs
         in  --trace (foldl (++) "splits:\t" (map showPCs ret)) $ 
             assert (partitionInv i ret) ret
 
-    restrict pc v'@(Var v) =
+    restrict pc v'@(V v) =
         if      pc == allConfigs then v'
-        else if pc == noConfigs then Var []
-        else    Var [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p]
+        else if pc == noConfigs then V []
+        else    V [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p]
         --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
 
 {-
@@ -377,8 +367,8 @@ instance VClass [a] where -- VList where
         --in  V.toList v'
 -}
 
-evalCond :: Var Bool -> (PresenceCondition, PresenceCondition)
-evalCond c'@(Var c) = 
+evalCond :: V Bool -> (PresenceCondition, PresenceCondition)
+evalCond c'@(V c) = 
     let t = filter (\(v,pc) -> v == True) c
         f = filter (\(v,pc) -> v == False) c
         tPC = foldr (\(_, pc) x -> x \/ pc) noConfigs t
@@ -389,14 +379,14 @@ evalCond c'@(Var c) =
         assert (tPC \/ fPC == definedAt c') $
         (tPC, fPC)
 
-liftedCond :: VClass a => Var Bool -> (PresenceCondition -> a b) -> (PresenceCondition -> a b) -> a b
+liftedCond :: VClass a => V Bool -> (PresenceCondition -> a b) -> (PresenceCondition -> a b) -> a b
 liftedCond c x y = 
     let (t,f) = evalCond c
     in  if t == noConfigs then (y f)
         else if f == noConfigs then (x t)
         else comb ((x t) /^ t) ((y f) /^ f)
 
-partitionInv :: Var a -> [Var a] -> Bool
+partitionInv :: V a -> [V a] -> Bool
 partitionInv x xs = (definedAt x) == cover
     where cover = foldr (\/) noConfigs (map definedAt xs)
 
@@ -463,11 +453,6 @@ liftV5 = liftA5
 --pattern (:^) :: Var a -> List' a -> List' a 
 --pattern x :^ xs <- Cons' x xs
 --infixr :^
-
-{-# INLINE (|:|) #-}
-(|:|) :: Var a -> Var [a] -> Var [a]
-(|:|) = liftV2 (:)
-infixr 5 |:|
 
 -- lifted primitive operators
 (^:) :: Var a -> [Var a] -> [Var a]
