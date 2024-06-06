@@ -71,7 +71,7 @@ compOp   = mkUnqualOp "."
 dollarOp = mkUnqualOp "$"
 
 liftedCond = mkVar (mkName "liftedCond")
-liftedNeg = mkVar (mkName "neg\'")
+liftedNeg = mkVar (mkName "negate")
 liftedCase = mkVar (mkName "liftedCase")
 
 getLiftedPrimitiveOp :: String -> Operator

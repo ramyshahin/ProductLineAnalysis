@@ -119,7 +119,7 @@ rewriteExpr globals locals inBranch e =
         -- assuming all infix operators have been lifted, either in 
         -- VPrelude or in the module being lifted
         InfixApp arg1 op arg2 -> mkInfixApp arg1 op arg2 --rewriteInfixApp globals locals inBranch arg1 op arg2
-        PrefixApp op arg -> mkPrefixApp op arg -- mkInfixApp liftedNeg appOp arg
+        PrefixApp op arg -> mkApp liftedNeg arg
         App fun arg ->  let fun' = rewriteExpr globals locals inBranch fun
                             arg' = rewriteExpr globals locals inBranch arg
                         in  mkApp fun' arg'

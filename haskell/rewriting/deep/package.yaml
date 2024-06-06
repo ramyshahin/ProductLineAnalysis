@@ -34,6 +34,9 @@ library:
     - references
     - ghc
     - containers
+  when:
+      - condition: false
+        other-modules: Paths_Deep
 
 executables:
   deep-rewriter-exe:
@@ -45,6 +48,9 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - deep
+    when:
+      - condition: false
+        other-modules: Paths_Deep
 
 tests:
   rewriter-test:
@@ -56,3 +62,6 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - deep
+    when:
+      - condition: false
+        other-modules: Paths_Deep

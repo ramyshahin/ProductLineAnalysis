@@ -72,17 +72,6 @@ test-suite rewriter-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
-      Test0Deep
-      Test1
-      TestApp
-      TestAppDeep
-      TestCase
-      TestCaseDeep
-      TestDeep
-      TestDFS
-      TestList
-      TestVal
-      TestValDeep
       Paths_deep
   hs-source-dirs:
       test

@@ -1,0 +1,30 @@
+{-# LANGUAGE NoImplicitPrelude #-}{-# LANGUAGE LambdaCase #-}
+
+module Test1Deep where
+import SPL
+import VPrelude
+import Data.List -- TODO: without a dummy import, indentation goes wrong
+
+x :: VInt
+x = ((v 3))
+
+y :: VInt
+y = ((v 7))
+
+z :: VInt
+z = ((v 9))
+
+foo :: VInt -> VInt -> VInt -> VInt
+foo x y z  = (bar x y) + (baz z)
+
+bar :: VInt -> VInt -> VInt
+bar x y  = x + y
+
+baz :: VInt -> VInt
+baz x  = negate (x)
+
+f = baz
+g = baz
+
+x' = f (f (g ((v 2))))
+
