@@ -121,3 +121,9 @@ foldl' _f z _xs =
         [] -> z
         (y : _ys) -> foldl' _f (_f z y) _ys
 -}
+
+{- 
+    SumOption annotated with a PC or absent
+-}
+data SumOption a =
+   Present (Val a) | Absent

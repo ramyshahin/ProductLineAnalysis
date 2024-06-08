@@ -1,4 +1,4 @@
-module TestSum1 where
+module TestProd1 where
 import Data.List -- TODO: without a dummy import, indentation goes wrong
 
-data Bool = False | True
+data T = T Int Int

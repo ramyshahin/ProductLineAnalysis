@@ -16,6 +16,7 @@
 module SPL(
     V,
     v,
+    Val,
     apply,
     annotate,
     (^|),

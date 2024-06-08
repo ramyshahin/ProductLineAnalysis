@@ -145,12 +145,15 @@ mkDefObj objName consName args =
     in  mkValueBinding $
             mkSimpleBind (mkVarPat objName) (mkUnguardedRhs $ foldl mkApp cons args') Nothing
 
+sumOption :: Type
+sumOption = mkVarType . mkName $ "SumOption"
+
 mkProdCons :: DeclHead -> [DeclHead] -> ConDecl
 mkProdCons dh dhs =
     let toField dh = let x = getTypeName' False False dh
                      in  mkName $ 'f' : tail x
-        toType  = mkVarType . mkName . (getTypeName' False True)
-        tname  = getTypeName' True False dh
+        toType  = (mkTypeApp sumOption) . mkVarType . mkName . (getTypeName' False True)
+        tname  = (prettyPrint $ liftedTypeName (mkName (getTypeName' False False dh))) ++ "_SOP"
         fields = map (\dh -> mkFieldDecl [toField dh] $ toType dh) dhs
     in mkRecordConDecl (mkName tname) fields
 
