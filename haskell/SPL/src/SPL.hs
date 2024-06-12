@@ -17,9 +17,14 @@ module SPL(
     V,
     v,
     Val,
+    VClass,
+    restrict, -- from VClass
+    combs,    -- from VClass
+    unions,
     apply,
     annotate,
     (^|),
+    (/^),
     (===),
     liftedCond
 ) where
@@ -127,7 +132,7 @@ v = (^| allConfigs)
 
 instance Functor V where
     fmap :: (a -> b) -> V a -> V b
-    fmap f = apply (f ^| allConfigs)
+    fmap f = apply (v f)
 
 instance Applicative V where
     pure  = v

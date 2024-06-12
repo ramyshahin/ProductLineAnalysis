@@ -1,0 +1,12 @@
+{-# LANGUAGE NoImplicitPrelude #-}module TestSum2Deep where
+import SPL
+import VPrelude
+import Data.List -- TODO: without a dummy import, indentation goes wrong
+
+data I_BFalse = I_BFalse
+
+data I_BTrue = I_BTrue
+data VB = VB_SOP { f_BFalse :: SumOption I_BFalse, f_BTrue :: SumOption I_BTrue }
+f :: VB -> VInt
+f b  = match [(\(I_BFalse) -> ((v 0))) <$> (f_BFalse (b)), (\(I_BTrue) -> ((v 1))) <$> (f_BTrue (b))]
+

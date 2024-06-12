@@ -127,3 +127,23 @@ foldl' _f z _xs =
 -}
 data SumOption a =
    Present (Val a) | Absent
+
+instance P.Functor SumOption where
+    fmap f Absent = Absent
+    fmap f (Present (x, pc)) = Present (f x, pc)
+
+(<$>) :: (P.Functor f) => (a -> b) -> f a -> f b
+(<$>) = P.fmap
+
+match :: (VClass a) => [SumOption (a b)] -> a b
+match xs = combs (match_ xs)
+
+match_ :: (VClass a) => [SumOption (a b)] -> [(a b)]
+match_ [] = []
+match_ (x : xs) =
+    case x of
+        Absent -> match_ xs
+        Present (v, pc) -> (restrict pc v) : match_ xs
+
+
+ 

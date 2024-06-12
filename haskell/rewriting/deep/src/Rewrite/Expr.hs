@@ -87,11 +87,11 @@ rewriteAlt globals locals c (Alt p (CaseRhs e) _) =
         p' = rewriteCasePattern p
         accessor = attributeName $ getPatternName p 
         field = mkParen $ mkApp (mkVar (accessor)) (mkParen c) 
-    in  mkApp (mkParen (mkLambda [p'] e'))field 
+    in  mkInfixApp (mkParen (mkLambda [p'] e')) fmapOp field
 
 rewriteCase :: Declarations -> Declarations -> Expr -> [Alt] -> Expr
 rewriteCase globals locals c alts =
-    mkApp symUnions $
+    mkApp symMatch $
     mkList $ map (rewriteAlt globals locals c) alts
 
 rewriteLocalBind :: Declarations -> Declarations -> Bool -> LocalBind -> (LocalBind, S.Set String)
@@ -111,11 +111,14 @@ rewriteRhs globals locals inBranch rhs = case rhs of
     UnguardedRhs e -> mkUnguardedRhs $ rewriteExpr globals locals inBranch e
     _              -> trace ("Unhandled RHS " ++ prettyPrint rhs) $ rhs
 
+isConstructor :: Name -> Bool
+isConstructor n = isUpper ((head . prettyPrint) n)
+
 rewriteExpr :: Declarations -> Declarations -> Bool -> Expr -> Expr
 rewriteExpr globals locals inBranch e = 
     case e of 
         Lit l -> liftExpr globals locals inBranch e
-        Var n -> mkVar n -- rewriteVar globals locals inBranch n 
+        Var n -> mkVar $ if isConstructor n then innerName n else n -- rewriteVar globals locals inBranch n 
         -- assuming all infix operators have been lifted, either in 
         -- VPrelude or in the module being lifted
         InfixApp arg1 op arg2 -> mkInfixApp arg1 op arg2 --rewriteInfixApp globals locals inBranch arg1 op arg2

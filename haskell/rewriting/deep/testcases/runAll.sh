@@ -2,6 +2,7 @@ TEST_FILES="
     Test1
 	TestProd1
 	TestSum1
+    TestSum2
     "
 
 ./clean.sh

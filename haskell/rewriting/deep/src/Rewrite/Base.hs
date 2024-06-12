@@ -47,7 +47,7 @@ restrictOp  = mkUnqualOp "/^"
 upOp        = mkUnqualOp "^|"
 --notSupported :: a -> a
 notSupported x = trace ("Not supported: " ++ prettyPrint x) x
-symUnions = mkVar $ mkName "unions"
+symMatch = mkVar $ mkName "match"
 
 type Declarations = S.Set String
 

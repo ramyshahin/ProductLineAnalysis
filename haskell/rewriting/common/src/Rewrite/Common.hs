@@ -13,6 +13,7 @@ appendModName :: String -> ModuleName -> ModuleName
 appendModName s mn = mkModuleName $ (mn ^. moduleNameString) ++ s
 
 appOp  = mkUnqualOp "<*>"
+fmapOp = mkUnqualOp "<$>"
 mkVarT = mkVar (mkName "mkVarT")
 mkVars = mkVar (mkName "mkVars")
 --tt     = mkVar (mkName "tt")
