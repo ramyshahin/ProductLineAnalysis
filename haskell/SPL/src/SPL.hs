@@ -322,22 +322,22 @@ cond p a b = if p then a else b
 -}
 -- VClass type class
 class VClass a where
-    nil  :: a b
-    isNil:: a b -> Bool
-    at   :: a b -> PresenceCondition
-    comb :: a b -> a b -> a b 
-    caseSplitter :: a b -> (b -> Int) -> Int -> [a b] 
-    combs :: [a b] -> a b
+    nil  :: a
+    isNil:: a -> Bool
+    at   :: a -> PresenceCondition
+    comb :: a -> a -> a 
+    --caseSplitter :: a b -> (b -> Int) -> Int -> [a b] 
+    combs :: [a] -> a
     combs = foldr comb nil
-    restrict :: PresenceCondition -> a b -> a b
+    restrict :: PresenceCondition -> a -> a
 
-instance VClass V where
+instance VClass (V a) where
     nil  = V []
     isNil (V xs) = null xs 
     at   = definedAt
     --cons v pc (Var vs) = Var $ (v,pc) : vs
     comb = SPL.union
-
+{-
     caseSplitter i@(V input) splitter range = --assert (compInv i) $
         let initV = V.replicate range nil
             xs = foldl 
@@ -349,7 +349,7 @@ instance VClass V where
             ret = V.toList xs
         in  --trace (foldl (++) "splits:\t" (map showPCs ret)) $ 
             assert (partitionInv i ret) ret
-
+-}
     restrict pc v'@(V v) =
         if      pc == allConfigs then v'
         else if pc == noConfigs then V []
@@ -385,7 +385,7 @@ evalCond c'@(V c) =
         assert (tPC \/ fPC == definedAt c') $
         (tPC, fPC)
 
-liftedCond :: VClass a => V Bool -> (PresenceCondition -> a b) -> (PresenceCondition -> a b) -> a b
+liftedCond :: VClass a => V Bool -> (PresenceCondition -> a) -> (PresenceCondition -> a) -> a
 liftedCond c x y = 
     let (t,f) = evalCond c
     in  if t == noConfigs then (y f)
