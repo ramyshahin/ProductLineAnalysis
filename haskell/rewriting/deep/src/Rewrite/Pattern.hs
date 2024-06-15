@@ -19,7 +19,7 @@ getPatternVars p =
     where unionPatterns ps = foldl S.union S.empty $ map getPatternVars (_annListElems ps)
 
 rewriteCasePattern :: Pattern -> Pattern
-rewriteCasePattern p = mkParenPat $ 
+rewriteCasePattern p = --mkParenPat $ 
     case p of
         VarPat n      -> mkVarPat $ innerName n
         AppPat c args -> mkAppPat (innerName c) (_annListElems args)

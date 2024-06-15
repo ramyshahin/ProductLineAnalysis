@@ -52,7 +52,7 @@ symMatch = mkVar $ mkName "match"
 type Declarations = S.Set String
 
 innerName :: Name -> Name
-innerName n = mkName $ "I_" ++ prettyPrint n 
+innerName n = mkName $ "I_" ++ prettyPrint n
 
 liftedTypeName :: Name -> Name
 liftedTypeName n = mkName ("V" ++ prettyPrint n)
@@ -61,7 +61,10 @@ consName :: Name -> Name
 consName n = mkName ("c_" ++ prettyPrint n)
 
 defaultName :: Name -> Name
-defaultName n = mkName ("d_" ++ prettyPrint n)
+defaultName n = mkName ("absent_" ++ prettyPrint n)
+
+consFnName :: Name -> Name
+consFnName n = mkName ("cons" ++ prettyPrint n)
 
 attributeName :: Name -> Name
 attributeName n = mkName $ "f_" ++ prettyPrint n
@@ -94,6 +97,15 @@ externalDecl globals locals x =
     let allDecls = S.union globals locals
         r = not $ S.member (prettyPrint x) allDecls
     in  trace (debugDecls allDecls ++ " External " ++ prettyPrint x ++ " ? " ++ show r) $ r
+
+sumOption :: Type
+sumOption = mkVarType . mkName $ "SumOption"
+
+absentCons = mkName "Absent"
+presentCons = mkName "Present"
+
+consNameSOP :: String -> String 
+consNameSOP s = s ++ "_PoS"
 
 {-
 liftOp (NormalOp o) inBranch = --trace ("liftOp: " ++ (prettyPrint o))

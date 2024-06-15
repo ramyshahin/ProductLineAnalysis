@@ -84,10 +84,12 @@ rewriteAlt' globals locals inBranch (Alt p (CaseRhs e) xs) =
 rewriteAlt :: Declarations -> Declarations -> Expr -> Alt -> Expr
 rewriteAlt globals locals c (Alt p (CaseRhs e) _) =
     let e' = rewriteExpr globals locals False e
-        p' = rewriteCasePattern p
+        p' = mkParenPat $ 
+                mkAppPat presentCons [mkTuplePat [rewriteCasePattern p, (mkVarPat . mkName) "pc"] ]
         accessor = attributeName $ getPatternName p 
         field = mkParen $ mkApp (mkVar (accessor)) (mkParen c) 
-    in  mkInfixApp (mkParen (mkLambda [p'] e')) fmapOp field
+    in  --mkInfixApp (mkParen (mkLambda [p'] e')) fmapOp field
+        mkApp (mkParen (mkLambda [p'] e')) field
 
 rewriteCase :: Declarations -> Declarations -> Expr -> [Alt] -> Expr
 rewriteCase globals locals c alts =
@@ -114,11 +116,18 @@ rewriteRhs globals locals inBranch rhs = case rhs of
 isConstructor :: Name -> Bool
 isConstructor n = isUpper ((head . prettyPrint) n)
 
+rewriteConstructor :: Name -> Expr
+rewriteConstructor n = 
+    let i_name = innerName n 
+        e = mkParen $ mkApp (mkVar presentCons) (mkTuple [mkVar i_name, (mkVar . mkName) "pc"])
+    in
+        mkApp (mkVar $ consFnName i_name) e
+
 rewriteExpr :: Declarations -> Declarations -> Bool -> Expr -> Expr
 rewriteExpr globals locals inBranch e = 
     case e of 
         Lit l -> liftExpr globals locals inBranch e
-        Var n -> mkVar $ if isConstructor n then innerName n else n -- rewriteVar globals locals inBranch n 
+        Var n -> if isConstructor n then rewriteConstructor n else mkVar n -- rewriteVar globals locals inBranch n 
         -- assuming all infix operators have been lifted, either in 
         -- VPrelude or in the module being lifted
         InfixApp arg1 op arg2 -> mkInfixApp arg1 op arg2 --rewriteInfixApp globals locals inBranch arg1 op arg2

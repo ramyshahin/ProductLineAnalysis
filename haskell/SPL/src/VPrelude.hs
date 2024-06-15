@@ -135,15 +135,16 @@ instance P.Functor SumOption where
 (<$>) :: (P.Functor f) => (a -> b) -> f a -> f b
 (<$>) = P.fmap
 
-match :: (VClass a) => [SumOption a] -> a
-match xs = combs (match_ xs)
+match :: (VClass a) => [a] -> a
+match = combs
 
+{-
 match_ :: (VClass a) => [SumOption a] -> [a]
 match_ [] = []
 match_ (x : xs) =
     case x of
         Absent -> match_ xs
         Present (v, pc) -> (restrict pc v) : match_ xs
-
+-}
 
  

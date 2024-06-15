@@ -119,8 +119,8 @@ getTypeName t =
         ParenType t -> getTypeName t
         _ -> notSupported $ mkName "getTypeName"
 
-cons2innerType :: Declarations -> DeclHead -> ConDecl -> ((Decl, Decl), (Name, DeclHead))
-cons2innerType globals dh c = 
+cons2innerType :: Declarations -> DeclHead -> Name -> ConDecl -> ((Decl, Decl), (Name, DeclHead))
+cons2innerType globals dh tn c = 
     case c of
         ConDecl n ts ->
             let name     = innerName n 
@@ -128,7 +128,7 @@ cons2innerType globals dh c =
                 ts''     = map (rewriteType globals) ts'
                 newCons  = mkConDecl name ts'' 
                 declHead = renameDeclHead dh name 
-                dObj     = mkDefObj (defaultName n) (innerName n) (map getTypeName ts'')
+                dObj     = mkInnerCons n (defaultName tn) --(map getTypeName ts'')
             in  ((mkDataDecl mkDataKeyword Nothing declHead [newCons] [], dObj), (n,declHead)) 
 
 emptyVar :: Name -> Expr
@@ -137,23 +137,34 @@ emptyVar n =
     then mkParen $ mkApp (mkVar $ mkName "Var") (mkList [])
     else mkVar $ defaultName n
 
-mkDefObj :: Name -> Name -> [Name] -> Decl
-mkDefObj objName consName args =
-    let --objName = defaultName consName
-        cons    = mkVar consName
-        args'   = map emptyVar args
+mkDefObj :: Name -> Int -> Decl
+mkDefObj typeName consCount =
+    let objName = defaultName typeName
+        cons    = (mkVar . mkName) $ consNameSOP (prettyPrint typeName)
+        args'   = map mkVar $ replicate consCount absentCons
     in  mkValueBinding $
             mkSimpleBind (mkVarPat objName) (mkUnguardedRhs $ foldl mkApp cons args') Nothing
 
-sumOption :: Type
-sumOption = mkVarType . mkName $ "SumOption"
+mkInnerCons :: Name -> Name -> Decl
+mkInnerCons n defObjName = --params =
+    let typeName = innerName n
+        paramName = mkName "x"
+        param = mkVarPat $ paramName
+        --consCount = length params
+        cName = consFnName typeName
+        fieldUpdates = [mkFieldUpdate (attributeName n) (mkVar $ paramName)]
+        recUpdate = mkRecUpdate cons fieldUpdates 
+        cons    = mkVar defObjName --(mkVar . mkName) $ consNameSOP (prettyPrint typeName)
+        --args'   = map mkVar $ replicate consCount absentCons
+    in  mkValueBinding $
+            mkSimpleBind (mkAppPat cName [param]) (mkUnguardedRhs $ recUpdate) Nothing
 
 mkProdCons :: DeclHead -> [DeclHead] -> ConDecl
 mkProdCons dh dhs =
     let toField dh = let x = getTypeName' False False dh
                      in  mkName $ 'f' : tail x
         toType  = (mkTypeApp sumOption) . mkVarType . mkName . (getTypeName' False True)
-        tname  = (prettyPrint $ liftedTypeName (mkName (getTypeName' False False dh))) ++ "_SOP"
+        tname  = (consNameSOP . prettyPrint) $ liftedTypeName (mkName (getTypeName' False False dh))
         fields = map (\dh -> mkFieldDecl [toField dh] $ toType dh) dhs
     in mkRecordConDecl (mkName tname) fields
 
@@ -234,22 +245,22 @@ rewriteDecl globals d =
         ValueBinding vb -> [rewriteValueBind globals vb]
         DataDecl newType ctxt hd cns drv -> 
             let newDeclHead = rewriteDeclHead globals hd
+                tname       = mkName $ getTypeName' False False hd
+                tname'      = liftedTypeName tname
                 cns'        = _annListElems cns
                 --conss       = length cns'
                 --consNames   = map getConName (_annListElems cns) 
-                (innerTypes', dhs') = unzip $ map (cons2innerType globals hd) (_annListElems cns)
+                (innerTypes', dhs') = unzip $ map (cons2innerType globals hd tname') (_annListElems cns)
                 (innerTypes, defObjs) = unzip innerTypes'
                 (names,dhss)= unzip dhs'
                 prodCons    = mkProdCons hd dhss -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
                 liftdConss  = map (rewriteConDecl globals hd) cns'
-                --tname       = mkName $ getTypeName' False False hd
-                --tname'      = liftedTypeName tname
-                --def         = mkDefObj (defaultName tname') tname' names 
+                def         = mkDefObj tname' (length cns') 
             in  innerTypes ++ 
                 [mkDataDecl newType (_annMaybe ctxt) newDeclHead --liftdConss
                     [prodCons]
-                    (_annListElems drv)] -- , def] -- ++ 
+                    (_annListElems drv), def] ++ 
                     --innerTypes ++ 
-                    --defObjs ++ 
+                    defObjs -- ++ 
                     --map (liftConstructor tname cns') (zip cns' [0..])
         _ -> [notSupported d]

@@ -34,6 +34,10 @@ library:
     - generic-deriving
     - deepseq
     - generics-sop
+  when:
+      - condition: false
+        other-modules: Paths_SPL
+
 tests:
   SPL-test:
     main:                SPL_test.hs
@@ -46,4 +50,7 @@ tests:
     - QuickCheck
     - containers
     - SPL
+    when:
+      - condition: false
+        other-modules: Paths_SPL
 
