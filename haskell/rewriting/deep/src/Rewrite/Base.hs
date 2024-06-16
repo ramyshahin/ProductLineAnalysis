@@ -107,6 +107,8 @@ presentCons = mkName "Present"
 consNameSOP :: String -> String 
 consNameSOP s = s ++ "_PoS"
 
+vclassName = mkName "VClass"
+
 {-
 liftOp (NormalOp o) inBranch = --trace ("liftOp: " ++ (prettyPrint o))
     let pc = if inBranch then cntxtExpr else ttExpr 

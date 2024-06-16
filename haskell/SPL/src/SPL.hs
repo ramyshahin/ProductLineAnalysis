@@ -18,15 +18,16 @@ module SPL(
     v,
     Val,
     VClass,
-    restrict, -- from VClass
-    combs,    -- from VClass
+    --restrict, -- from VClass
+    --combs,    -- from VClass
+    nil,        -- from VClass
     unions,
     apply,
     annotate,
     (^|),
-    (/^),
-    (===),
-    liftedCond
+    --(/^),
+    (===)--,
+    --liftedCond
 ) where
 
 
@@ -305,7 +306,7 @@ apply f@(V fn) x = assert (disjInv f) $
      assert (disjInv x) $ --compact $
      unions [apply_ f x | f <- fn] 
 
-(/^) x pc = restrict pc x
+--(/^) x pc = restrict pc x
 {-
 
 --instance Foldable Var where
@@ -323,20 +324,22 @@ cond p a b = if p then a else b
 -- VClass type class
 class VClass a where
     nil  :: a
-    isNil:: a -> Bool
-    at   :: a -> PresenceCondition
-    comb :: a -> a -> a 
+--    isNil:: a -> Bool
+--    at   :: a -> PresenceCondition
+--    comb :: a -> a -> a 
     --caseSplitter :: a b -> (b -> Int) -> Int -> [a b] 
-    combs :: [a] -> a
-    combs = foldr comb nil
-    restrict :: PresenceCondition -> a -> a
+--    combs :: [a] -> a
+--    combs = foldr comb nil
+--    restrict :: PresenceCondition -> a -> a
 
 instance VClass (V a) where
     nil  = V []
+    {-
     isNil (V xs) = null xs 
     at   = definedAt
     --cons v pc (Var vs) = Var $ (v,pc) : vs
     comb = SPL.union
+    -}
 {-
     caseSplitter i@(V input) splitter range = --assert (compInv i) $
         let initV = V.replicate range nil
@@ -350,12 +353,13 @@ instance VClass (V a) where
         in  --trace (foldl (++) "splits:\t" (map showPCs ret)) $ 
             assert (partitionInv i ret) ret
 -}
+{-
     restrict pc v'@(V v) =
         if      pc == allConfigs then v'
         else if pc == noConfigs then V []
         else    V [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p]
         --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
-
+-}
 {-
 instance VClass [a] where -- VList where
     nil  = VDeep []
@@ -385,12 +389,14 @@ evalCond c'@(V c) =
         assert (tPC \/ fPC == definedAt c') $
         (tPC, fPC)
 
+{-
 liftedCond :: VClass a => V Bool -> (PresenceCondition -> a) -> (PresenceCondition -> a) -> a
 liftedCond c x y = 
     let (t,f) = evalCond c
     in  if t == noConfigs then (y f)
         else if f == noConfigs then (x t)
         else comb ((x t) /^ t) ((y f) /^ f)
+-}
 
 partitionInv :: V a -> [V a] -> Bool
 partitionInv x xs = (definedAt x) == cover

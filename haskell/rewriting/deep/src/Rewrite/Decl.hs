@@ -255,11 +255,21 @@ rewriteDecl globals d =
                 (names,dhss)= unzip dhs'
                 prodCons    = mkProdCons hd dhss -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
                 liftdConss  = map (rewriteConDecl globals hd) cns'
-                def         = mkDefObj tname' (length cns') 
+                def         = mkDefObj tname' (length cns')
+                vclassInst  = mkInstanceDecl 
+                    Nothing 
+                    (mkInstanceRule Nothing (mkAppInstanceHead (mkInstanceHead vclassName) (mkVarType tname')))
+                    (Just $ mkInstanceBody [
+                        let objName = mkName "nil"
+                            cons    = (mkVar . mkName) $ consNameSOP (prettyPrint tname')
+                            args'   = map mkVar $ replicate (length cns') absentCons
+                        in  mkInstanceBind $
+                            mkSimpleBind (mkVarPat objName) (mkUnguardedRhs $ foldl mkApp cons args') Nothing 
+                    ]) 
             in  innerTypes ++ 
                 [mkDataDecl newType (_annMaybe ctxt) newDeclHead --liftdConss
                     [prodCons]
-                    (_annListElems drv), def] ++ 
+                    (_annListElems drv), vclassInst, def] ++ 
                     --innerTypes ++ 
                     defObjs -- ++ 
                     --map (liftConstructor tname cns') (zip cns' [0..])
