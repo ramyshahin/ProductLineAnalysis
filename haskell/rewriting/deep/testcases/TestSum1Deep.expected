@@ -5,5 +5,8 @@ import Data.List -- TODO: without a dummy import, indentation goes wrong
 
 data I_False = I_False
 data I_True = I_True
-data VBool = VBool_SOP { f_False :: SumOption I_False, f_True :: SumOption I_True }
+data VB = VB_PoS { f_False :: SumOption I_False, f_True :: SumOption I_True }
+instance VClass VB where nil = VB_PoS Absent Absent
+consI_False x r = r { f_False = x }
+consI_True x r = r { f_True = x }
 

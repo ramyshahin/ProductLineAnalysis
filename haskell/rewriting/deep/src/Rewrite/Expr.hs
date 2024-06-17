@@ -88,8 +88,9 @@ rewriteAlt globals locals c (Alt p (CaseRhs e) _) =
                 mkAppPat presentCons [mkTuplePat [rewriteCasePattern p, (mkVarPat . mkName) "pc"] ]
         accessor = attributeName $ getPatternName p 
         field = mkParen $ mkApp (mkVar (accessor)) (mkParen c) 
+        r = mkVarPat $ mkName "r"
     in  --mkInfixApp (mkParen (mkLambda [p'] e')) fmapOp field
-        mkApp (mkParen (mkLambda [p'] e')) field
+        mkApp (mkParen (mkLambda [p', r] e')) field
 
 rewriteCase :: Declarations -> Declarations -> Expr -> [Alt] -> Expr
 rewriteCase globals locals c alts =
@@ -120,8 +121,9 @@ rewriteConstructor :: Name -> Expr
 rewriteConstructor n = 
     let i_name = innerName n 
         e = mkParen $ mkApp (mkVar presentCons) (mkTuple [mkVar i_name, (mkVar . mkName) "pc"])
+        r = mkVar $ mkName "r"
     in
-        mkApp (mkVar $ consFnName i_name) e
+        mkApp (mkApp (mkVar $ consFnName i_name) e) r 
 
 rewriteExpr :: Declarations -> Declarations -> Bool -> Expr -> Expr
 rewriteExpr globals locals inBranch e = 

@@ -3,6 +3,7 @@ TEST_FILES="
 	TestProd1
 	TestSum1
     TestSum2
+    TestSum3
     "
 
 ./clean.sh

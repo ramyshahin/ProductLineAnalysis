@@ -148,16 +148,18 @@ mkDefObj typeName consCount =
 mkInnerCons :: Name -> Name -> Decl
 mkInnerCons n defObjName = --params =
     let typeName = innerName n
-        paramName = mkName "x"
-        param = mkVarPat $ paramName
+        paramXname = mkName "x"
+        paramRname = mkName "r"
+        paramX = mkVarPat $ paramXname
+        paramR = mkVarPat $ paramRname
         --consCount = length params
         cName = consFnName typeName
-        fieldUpdates = [mkFieldUpdate (attributeName n) (mkVar $ paramName)]
+        fieldUpdates = [mkFieldUpdate (attributeName n) (mkVar $ paramXname)]
         recUpdate = mkRecUpdate cons fieldUpdates 
-        cons    = mkVar defObjName --(mkVar . mkName) $ consNameSOP (prettyPrint typeName)
+        cons    = mkVar paramRname --(mkVar . mkName) $ consNameSOP (prettyPrint typeName)
         --args'   = map mkVar $ replicate consCount absentCons
     in  mkValueBinding $
-            mkSimpleBind (mkAppPat cName [param]) (mkUnguardedRhs $ recUpdate) Nothing
+            mkSimpleBind (mkAppPat cName [paramX, paramR]) (mkUnguardedRhs $ recUpdate) Nothing
 
 mkProdCons :: DeclHead -> [DeclHead] -> ConDecl
 mkProdCons dh dhs =
@@ -269,7 +271,7 @@ rewriteDecl globals d =
             in  innerTypes ++ 
                 [mkDataDecl newType (_annMaybe ctxt) newDeclHead --liftdConss
                     [prodCons]
-                    (_annListElems drv), vclassInst, def] ++ 
+                    (_annListElems drv), vclassInst] ++ 
                     --innerTypes ++ 
                     defObjs -- ++ 
                     --map (liftConstructor tname cns') (zip cns' [0..])

@@ -135,8 +135,8 @@ data SumOption a =
 --(<$>) :: (P.Functor f) => (a -> b) -> f a -> f b
 --(<$>) = P.fmap
 
-match :: (VClass a) => [a] -> a
-match xs = nil -- TODO 
+match :: (VClass a) => [a -> a] -> a
+match = P.foldr (\f x -> f x) nil
 
 {-
 match_ :: (VClass a) => [SumOption a] -> [a]

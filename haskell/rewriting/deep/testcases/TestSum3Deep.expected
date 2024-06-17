@@ -1,4 +1,4 @@
-{-# LANGUAGE NoImplicitPrelude #-}module TestSum2Deep where
+{-# LANGUAGE NoImplicitPrelude #-}module TestSum3Deep where
 import SPL
 import VPrelude
 import Data.List -- TODO: without a dummy import, indentation goes wrong
@@ -10,6 +10,6 @@ data VB = VB_PoS { f_BFalse :: SumOption I_BFalse, f_BTrue :: SumOption I_BTrue 
 instance VClass VB where nil = VB_PoS Absent Absent
 consI_BFalse x r = r { f_BFalse = x }
 consI_BTrue x r = r { f_BTrue = x }
-f :: VB -> VInt
-f b  = match [(\(Present (I_BFalse, pc)) r -> ((v 0))) (f_BFalse (b)), (\(Present (I_BTrue, pc)) r -> ((v 1))) (f_BTrue (b))]
+f :: VB -> VB
+f b  = match [(\(Present (I_BFalse, pc)) r -> consI_BTrue (Present (I_BTrue, pc)) r) (f_BFalse (b)), (\(Present (I_BTrue, pc)) r -> consI_BFalse (Present (I_BFalse, pc)) r) (f_BTrue (b))]
 
