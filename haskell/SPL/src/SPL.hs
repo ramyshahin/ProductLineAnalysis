@@ -18,9 +18,12 @@ module SPL(
     v,
     Val,
     VClass,
+    SumOption (..),
+    match,
     --restrict, -- from VClass
-    --combs,    -- from VClass
+    combs,    
     nil,        -- from VClass
+    comb,       -- from VClass
     unions,
     apply,
     annotate,
@@ -326,11 +329,24 @@ class VClass a where
     nil  :: a
 --    isNil:: a -> Bool
 --    at   :: a -> PresenceCondition
---    comb :: a -> a -> a 
+    comb :: a -> a -> a 
     --caseSplitter :: a b -> (b -> Int) -> Int -> [a b] 
 --    combs :: [a] -> a
 --    combs = foldr comb nil
 --    restrict :: PresenceCondition -> a -> a
+
+{-
+class GVClass f where
+    gnil :: f a
+    gcomb :: f a -> f a -> f a
+
+instance GVClass U1 where 
+    gnil U1 = ...
+    gcomb a b = ...
+-}
+
+combs :: VClass a => [a] -> a
+combs = foldr comb nil
 
 instance VClass (V a) where
     nil  = V []
@@ -338,8 +354,8 @@ instance VClass (V a) where
     isNil (V xs) = null xs 
     at   = definedAt
     --cons v pc (Var vs) = Var $ (v,pc) : vs
-    comb = SPL.union
     -}
+    comb = SPL.union
 {-
     caseSplitter i@(V input) splitter range = --assert (compInv i) $
         let initV = V.replicate range nil
@@ -612,3 +628,25 @@ list1 = x ^: list0
 -}
 
 -}
+
+{- 
+    SumOption annotated with a PC or absent
+-}
+data SumOption a =
+   Present (Val a) | Absent
+
+instance (VClass a) => VClass (SumOption a) where
+    nil = Absent
+    comb Absent y = y
+    comb x Absent = x
+    comb (Present (x, xpc)) (Present (y, ypc)) = Present (comb x y, xpc \/ ypc)
+
+--instance P.Functor SumOption where
+--    fmap f Absent = Absent
+--    fmap f (Present (x, pc)) = Present (f x, pc)
+
+--(<$>) :: (P.Functor f) => (a -> b) -> f a -> f b
+--(<$>) = P.fmap
+
+match :: (VClass a) => [a -> a] -> a
+match = foldr (\f x -> f x) nil

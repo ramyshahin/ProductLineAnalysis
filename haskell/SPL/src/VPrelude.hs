@@ -122,21 +122,7 @@ foldl' _f z _xs =
         (y : _ys) -> foldl' _f (_f z y) _ys
 -}
 
-{- 
-    SumOption annotated with a PC or absent
--}
-data SumOption a =
-   Present (Val a) | Absent
 
---instance P.Functor SumOption where
---    fmap f Absent = Absent
---    fmap f (Present (x, pc)) = Present (f x, pc)
-
---(<$>) :: (P.Functor f) => (a -> b) -> f a -> f b
---(<$>) = P.fmap
-
-match :: (VClass a) => [a -> a] -> a
-match = P.foldr (\f x -> f x) nil
 
 {-
 match_ :: (VClass a) => [SumOption a] -> [a]

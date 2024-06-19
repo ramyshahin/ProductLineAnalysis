@@ -5,6 +5,9 @@ import Data.List -- TODO: without a dummy import, indentation goes wrong
 
 data I_T = I_T VInt VInt
 data VT = VT_PoS { f_T :: SumOption I_T }
-instance VClass VT where nil = VT_PoS Absent
+instance VClass VT where nil = VT_PoS nil
+                         comb a b = VT_PoS (comb (f_T a) (f_T b))
+instance VClass I_T where nil = I_T nil nil
+                          comb (I_T a1 a2) (I_T b1 b2) = I_T ((comb a1 b1)) ((comb a2 b2))
 consI_T x r = r { f_T = x }
 

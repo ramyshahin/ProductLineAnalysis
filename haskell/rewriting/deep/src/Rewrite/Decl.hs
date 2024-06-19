@@ -119,17 +119,19 @@ getTypeName t =
         ParenType t -> getTypeName t
         _ -> notSupported $ mkName "getTypeName"
 
-cons2innerType :: Declarations -> DeclHead -> Name -> ConDecl -> ((Decl, Decl), (Name, DeclHead))
+cons2innerType :: Declarations -> DeclHead -> Name -> ConDecl -> ((Decl, Decl), Decl, (Name, DeclHead))
 cons2innerType globals dh tn c = 
     case c of
         ConDecl n ts ->
             let name     = innerName n 
                 ts'      = _annListElems ts
                 ts''     = map (rewriteType globals) ts'
+                tNames   = map getTypeName ts''
                 newCons  = mkConDecl name ts'' 
                 declHead = renameDeclHead dh name 
                 dObj     = mkInnerCons n (defaultName tn) --(map getTypeName ts'')
-            in  ((mkDataDecl mkDataKeyword Nothing declHead [newCons] [], dObj), (n,declHead)) 
+                vclassInst = mkVClassInst name name tNames True
+            in  ((mkDataDecl mkDataKeyword Nothing declHead [newCons] [], dObj), vclassInst, (n,declHead)) 
 
 emptyVar :: Name -> Expr
 emptyVar n = 
@@ -240,6 +242,33 @@ rewriteValueBind globals vb = mkValueBinding $ case vb of
             map (\m -> rewriteMatch globals (getMatchVars m) False m) (_annListElems ms)) 
     _ -> notSupported vb --trace ("Unhandled Value Bind " ++ prettyPrint vb) $ vb
 
+mkVClassInst :: Name -> Name -> [Name] -> Bool -> Decl
+mkVClassInst tname consName names' inner = 
+    let paramCount = length names'
+        names   = if inner then map (\n -> mkName $ show n) [1..(length names')] else names'
+        cons    = mkVar consName
+        nilBind = (let objName = mkName "nil"
+                       args'   = map mkVar $ replicate paramCount objName
+                   in  mkInstanceBind $
+                        mkSimpleBind (mkVarPat objName) (mkUnguardedRhs $ foldl mkApp cons args') Nothing)
+        combBind = (let v s n = mkVar $ mkName (s ++ (prettyPrint n))
+                        comb = mkVar (mkName "comb")
+                        arg n s = mkParen $ if inner 
+                                  then mkParen $ mkApp (mkApp comb (v "a" n)) (v "b" n) 
+                                  else mkApp ((mkVar . attributeName) n) ((mkVar . mkName) s)
+                        args = map (\n ->  if inner then arg n "" else mkParen $ mkApp (mkApp comb (arg n "a")) (arg n "b")) names
+                        pat s = if inner 
+                                then (if length names > 0 then mkParenPat else id) $ 
+                                        mkAppPat consName (map (mkVarPat . (\n -> mkName $ s ++ n) . prettyPrint) names) 
+                                else mkVarPat $ mkName s 
+                        --cons = (mkVar . mkName) $ consNameSOP (prettyPrint tname)
+                    in  mkInstanceBind $ mkSimpleBind 
+                            (mkAppPat (mkName "comb") [pat "a", pat "b"]) 
+                            (mkUnguardedRhs $ foldl mkApp cons args) Nothing)
+    in mkInstanceDecl Nothing 
+        (mkInstanceRule Nothing (mkAppInstanceHead (mkInstanceHead vclassName) (mkVarType tname)))
+        (Just $ mkInstanceBody [nilBind, combBind]) 
+
 rewriteDecl :: Declarations -> Decl -> [Decl]
 rewriteDecl globals d = 
      case d of
@@ -252,26 +281,18 @@ rewriteDecl globals d =
                 cns'        = _annListElems cns
                 --conss       = length cns'
                 --consNames   = map getConName (_annListElems cns) 
-                (innerTypes', dhs') = unzip $ map (cons2innerType globals hd tname') (_annListElems cns)
+                (innerTypes', vclassInsts, dhs') = unzip3 $ map (cons2innerType globals hd tname') (_annListElems cns)
                 (innerTypes, defObjs) = unzip innerTypes'
                 (names,dhss)= unzip dhs'
                 prodCons    = mkProdCons hd dhss -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
                 liftdConss  = map (rewriteConDecl globals hd) cns'
-                def         = mkDefObj tname' (length cns')
-                vclassInst  = mkInstanceDecl 
-                    Nothing 
-                    (mkInstanceRule Nothing (mkAppInstanceHead (mkInstanceHead vclassName) (mkVarType tname')))
-                    (Just $ mkInstanceBody [
-                        let objName = mkName "nil"
-                            cons    = (mkVar . mkName) $ consNameSOP (prettyPrint tname')
-                            args'   = map mkVar $ replicate (length cns') absentCons
-                        in  mkInstanceBind $
-                            mkSimpleBind (mkVarPat objName) (mkUnguardedRhs $ foldl mkApp cons args') Nothing 
-                    ]) 
+                def         = mkDefObj tname' (length cns') 
+                vclassInst  = mkVClassInst tname' ((mkName . consNameSOP . prettyPrint) tname') names False
             in  innerTypes ++ 
                 [mkDataDecl newType (_annMaybe ctxt) newDeclHead --liftdConss
                     [prodCons]
                     (_annListElems drv), vclassInst] ++ 
+                    vclassInsts ++
                     --innerTypes ++ 
                     defObjs -- ++ 
                     --map (liftConstructor tname cns') (zip cns' [0..])

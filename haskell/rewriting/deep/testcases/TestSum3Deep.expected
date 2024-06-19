@@ -7,7 +7,12 @@ data I_BFalse = I_BFalse
 
 data I_BTrue = I_BTrue
 data VB = VB_PoS { f_BFalse :: SumOption I_BFalse, f_BTrue :: SumOption I_BTrue }
-instance VClass VB where nil = VB_PoS Absent Absent
+instance VClass VB where nil = VB_PoS nil nil
+                         comb a b = VB_PoS (comb (f_BFalse a) (f_BFalse b)) (comb (f_BTrue a) (f_BTrue b))
+instance VClass I_BFalse where nil = I_BFalse
+                               comb I_BFalse I_BFalse = I_BFalse
+instance VClass I_BTrue where nil = I_BTrue
+                              comb I_BTrue I_BTrue = I_BTrue
 consI_BFalse x r = r { f_BFalse = x }
 consI_BTrue x r = r { f_BTrue = x }
 f :: VB -> VB
