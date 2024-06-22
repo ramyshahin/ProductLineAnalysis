@@ -52,6 +52,7 @@ library
     , haskell-tools-refactor
     , haskell-tools-rewrite
     , references
+    , split
   default-language: Haskell2010
 
 executable deep-rewriter-exe

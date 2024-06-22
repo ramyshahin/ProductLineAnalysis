@@ -34,6 +34,7 @@ library:
     - references
     - ghc
     - containers
+    - split
   when:
       - condition: false
         other-modules: Paths_Deep

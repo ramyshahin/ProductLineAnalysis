@@ -16,6 +16,7 @@ import Language.Haskell.Tools.Rewrite.Match.Decls
 
 import Control.Reference -- ((.-), (.=), (^.) (&))
 import FastString
+import Data.Char
 import Debug.Trace 
 import qualified Data.Set as S 
 import qualified SPL as L
@@ -46,7 +47,9 @@ cntxtExpr   = mkVar $ mkName vCntxt
 restrictOp  = mkUnqualOp "/^"
 upOp        = mkUnqualOp "^|"
 --notSupported :: a -> a
-notSupported x = trace ("Not supported: " ++ prettyPrint x) x
+notSupported m x = trace (m ++ ": Not supported: " ++ prettyPrint x) x
+notSupported' m x y = trace (m ++ ": Not supported: " ++ prettyPrint x) y 
+
 symMatch = mkVar $ mkName "match"
 
 type Declarations = S.Set String
@@ -54,8 +57,13 @@ type Declarations = S.Set String
 innerName :: Name -> Name
 innerName n = mkName $ "I_" ++ prettyPrint n
 
+isTypeVar :: Name -> Bool
+isTypeVar n = 
+    let s = prettyPrint n
+    in  length s > 0 && isLower (head s)
+
 liftedTypeName :: Name -> Name
-liftedTypeName n = mkName ("V" ++ prettyPrint n)
+liftedTypeName n = if isTypeVar n then n else mkName ('V' : prettyPrint n)
 
 consName :: Name -> Name
 consName n = mkName ("c_" ++ prettyPrint n)

@@ -23,14 +23,14 @@ rewriteCasePattern p = --mkParenPat $
     case p of
         VarPat n      -> mkVarPat $ innerName n
         AppPat c args -> mkAppPat (innerName c) (_annListElems args)
-        _             -> notSupported p
+        _             -> notSupported "rewriteCasePattern" p
 
 getPatternName :: Pattern -> Name
 getPatternName p =
     case p of
         VarPat n -> n
         AppPat n _ -> n
-        _          -> notSupported (mkName "")
+        _          -> notSupported "getPatternName" (mkName "")
 
 rewritePattern :: Pattern -> Pattern
 rewritePattern p = 

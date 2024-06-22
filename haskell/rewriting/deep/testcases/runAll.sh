@@ -5,6 +5,7 @@ TEST_FILES="
     TestSum2
     TestSum3
     TestSum4
+    TestSum5
     "
 
 ./clean.sh
