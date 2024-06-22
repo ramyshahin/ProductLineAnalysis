@@ -7,14 +7,14 @@ data I_None a = I_None
 
 data I_Some a = I_Some a
 data VOption a = VOption_PoS { f_None :: SumOption (I_None a), f_Some :: SumOption (I_Some a) }
-instance  VClass a =>VClass (VOption a) where nil = VOption_PoS nil nil
-                                              comb a b = VOption_PoS (comb (f_None a) (f_None b)) (comb (f_Some a) (f_Some b))
+instance  VClass a =>VClass ((VOption a)) where nil = VOption_PoS nil nil
+                                                comb a b = VOption_PoS (comb (f_None a) (f_None b)) (comb (f_Some a) (f_Some b))
 instance  VClass a =>VClass (I_None a) where nil = I_None
                                              comb I_None I_None = I_None
 instance  VClass a =>VClass (I_Some a) where nil = I_Some nil
                                              comb (I_Some a1) (I_Some b1) = I_Some ((comb a1 b1))
 consI_None x r = r { f_None = x }
 consI_Some x r = r { f_Some = x }
-plus :: VOption VInt -> VOption VInt -> VOption VInt
+plus :: (VOption VInt) -> (VOption VInt) -> (VOption VInt)
 plus a b  = match [(\(Present (I_None, pc)) r -> consI_None (Present (I_None, pc)) r) (f_None (a)), (\(Present (I_Some x, pc)) r -> match [(\(Present (I_None, pc)) r -> consI_None (Present (I_None, pc)) r) (f_None (b)), (\(Present (I_Some y, pc)) r -> consI_Some (Present (I_Some (x + y), pc)) r) (f_Some (b))]) (f_Some (a))]
 

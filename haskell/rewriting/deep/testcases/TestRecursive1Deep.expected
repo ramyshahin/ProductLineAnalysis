@@ -1,0 +1,25 @@
+{-# LANGUAGE NoImplicitPrelude #-}module TestRecursive1Deep where
+import SPL
+import VPrelude
+import Data.List -- TODO: without a dummy import, indentation goes wrong
+
+data I_Proxy_LList a = I_Proxy_LList ((VLList a))
+
+data I_NNil a = I_NNil
+data I_CCons a = I_CCons a ((VLList a))
+data VLList a = VLList_PoS { f_Proxy_LList :: SumOption (I_Proxy_LList a), f_NNil :: SumOption (I_NNil a), f_CCons :: SumOption (I_CCons a) }
+instance  VClass a =>VClass ((VLList a)) where nil = VLList_PoS nil nil nil
+                                               comb a b = VLList_PoS (comb (f_Proxy_LList a) (f_Proxy_LList b)) (comb (f_NNil a) (f_NNil b)) (comb (f_CCons a) (f_CCons b))
+instance  VClass a =>VClass (I_Proxy_LList a) where nil = I_Proxy_LList nil
+                                                    comb (I_Proxy_LList a1) (I_Proxy_LList b1) = I_Proxy_LList ((comb a1 b1))
+instance  VClass a =>VClass (I_NNil a) where nil = I_NNil
+                                             comb I_NNil I_NNil = I_NNil
+instance  VClass a =>VClass (I_CCons a) where nil = I_CCons nil nil
+                                              comb (I_CCons a1 a2) (I_CCons b1 b2) = I_CCons ((comb a1 b1)) ((comb a2 b2))
+consI_Proxy_LList x r = r { f_Proxy_LList = x }
+consI_NNil x r = r { f_NNil = x }
+consI_CCons x r = r { f_CCons = x }
+llength :: (VLList a) -> VInt
+llength l  = match [(\(Present (I_NNil, pc)) r -> ((v 0))) (f_NNil (l)), (\(Present (I_CCons x xs, pc)) r -> ((v 1)) + llength xs) (f_CCons (l))]
+
+

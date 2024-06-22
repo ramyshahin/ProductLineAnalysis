@@ -47,23 +47,23 @@ getDeclaredName d =
 --isTypeVar :: Name -> Bool
 --isTypeVar n = isLower $ head $ prettyPrint n
 
-rewriteType :: Declarations -> Type -> Type
-rewriteType globals t = case t of
+rewriteType :: Type -> Type
+rewriteType t = case t of
     -- arrow types (e.g., Int -> Int)
     FunctionType a b    -> 
-        mkFunctionType (rewriteType globals a) (rewriteType globals b)
+        mkFunctionType (rewriteType a) (rewriteType b)
     -- parenthesized type application (e.g., (Int), Maybe (Maybe Int))
-    ParenType t         -> mkParenType (rewriteType globals t)
+    ParenType t         -> mkParenType (rewriteType t)
     -- tuple notation (e.g., (Int, Int))
     TupleType ts        -> 
-        mkTupleType (map (rewriteType globals) (_annListElems ts))
+        mkTupleType (map rewriteType (_annListElems ts))
     -- list notation (e.g., [Int])
     -- TODO: we only lift the element type for now
-    ListType t          -> mkListType (rewriteType globals t)
+    ListType t          -> mkListType (rewriteType t)
     -- first-order types (e.g., Int, String)
     VarType  n          -> mkVarType (liftedTypeName n)
-    TypeApp t1 t2       -> 
-        mkTypeApp (rewriteType globals t1) (rewriteType globals t2)
+    TypeApp t1 t2       -> mkParenType $
+        mkTypeApp (rewriteType t1) (rewriteType t2)
     -- TODO: handle other cases
     _ -> notSupported "rewriteType" t
 
@@ -82,7 +82,7 @@ getHeadTypeName t =
 rewriteTypeSig :: Declarations -> TypeSignature -> Decl
 rewriteTypeSig globals (TypeSignature ns t) = 
     let n = head $ _annListElems ns
-    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType globals t)
+    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType t)
 {-
 recursive :: DeclHead -> Type -> Bool
 recursive hd t =
@@ -124,13 +124,14 @@ getTypeVars :: Name -> [Name]
 getTypeVars n =
     let ts = map mkName $ splitOneOf " \t\n()" (prettyPrint n)
     in  filter isTypeVar ts
-    {-
+
+getTypeVars' :: Type -> [Name]
+getTypeVars' t =
     case t of
         VarType n -> if isTypeVar n then [n] else []
-        TypeApp t1 t2 -> getTypeVars t1 ++ getTypeVars t2
-        ParenType t -> getTypeVars t 
-        _ -> notSupported' "getTypeVars" t []
--}
+        TypeApp t1 t2 -> getTypeVars' t1 ++ getTypeVars' t2
+        ParenType t -> getTypeVars' t 
+        _ -> notSupported' "getTypeVars'" t []
 
 cons2innerType :: Declarations -> DeclHead -> Name -> ConDecl -> ((Decl, Decl), Decl, (Name, DeclHead))
 cons2innerType globals dh tn c = 
@@ -138,13 +139,13 @@ cons2innerType globals dh tn c =
         ConDecl n ts ->
             let name     = innerName n 
                 ts'      = _annListElems ts
-                ts''     = map (rewriteType globals) ts'
+                ts''     = map rewriteType ts'
                 tNames   = map getTypeName ts''
                 newCons  = mkConDecl name ts'' 
                 declHead = renameDeclHead dh name 
                 fullTypename = mkName $ getTypeName' False True declHead
                 dObj     = mkInnerCons n (defaultName tn) --(map getTypeName ts'')
-                vclassInst = mkVClassInst fullTypename name name tNames True
+                vclassInst = mkVClassInst (getType declHead) name tNames True
             in  ((mkDataDecl mkDataKeyword Nothing declHead [newCons] [], dObj), vclassInst, (n,declHead)) 
 
 {-
@@ -183,7 +184,7 @@ mkProdCons :: DeclHead -> [DeclHead] -> ConDecl
 mkProdCons dh dhs =
     let toField dh = let x = getTypeName' False False dh
                      in  mkName $ 'f' : tail x
-        toType  = (mkTypeApp sumOption) . mkVarType . mkName . (getTypeName' False True)
+        toType  = (mkTypeApp sumOption) . getType --mkVarType . mkName . (getTypeName' False True)
         tname  = (consNameSOP . prettyPrint) $ liftedTypeName (mkName (getTypeName' False False dh))
         fields = map (\dh -> mkFieldDecl [toField dh] $ toType dh) dhs
     in mkRecordConDecl (mkName tname) fields
@@ -197,7 +198,7 @@ rewriteConDecl globals hd d =
                 (map (\t -> --if recursive hd t 
                             --then t -- typeToLiftedType t 
                             --else 
-                                rewriteType globals t)
+                                rewriteType t)
                      (_annListElems ts))
         _ -> notSupported "rewriteConDecl" d
 
@@ -212,6 +213,34 @@ rewriteDeclHead decls dh =
         -}
         _ -> notSupported "rewriteDeclHead" dh
 
+getType :: DeclHead -> Type 
+getType dh = 
+    case dh of
+        NameDeclHead n -> mkVarType n
+        ParenDeclHead b -> mkParenType (getType b)
+        DeclHeadApp f op -> mkParenType $ mkTypeApp (getType f) (mkVarType ((mkName . prettyPrint) op))
+        _ -> notSupported' "getType" dh (mkVarType (mkName ""))
+
+eqType :: Type -> Type -> Bool
+eqType t1 t2 = 
+    case (t1, t2) of
+        (VarType m, VarType n) -> (isTypeVar m && isTypeVar n) || (prettyPrint m == prettyPrint n) 
+        (TypeApp t1 t2, TypeApp t3 t4) -> eqType t1 t3 && eqType t2 t4 
+        (ParenType t, t') -> eqType t t'
+        (t', ParenType t) -> eqType t' t  
+        _ -> False
+
+isRecursiveCons :: DeclHead -> ConDecl -> Bool 
+isRecursiveCons dh cd =
+    case cd of
+        ConDecl _ ts -> any (eqType (getType dh)) (_annListElems ts)
+
+isRecursive :: Decl -> Bool
+isRecursive d =
+    case d of 
+        DataDecl _ _ hd cns _ -> any (isRecursiveCons hd) (_annListElems cns)
+        _ -> False
+
 getTypeName' :: Bool -> Bool -> DeclHead -> String
 getTypeName' lifted full dh =
     case dh of
@@ -220,7 +249,8 @@ getTypeName' lifted full dh =
         ParenDeclHead  b -> getTypeName' lifted full b
         DeclHeadApp f op -> 
             if full 
-            then "(" ++ (getTypeName' lifted full f) ++ " " ++ (prettyPrint op) ++ ")"
+            then let r = (getTypeName' lifted full f) ++ " " ++ (prettyPrint op) 
+                 in  if lifted then "(" ++ r ++ ")" else r
             else getTypeName' lifted full f
         InfixDeclHead l op r -> ""
 {-
@@ -258,8 +288,15 @@ rewriteValueBind globals vb = mkValueBinding $ case vb of
             map (\m -> rewriteMatch globals (getMatchVars m) False m) (_annListElems ms)) 
     _ -> notSupported "rewriteValueBind" vb --trace ("Unhandled Value Bind " ++ prettyPrint vb) $ vb
 
-mkVClassInst :: Name -> Name -> Name -> [Name] -> Bool -> Decl
-mkVClassInst fulltname tname consName names' inner = 
+isCompType :: Type -> Bool
+isCompType t =
+    case t of
+        TypeApp t1 t2 -> True
+        ParenType t -> isCompType t 
+        _ -> False
+
+mkVClassInst :: Type -> Name -> [Name] -> Bool -> Decl
+mkVClassInst t consName names' inner = 
     let paramCount = length names'
         names   = if inner then map (\n -> mkName $ show n) [1..(length names')] else names'
         cons    = mkVar consName
@@ -281,12 +318,18 @@ mkVClassInst fulltname tname consName names' inner =
                     in  mkInstanceBind $ mkSimpleBind 
                             (mkAppPat (mkName "comb") [pat "a", pat "b"]) 
                             (mkUnguardedRhs $ foldl mkApp cons args) Nothing)
-        vtype = mkVarType fulltname
-        varTypes = map mkVarType (getTypeVars fulltname)
+        --vtype = t --mkVarType fulltname
+        varTypes = map mkVarType (getTypeVars' t)
         ctxt = if length varTypes == 0 then Nothing else (Just . mkContext) $ mkClassAssert vclassName varTypes 
+        t'   = if inner then t else rewriteType t
     in mkInstanceDecl Nothing 
-        (mkInstanceRule ctxt (mkAppInstanceHead (mkInstanceHead vclassName) vtype))
+        (mkInstanceRule ctxt (mkAppInstanceHead (mkInstanceHead vclassName) t'))
         (Just $ mkInstanceBody [nilBind, combBind]) 
+
+proxyCns :: Type -> ConDecl
+proxyCns t = 
+    let n = getTypeName t
+    in  mkConDecl (mkName $ ("Proxy_" ++ prettyPrint n)) [t]
 
 rewriteDecl :: Declarations -> Decl -> [Decl]
 rewriteDecl globals d = 
@@ -295,19 +338,23 @@ rewriteDecl globals d =
         ValueBinding vb -> [rewriteValueBind globals vb]
         DataDecl newType ctxt hd cns drv -> 
             let newDeclHead = rewriteDeclHead globals hd
+                otname       = mkName $ getTypeName' False False hd 
+                oftname      = mkName $ getTypeName' False True hd 
                 tname        = mkName $ getTypeName' True False hd
                 tname'       = mkName $ getTypeName' True True hd
                 --tname'      = liftedTypeName tname
-                cns'        = _annListElems cns
+                cns'        = if isRecursive d
+                              then (proxyCns (getType hd)) : _annListElems cns
+                              else _annListElems cns
                 --conss       = length cns'
                 --consNames   = map getConName (_annListElems cns) 
-                (innerTypes', vclassInsts, dhs') = unzip3 $ map (cons2innerType globals hd tname') (_annListElems cns)
+                (innerTypes', vclassInsts, dhs') = unzip3 $ map (cons2innerType globals hd tname') cns'
                 (innerTypes, defObjs) = unzip innerTypes'
                 (names,dhss)= unzip dhs'
                 prodCons    = mkProdCons hd dhss -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
                 liftdConss  = map (rewriteConDecl globals hd) cns'
                 def         = mkDefObj tname' (length cns') 
-                vclassInst  = mkVClassInst tname' tname' ((mkName . consNameSOP . prettyPrint) tname) names False
+                vclassInst  = mkVClassInst (getType hd) ((mkName . consNameSOP . prettyPrint) tname) names False
             in  innerTypes ++ 
                 [mkDataDecl newType (_annMaybe ctxt) newDeclHead --liftdConss
                     [prodCons]

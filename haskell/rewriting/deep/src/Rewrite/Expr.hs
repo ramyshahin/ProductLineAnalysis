@@ -159,7 +159,8 @@ rewriteExpr globals locals inConstructor e =
             {-if isConstructor e then rewriteConstructor globals locals inConstructor e True else-}  -- rewriteVar globals locals inConstructor n 
         -- assuming all infix operators have been lifted, either in 
         -- VPrelude or in the module being lifted
-        InfixApp arg1 op arg2 -> mkInfixApp arg1 op arg2 --rewriteInfixApp globals locals inConstructor arg1 op arg2
+        InfixApp arg1 op arg2 -> mkInfixApp (rewriteExpr globals locals inConstructor arg1)
+            op (rewriteExpr globals locals inConstructor arg2) --rewriteInfixApp globals locals inConstructor arg1 op arg2
         PrefixApp op arg -> mkApp liftedNeg arg
         App fun arg ->  let inCons = isConstructor fun
                             fun' = rewriteExpr globals locals inCons fun
