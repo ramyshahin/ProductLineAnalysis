@@ -17,13 +17,13 @@ module SPL(
     V,
     v,
     Val,
-    VClass,
+    VClass (..),
     SumOption (..),
+    I_VProxy,
+    resolveVProxy,
     match,
     --restrict, -- from VClass
     combs,    
-    nil,        -- from VClass
-    comb,       -- from VClass
     unions,
     apply,
     annotate,
@@ -334,6 +334,8 @@ class VClass a where
 --    combs :: [a] -> a
 --    combs = foldr comb nil
 --    restrict :: PresenceCondition -> a -> a
+    proxy :: a -> a
+    proxy _ = nil 
 
 {-
 class GVClass f where
@@ -648,5 +650,17 @@ instance (VClass a) => VClass (SumOption a) where
 --(<$>) :: (P.Functor f) => (a -> b) -> f a -> f b
 --(<$>) = P.fmap
 
+data I_VProxy a = I_VProxy a
+
+resolveVProxy :: VClass a => SumOption (I_VProxy a) -> a
+resolveVProxy s = 
+    case s of 
+        Absent -> nil
+        Present (I_VProxy y, _) -> y
+
+instance (VClass a) => VClass (I_VProxy a) where
+    nil = I_VProxy nil
+    comb (I_VProxy x) (I_VProxy y) = I_VProxy (comb x y)
+
 match :: (VClass a) => [a -> a] -> a
-match = foldr (\f x -> f x) nil
+match xs = foldr (\f x -> f x) nil ((\x -> proxy x) : xs)

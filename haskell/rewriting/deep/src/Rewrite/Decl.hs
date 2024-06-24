@@ -145,7 +145,7 @@ cons2innerType globals dh tn c =
                 declHead = renameDeclHead dh name 
                 fullTypename = mkName $ getTypeName' False True declHead
                 dObj     = mkInnerCons n (defaultName tn) --(map getTypeName ts'')
-                vclassInst = mkVClassInst (getType declHead) name tNames True
+                vclassInst = mkVClassInst (getType declHead) name tNames True False
             in  ((mkDataDecl mkDataKeyword Nothing declHead [newCons] [], dObj), vclassInst, (n,declHead)) 
 
 {-
@@ -180,12 +180,15 @@ mkInnerCons n defObjName = --params =
     in  mkValueBinding $
             mkSimpleBind (mkAppPat cName [paramX, paramR]) (mkUnguardedRhs $ recUpdate) Nothing
 
-mkProdCons :: DeclHead -> [DeclHead] -> ConDecl
-mkProdCons dh dhs =
-    let toField dh = let x = getTypeName' False False dh
-                     in  mkName $ 'f' : tail x
+mkProdCons :: DeclHead -> [DeclHead] -> Bool -> ConDecl
+mkProdCons dh dhs' recursive =
+    let dhs = if recursive then (mkDeclHeadApp (mkNameDeclHead (innerName proxyName)) (mkTypeVar vtname')) : dhs' else dhs'
+        toField dh = let x = getTypeName' False False dh
+                     in  getFieldForType x
         toType  = (mkTypeApp sumOption) . getType --mkVarType . mkName . (getTypeName' False True)
-        tname  = (consNameSOP . prettyPrint) $ liftedTypeName (mkName (getTypeName' False False dh))
+        vtname' = mkName (getTypeName' True True dh)
+        vtname = liftedTypeName (mkName (getTypeName' False False dh))
+        tname  = (consNameSOP . prettyPrint) vtname
         fields = map (\dh -> mkFieldDecl [toField dh] $ toType dh) dhs
     in mkRecordConDecl (mkName tname) fields
 
@@ -295,10 +298,11 @@ isCompType t =
         ParenType t -> isCompType t 
         _ -> False
 
-mkVClassInst :: Type -> Name -> [Name] -> Bool -> Decl
-mkVClassInst t consName names' inner = 
-    let paramCount = length names'
-        names   = if inner then map (\n -> mkName $ show n) [1..(length names')] else names'
+mkVClassInst :: Type -> Name -> [Name] -> Bool -> Bool -> Decl
+mkVClassInst t consName names' inner recursive = 
+    let paramCount = if recursive then 1 + length names' else length names'
+        names   = if inner then map (\n -> mkName $ show n) [1..(length names')] else 
+                  if recursive then proxyName : names' else names'
         cons    = mkVar consName
         nilBind = (let objName = mkName "nil"
                        args'   = map mkVar $ replicate paramCount objName
@@ -318,19 +322,27 @@ mkVClassInst t consName names' inner =
                     in  mkInstanceBind $ mkSimpleBind 
                             (mkAppPat (mkName "comb") [pat "a", pat "b"]) 
                             (mkUnguardedRhs $ foldl mkApp cons args) Nothing)
+        proxyBind = mkInstanceBind $ mkSimpleBind 
+                            (mkVarPat (mkName "proxy"))
+                            (mkUnguardedRhs $ mkInfixApp (mkVar (mkName "resolveVProxy")) compOp (mkVar $ (getFieldForType . prettyPrint . innerName) proxyName)) 
+                            Nothing
         --vtype = t --mkVarType fulltname
         varTypes = map mkVarType (getTypeVars' t)
         ctxt = if length varTypes == 0 then Nothing else (Just . mkContext) $ mkClassAssert vclassName varTypes 
         t'   = if inner then t else rewriteType t
     in mkInstanceDecl Nothing 
         (mkInstanceRule ctxt (mkAppInstanceHead (mkInstanceHead vclassName) t'))
-        (Just $ mkInstanceBody [nilBind, combBind]) 
+        (Just $ mkInstanceBody ([nilBind, combBind] ++ if recursive then [proxyBind] else [])) 
 
 proxyCns :: Type -> ConDecl
 proxyCns t = 
     let n = getTypeName t
     in  mkConDecl (mkName $ ("Proxy_" ++ prettyPrint n)) [t]
 
+-- data VLList a = VLList_PoS { 
+--    f_Proxy_LList :: SumOption (I_Proxy_LList a), 
+--    f_NNil :: SumOption (I_NNil a), 
+--    f_CCons :: SumOption (I_CCons a) }
 rewriteDecl :: Declarations -> Decl -> [Decl]
 rewriteDecl globals d = 
      case d of
@@ -343,18 +355,20 @@ rewriteDecl globals d =
                 tname        = mkName $ getTypeName' True False hd
                 tname'       = mkName $ getTypeName' True True hd
                 --tname'      = liftedTypeName tname
-                cns'        = if isRecursive d
-                              then (proxyCns (getType hd)) : _annListElems cns
-                              else _annListElems cns
+                cns'        = --if isRecursive d
+                              --then (proxyCns (getType hd)) : _annListElems cns
+                              --else 
+                                _annListElems cns
                 --conss       = length cns'
                 --consNames   = map getConName (_annListElems cns) 
+                recursive   = isRecursive d
                 (innerTypes', vclassInsts, dhs') = unzip3 $ map (cons2innerType globals hd tname') cns'
                 (innerTypes, defObjs) = unzip innerTypes'
                 (names,dhss)= unzip dhs'
-                prodCons    = mkProdCons hd dhss -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
+                prodCons    = mkProdCons hd dhss recursive -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
                 liftdConss  = map (rewriteConDecl globals hd) cns'
                 def         = mkDefObj tname' (length cns') 
-                vclassInst  = mkVClassInst (getType hd) ((mkName . consNameSOP . prettyPrint) tname) names False
+                vclassInst  = mkVClassInst (getType hd) ((mkName . consNameSOP . prettyPrint) tname) names False recursive
             in  innerTypes ++ 
                 [mkDataDecl newType (_annMaybe ctxt) newDeclHead --liftdConss
                     [prodCons]

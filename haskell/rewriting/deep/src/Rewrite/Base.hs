@@ -54,6 +54,10 @@ symMatch = mkVar $ mkName "match"
 
 type Declarations = S.Set String
 
+proxyName = mkName "VProxy"
+
+getFieldForType tn = mkName $ 'f' : tail tn 
+
 innerName :: Name -> Name
 innerName n = mkName $ "I_" ++ prettyPrint n
 

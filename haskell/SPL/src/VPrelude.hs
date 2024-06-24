@@ -122,7 +122,8 @@ foldl' _f z _xs =
         (y : _ys) -> foldl' _f (_f z y) _ys
 -}
 
-
+(.) :: (b -> c) -> (a -> b) -> a -> c
+f . g = \x -> f (g x)
 
 {-
 match_ :: (VClass a) => [SumOption a] -> [a]
