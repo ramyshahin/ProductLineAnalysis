@@ -1,4 +1,4 @@
-{-# LANGUAGE NoImplicitPrelude #-}module TestRecursive1Deep where
+{-# LANGUAGE NoImplicitPrelude #-}module TestRecursive2Deep where
 import SPL
 import VPrelude
 import Data.List -- TODO: without a dummy import, indentation goes wrong
@@ -7,16 +7,43 @@ data I_NNil a = I_NNil
 
 data I_CCons a = I_CCons a ((VLList a))
 data VLList a = VLList_PoS { f_VProxyVLList :: SumOption (I_VProxy (VLList a)), f_NNil :: SumOption (I_NNil a), f_CCons :: SumOption (I_CCons a) }
+
 instance  VClass a =>VClass ((VLList a)) where nil = VLList_PoS nil nil nil
                                                comb a b = VLList_PoS (comb (f_VProxyVLList a) (f_VProxyVLList b)) (comb (f_NNil a) (f_NNil b)) (comb (f_CCons a) (f_CCons b))
                                                proxy = resolveVProxy . f_VProxyVLList
+
 instance  VClass a =>VClass (I_NNil a) where nil = I_NNil
                                              comb I_NNil I_NNil = I_NNil
+
 instance  VClass a =>VClass (I_CCons a) where nil = I_CCons nil nil
                                               comb (I_CCons a1 a2) (I_CCons b1 b2) = I_CCons ((comb a1 b1)) ((comb a2 b2))
+
 consI_NNil x r = r { f_NNil = x }
+
 consI_CCons x r = r { f_CCons = x }
+
 llength :: (VLList a) -> VInt
+
 llength l  = match [(\(Present (I_NNil, pc)) r -> ((v 0))) (f_NNil (l)), (\(Present (I_CCons x xs, pc)) r -> ((v 1)) + llength xs) (f_CCons (l))]
+
+data I_E a = I_E
+
+data I_T a = I_T ((VBTree a)) a ((VBTree a))
+
+data VBTree a = VBTree_PoS { f_VProxyVBTree :: SumOption (I_VProxy (VBTree a)), f_E :: SumOption (I_E a), f_T :: SumOption (I_T a) }
+
+instance  VClass a =>VClass ((VBTree a)) where nil = VBTree_PoS nil nil nil
+                                               comb a b = VBTree_PoS (comb (f_VProxyVBTree a) (f_VProxyVBTree b)) (comb (f_E a) (f_E b)) (comb (f_T a) (f_T b))
+                                               proxy = resolveVProxy . f_VProxyVBTree
+
+instance  VClass a =>VClass (I_E a) where nil = I_E
+                                          comb I_E I_E = I_E
+
+instance  VClass a =>VClass (I_T a) where nil = I_T nil nil nil
+                                          comb (I_T a1 a2 a3) (I_T b1 b2 b3) = I_T ((comb a1 b1)) ((comb a2 b2)) ((comb a3 b3))
+
+consI_E x r = r { f_E = x }
+
+consI_T x r = r { f_T = x }
 
 

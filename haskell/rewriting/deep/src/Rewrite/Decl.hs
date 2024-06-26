@@ -9,6 +9,7 @@ import Control.Reference -- ((.-), (.=), (^.) (&))
 import FastString
 import Debug.Trace
 import Data.Char
+import Data.List
 import Data.List.Split
 import qualified Data.Set as S 
 import qualified SPL as L
@@ -182,9 +183,10 @@ mkInnerCons n defObjName = --params =
 
 mkProdCons :: DeclHead -> [DeclHead] -> Bool -> ConDecl
 mkProdCons dh dhs' recursive =
-    let dhs = if recursive then (mkDeclHeadApp (mkNameDeclHead (innerName proxyName)) (mkTypeVar vtname')) : dhs' else dhs'
+    let dhs = if recursive then (mkDeclHeadApp (mkNameDeclHead (innerName (proxyName ""))) (mkTypeVar vtname')) : dhs' else dhs'
         toField dh = let x = getTypeName' False False dh
-                     in  getFieldForType x
+                         n = if isProxyType x then x ++ (prettyPrint vtname) else x 
+                     in  getFieldForType n
         toType  = (mkTypeApp sumOption) . getType --mkVarType . mkName . (getTypeName' False True)
         vtname' = mkName (getTypeName' True True dh)
         vtname = liftedTypeName (mkName (getTypeName' False False dh))
@@ -302,7 +304,7 @@ mkVClassInst :: Type -> Name -> [Name] -> Bool -> Bool -> Decl
 mkVClassInst t consName names' inner recursive = 
     let paramCount = if recursive then 1 + length names' else length names'
         names   = if inner then map (\n -> mkName $ show n) [1..(length names')] else 
-                  if recursive then proxyName : names' else names'
+                  if recursive then proxyName tn : names' else names'
         cons    = mkVar consName
         nilBind = (let objName = mkName "nil"
                        args'   = map mkVar $ replicate paramCount objName
@@ -324,12 +326,13 @@ mkVClassInst t consName names' inner recursive =
                             (mkUnguardedRhs $ foldl mkApp cons args) Nothing)
         proxyBind = mkInstanceBind $ mkSimpleBind 
                             (mkVarPat (mkName "proxy"))
-                            (mkUnguardedRhs $ mkInfixApp (mkVar (mkName "resolveVProxy")) compOp (mkVar $ (getFieldForType . prettyPrint . innerName) proxyName)) 
+                            (mkUnguardedRhs $ mkInfixApp (mkVar (mkName "resolveVProxy")) compOp (mkVar $ (getFieldForType . prettyPrint . innerName) (proxyName tn))) 
                             Nothing
         --vtype = t --mkVarType fulltname
         varTypes = map mkVarType (getTypeVars' t)
         ctxt = if length varTypes == 0 then Nothing else (Just . mkContext) $ mkClassAssert vclassName varTypes 
         t'   = if inner then t else rewriteType t
+        tn   = (prettyPrint . getTypeName) t'
     in mkInstanceDecl Nothing 
         (mkInstanceRule ctxt (mkAppInstanceHead (mkInstanceHead vclassName) t'))
         (Just $ mkInstanceBody ([nilBind, combBind] ++ if recursive then [proxyBind] else [])) 

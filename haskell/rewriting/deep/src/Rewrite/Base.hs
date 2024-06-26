@@ -17,6 +17,7 @@ import Language.Haskell.Tools.Rewrite.Match.Decls
 import Control.Reference -- ((.-), (.=), (^.) (&))
 import FastString
 import Data.Char
+import Data.List
 import Debug.Trace 
 import qualified Data.Set as S 
 import qualified SPL as L
@@ -54,9 +55,13 @@ symMatch = mkVar $ mkName "match"
 
 type Declarations = S.Set String
 
-proxyName = mkName "VProxy"
+proxyName tn = mkName $ "VProxy" ++ tn 
 
-getFieldForType tn = mkName $ 'f' : tail tn 
+isProxyType :: String -> Bool
+isProxyType = isPrefixOf "I_VProxy"
+
+getFieldForType tn = 
+    mkName $ 'f' : tail tn 
 
 innerName :: Name -> Name
 innerName n = mkName $ "I_" ++ prettyPrint n

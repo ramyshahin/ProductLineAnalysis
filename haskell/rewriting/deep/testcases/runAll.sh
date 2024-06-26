@@ -7,6 +7,7 @@ TEST_FILES="
     TestSum4
     TestSum5
     TestRecursive1
+    TestRecursive2
     "
 
 ./clean.sh
