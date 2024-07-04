@@ -9,6 +9,8 @@ import SPL
 --
 -- Booleans
 --
+
+{-
 type VBool = V P.Bool 
 
 (&&) :: VBool -> VBool -> VBool
@@ -55,6 +57,7 @@ infix 4 <
 infix 4 <=
 infix 4 >
 infix 4 >= 
+-}
 
 --
 -- Integers
@@ -85,9 +88,11 @@ class P.Num a => VNum a where
 
 instance VNum P.Int
 
+{-
 instance VEq P.Int
 
 instance VOrd P.Int 
+-}
 
 --(^.) :: (b -> c) -> (a -> b) -> a -> c
 --(^.) f0 f1 x = f0 (f1 x) 
