@@ -1,6 +1,4 @@
-{-# LANGUAGE NoImplicitPrelude #-}{-# LANGUAGE LambdaCase #-}
-
-module Test1Deep where
+{-# LANGUAGE NoImplicitPrelude #-}module TestBasicDeep where
 import SPL
 import VPrelude
 import Data.List -- TODO: without a dummy import, indentation goes wrong

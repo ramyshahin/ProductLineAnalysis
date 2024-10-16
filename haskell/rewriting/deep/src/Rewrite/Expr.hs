@@ -145,9 +145,10 @@ rewriteConstructor :: Expr -> Expr
 rewriteConstructor e =
     let i_name = getConsName e
                 --let i_name = if isConstructorName n then innerName n else n
-        x = mkParen $ mkApp (mkVar presentCons) (mkTuple [e, (mkVar . mkName) "pc"])
-        r = mkVar $ mkName "r"
-    in  mkApp (mkApp (mkVar $ consFnName i_name) x) r
+        pc = "allConfigs" -- "pc"
+        x = mkParen $ mkApp (mkVar presentCons) (mkTuple [e, (mkVar . mkName) pc])
+        r = mkVar $ mkName "nil" --"r"
+    in  mkParen $ mkApp (mkApp (mkVar $ consFnName i_name) x) r
         --mkApp x r
 
 rewriteExpr :: Declarations -> Declarations -> Bool -> Expr -> Expr

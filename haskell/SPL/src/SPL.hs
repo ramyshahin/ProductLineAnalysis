@@ -29,7 +29,8 @@ module SPL(
     annotate,
     (^|),
     --(/^),
-    (===)--,
+    (===),
+    allConfigs
     --liftedCond
 ) where
 

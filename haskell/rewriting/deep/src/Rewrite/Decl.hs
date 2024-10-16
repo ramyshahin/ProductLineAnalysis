@@ -82,8 +82,15 @@ getHeadTypeName t =
 -- to multiple declarations
 rewriteTypeSig :: Declarations -> TypeSignature -> Decl
 rewriteTypeSig globals (TypeSignature ns t) = 
-    let n = head $ _annListElems ns
-    in  mkTypeSigDecl $ mkTypeSignature n (rewriteType t)
+    let n       = head $ _annListElems ns
+        t'      = rewriteType t
+        ctxt    = mkTypeClassContext t
+        sig     = mkTypeSignature n $ 
+            case ctxt of 
+                Nothing -> t'
+                Just c  -> mkCtxType c t'
+    in  mkTypeSigDecl sig
+        
 {-
 recursive :: DeclHead -> Type -> Bool
 recursive hd t =
@@ -127,9 +134,10 @@ getTypeVars n =
     in  filter isTypeVar ts
 
 getTypeVars' :: Type -> [Name]
-getTypeVars' t =
+getTypeVars' t = nubBy (\x y -> prettyPrint x == prettyPrint y) $
     case t of
         VarType n -> if isTypeVar n then [n] else []
+        FunctionType a b -> getTypeVars' a ++ getTypeVars' b
         TypeApp t1 t2 -> getTypeVars' t1 ++ getTypeVars' t2
         ParenType t -> getTypeVars' t 
         _ -> notSupported' "getTypeVars'" t []
@@ -300,6 +308,13 @@ isCompType t =
         ParenType t -> isCompType t 
         _ -> False
 
+mkTypeClassContext :: Type -> Maybe Context
+mkTypeClassContext t =
+    let varTypes = map mkVarType (getTypeVars' t)
+    in  if length varTypes == 0 
+        then Nothing 
+        else (Just . mkContext) $ mkClassAssert vclassName varTypes 
+    
 mkVClassInst :: Type -> Name -> [Name] -> Bool -> Bool -> Decl
 mkVClassInst t consName names' inner recursive = 
     let paramCount = if recursive then 1 + length names' else length names'
@@ -329,8 +344,9 @@ mkVClassInst t consName names' inner recursive =
                             (mkUnguardedRhs $ mkInfixApp (mkVar (mkName "resolveVProxy")) compOp (mkVar $ (getFieldForType . prettyPrint . innerName) (proxyName tn))) 
                             Nothing
         --vtype = t --mkVarType fulltname
-        varTypes = map mkVarType (getTypeVars' t)
-        ctxt = if length varTypes == 0 then Nothing else (Just . mkContext) $ mkClassAssert vclassName varTypes 
+        --varTypes = map mkVarType (getTypeVars' t)
+        --ctxt = if length varTypes == 0 then Nothing else (Just . mkContext) $ mkClassAssert vclassName varTypes 
+        ctxt = mkTypeClassContext t
         t'   = if inner then t else rewriteType t
         tn   = (prettyPrint . getTypeName) t'
     in mkInstanceDecl Nothing 

@@ -16,5 +16,5 @@ instance VClass I_BTrue where nil = I_BTrue
 consI_BFalse x r = r { f_BFalse = x }
 consI_BTrue x r = r { f_BTrue = x }
 f :: VB -> VB
-f b  = match [(\(Present (I_BFalse, pc)) r -> consI_BTrue (Present (I_BTrue, pc)) r) (f_BFalse (b)), (\(Present (I_BTrue, pc)) r -> consI_BFalse (Present (I_BFalse, pc)) r) (f_BTrue (b))]
+f b  = match [(\(Present (I_BFalse, pc)) r -> (consI_BTrue (Present (I_BTrue, allConfigs)) nil)) (f_BFalse (b)), (\(Present (I_BTrue, pc)) r -> (consI_BFalse (Present (I_BFalse, allConfigs)) nil)) (f_BTrue (b))]
 

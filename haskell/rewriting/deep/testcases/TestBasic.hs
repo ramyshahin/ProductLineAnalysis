@@ -1,6 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
-
-module Test1 where
+module TestBasic where
 import Data.List -- TODO: without a dummy import, indentation goes wrong
 
 x :: Int

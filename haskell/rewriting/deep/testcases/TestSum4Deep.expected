@@ -16,5 +16,5 @@ instance VClass I_Some where nil = I_Some nil
 consI_None x r = r { f_None = x }
 consI_Some x r = r { f_Some = x }
 plus :: VIntOption -> VIntOption -> VIntOption
-plus a b  = match [(\(Present (I_None, pc)) r -> consI_None (Present (I_None, pc)) r) (f_None (a)), (\(Present (I_Some x, pc)) r -> match [(\(Present (I_None, pc)) r -> consI_None (Present (I_None, pc)) r) (f_None (b)), (\(Present (I_Some y, pc)) r -> consI_Some (Present (I_Some (x + y), pc)) r) (f_Some (b))]) (f_Some (a))]
+plus a b  = match [(\(Present (I_None, pc)) r -> (consI_None (Present (I_None, allConfigs)) nil)) (f_None (a)), (\(Present (I_Some x, pc)) r -> match [(\(Present (I_None, pc)) r -> (consI_None (Present (I_None, allConfigs)) nil)) (f_None (b)), (\(Present (I_Some y, pc)) r -> (consI_Some (Present (I_Some (x + y), allConfigs)) nil)) (f_Some (b))]) (f_Some (a))]
 

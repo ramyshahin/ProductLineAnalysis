@@ -22,7 +22,7 @@ consI_NNil x r = r { f_NNil = x }
 
 consI_CCons x r = r { f_CCons = x }
 
-llength :: (VLList a) -> VInt
+llength :: VClass a => (VLList a) -> VInt
 
 llength l  = match [(\(Present (I_NNil, pc)) r -> ((v 0))) (f_NNil (l)), (\(Present (I_CCons x xs, pc)) r -> ((v 1)) + llength xs) (f_CCons (l))]
 
