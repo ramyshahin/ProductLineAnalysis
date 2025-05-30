@@ -10,7 +10,10 @@ module PresenceCondition(
     empty,
     allConfigs,
     noConfigs,
-    mkPartition
+    mkPartition,
+    parsePC,
+    getVars,
+    getAllConfigs
 ) where
 
 import PropBDD

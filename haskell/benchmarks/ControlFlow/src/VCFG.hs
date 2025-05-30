@@ -1,10 +1,11 @@
---{-# LANGUAGE DeriveGeneric, DeriveAnyClass, BangPatterns #-}
+
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass, BangPatterns #-}
+
 module VCFG 
 --    ( module VCFG
 --    , module NodeTypes
 --    ) 
     where
-{-
 import Control.Exception
 import Control.Applicative
 import Language.C.Syntax.AST
@@ -25,7 +26,6 @@ infixr 5 |:|
 
 lv2vl :: [V a] -> V [a]
 lv2vl = foldr (|:|) (v [])
-
 {-
 data NodeType =
     CFGExpr     CExpr
@@ -45,7 +45,9 @@ data CFGNode = CFGNode {
     ast :: C.NodeType,
     _preds :: [V Int],
     __succs :: [V Int]
-    } deriving (Show, Generic)
+    } deriving (Show
+    --, Generic
+    )
 
 dummyCNode = C.CFGNode 0 (T.pack "") (T.pack "") (CFGDummy (T.pack "")) [] []
 
@@ -55,7 +57,7 @@ toShallowNode (n, pc) =
         ss = lv2vl $ __succs n
         d  = (C.CFGNode ^| pc) <*> ((_nID n) ^| pc) <*> ((_fname n) ^| pc) <*> ((text n) ^| pc) 
                                <*> ((ast n) ^| pc) <*> ps <*> ss
-    in  fixCompleteness dummyCNode d
+    in  fixCompleteness d
 
 data CFG = CFG {
     nodes :: M.ListMultimap Int (CFGNode, PresenceCondition)
@@ -75,20 +77,21 @@ mkShallowCFG' = --trace ("Variants: " ++ (show (length ns'))) $
 
 toShallowCFG :: CFG -> V C.CFG
 toShallowCFG c =
-    let !ns = _nodes c
-        !ns' = map toShallowNode ns
-        !vl  = lv2vl ns'
-        !ret = mkShallowCFG' vl
-    in  --trace ("Var Node count: " ++ (show (length vl'))) $
+    let ns = _nodes c
+        ns' = map toShallowNode ns
+        vl  = lv2vl ns'
+        ret = mkShallowCFG' vl
+    in  --trace ("V Node count: " ++ (show (length vl'))) $
         ret
 
+{-
 _succs' :: V CFG -> V CFGNode -> [V CFGNode]
 _succs' vs n = 
     case vs of 
         ((cfg, pc) : ss) -> 
             assert (null ss) $
             let ss' = foldr (++) [] $ map (\(n',_) -> if (_nID n') == 0 then [] else __succs n') n
-                zs  = map (\xs -> Var $ 
+                zs  = map (\xs -> V $ 
                                   map 
                                     (\(n,pc) -> let ys = --trace (show n) $ 
                                                         (nodes cfg) M.! n
@@ -98,37 +101,36 @@ _succs' vs n =
             in  --zs 
                 map (fixCompleteness dummyNode) zs 
         [] -> []
+-}
 
-{-
-fixCompleteness :: Var a -> Var a
-fixCompleteness v = 
-    if      definedAt v == ttPC 
+fixCompleteness :: V a -> V a
+fixCompleteness v = v
+{- 
+    if      definedAt v == allConfigs 
     then    v
     else    SPL.union v (dummyNode ^| (undefinedAt v))
 -}
-
 dummyNode = CFGNode 0 T.empty T.empty (C.CFGDummy T.empty) [] []
 
---node2Vnode :: CFGNode -> Var CFGNode
+--node2Vnode :: CFGNode -> V CFGNode
 --node2Vnode n = 
---    let (Var ids) = _nID n
---    in  Var $ map (\(id, pc) -> if id == 0 then (dummyNode, pc) else (n, pc)) ids
+--    let (V ids) = _nID n
+--    in  V $ map (\(id, pc) -> if id == 0 then (dummyNode, pc) else (n, pc)) ids
 
 mkV :: a -> (a, PresenceCondition) -> V a
-mkV dummy (v, pc) = 
-    if   pc == ttPC
-    then mkVarT v
-    else mkVars [(v, pc), (dummy, negPC pc)]
+mkV dummy (x, pc) = 
+    if   pc == allConfigs
+    then v x
+    else mkVars [(x, pc), (dummy, negPC pc)]
 
 _nodes' :: V CFG -> [V CFGNode]
 _nodes' vs = 
     case vs of 
-        ((cfg, pc) : ss) -> 
-            assert (null ss) $ assert (pc == ttPC) $
+        V ((cfg, pc) : ss) -> 
+            assert (null ss) $ assert (pc == allConfigs) $
             let ns = (snd . unzip . M.toList) $ nodes cfg
-            in  --map (\x -> Var [x]) ns 
+            in  --map (\x -> V [x]) ns 
                 map (\v -> mkV dummyNode v) ns
 
 _nID' :: V CFGNode -> V Int
-_nID' n = foldr union (Var []) $ map (\(n', pc) -> (_nID n') ^| pc) n
--}
+_nID' (V n) = foldr union emptyV $ map (\(n', pc) -> (_nID n') ^| pc) n

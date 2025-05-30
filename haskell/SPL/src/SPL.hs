@@ -14,7 +14,7 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, FlexibleInstances, ExplicitForAll #-}
 
 module SPL(
-    V,
+    V (..),
     v,
     Val,
     VClass (..),
@@ -23,14 +23,20 @@ module SPL(
     resolveVProxy,
     match,
     --restrict, -- from VClass
-    combs,    
+    combs,  
+    union,  
     unions,
     apply,
     annotate,
     (^|),
     --(/^),
     (===),
-    allConfigs
+    allConfigs,
+    mkVars,
+    emptyV,
+    getFeatures,
+    definedAt, undefinedAt,
+    liftV5 -- TODO
     --liftedCond
 ) where
 
@@ -89,6 +95,9 @@ type Val a = (a, PresenceCondition)
 -- across all possible products.
 newtype V t = V [(Val t)]
     deriving (Generic)
+
+emptyV :: V a
+emptyV = V []
 
 --instance NFData (V a) where
 --    rnf (Var !xs) = xs `seq` (map (\(!x,!pc) -> x `seq` pc `seq` ()) xs) `seq` ()
@@ -273,17 +282,14 @@ getFeatures' :: Var t -> S.Set String
 getFeatures' (Var vs) =
     foldr S.union S.empty (map (getPCFeatures' . p . snd) vs)
 -}
-
-{-
+-}
 getFeatures :: IO [String]
 getFeatures = do 
     !vs <- getVars allConfigs
     return $ (fst . unzip) vs
--}
 
 --union2 :: Var (Var t) -> Var t 
 --union2 (Var xs') = unions (map (\(x,pc) -> (restrict pc x)) xs')
--}
 
 union :: V t -> V t -> V t
 union x@(V a) y@(V b) =
@@ -446,12 +452,13 @@ fixCompleteness :: a -> Var a -> Var a
 fixCompleteness dummy v =
     let r = undefinedAt v
     in  if r == noConfigs then v else SPL.union v $ mkVar dummy r
+-}
 
 -- lifting higher-order functions
-mapLifted :: Var (a -> b) -> Var [a] -> Var [b]
+mapLifted :: V (a -> b) -> V [a] -> V [b]
 mapLifted = liftA2 map
 
-filterLifted :: Var (a -> Bool) -> Var [a] -> Var [a]
+filterLifted :: V (a -> Bool) -> V [a] -> V [a]
 filterLifted = liftA2 filter
 
 liftA4 :: Applicative f => (a -> b -> c -> d -> e) -> f a -> f b -> f c -> f d -> f e
@@ -461,21 +468,21 @@ liftA5 :: Applicative f => (a -> b -> c -> d -> e -> g) -> f a -> f b -> f c -> 
 liftA5 f a b c d e = fmap f a <*> b <*> c <*> d <*> e
 
 {-# INLINE liftV #-}
-liftV :: (a -> b) -> Var a -> Var b
+liftV :: (a -> b) -> V a -> V b
 liftV = liftA
 
-liftV2 :: (a -> b -> c) -> Var a -> Var b -> Var c
+liftV2 :: (a -> b -> c) -> V a -> V b -> V c
 liftV2 = liftA2
 
-liftV3 :: (a -> b -> c -> d) -> Var a -> Var b -> Var c -> Var d
+liftV3 :: (a -> b -> c -> d) -> V a -> V b -> V c -> V d
 liftV3 = liftA3
 
-liftV4 :: (a -> b -> c -> d -> e) -> Var a -> Var b -> Var c -> Var d -> Var e
+liftV4 :: (a -> b -> c -> d -> e) -> V a -> V b -> V c -> V d -> V e
 liftV4 = liftA4
 
-liftV5 :: (a -> b -> c -> d -> e -> f) -> Var a -> Var b -> Var c -> Var d -> Var e -> Var f
+liftV5 :: (a -> b -> c -> d -> e -> f) -> V a -> V b -> V c -> V d -> V e -> V f
 liftV5 = liftA5
-
+{-
 -- lifted list
 --data [a]^ = 
 --    [^]

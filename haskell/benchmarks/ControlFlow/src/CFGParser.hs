@@ -1,8 +1,9 @@
 {-# LANGUAGE OverloadedStrings, BangPatterns #-}
 
 module CFGParser where
-{-
+
 import VCFG
+import NodeTypes
 import Language.C.Parser
 import Language.C.Data.InputStream
 import Language.C.Data.Position
@@ -18,6 +19,7 @@ import SPL
 import PresenceCondition 
 
 type VNode = V CFGNode
+type PCExpr = PresenceCondition
 
 --dummyNode = CFGNode 0 T.empty (CFGDummy T.empty) [] []
 
@@ -116,7 +118,7 @@ splitPCs :: T.Text -> [(T.Text, PCExpr)]
 splitPCs t =
     let (c0, rest)  = T.breakOn "#if" t
         (c1, rest') = T.breakOn "#endif" (T.drop 3 rest)
-    in  if T.null rest then [(c0, ttPC)] else (c0, ttPC) : (extractPC c1) : splitPCs (T.drop 6 rest')
+    in  if T.null rest then [(c0, allConfigs)] else (c0, allConfigs) : (extractPC c1) : splitPCs (T.drop 6 rest')
 
 parseNode :: T.Text -> Int -> T.Text -> (NodeType, PCExpr, T.Text)
 parseNode t lineNum nodeType = --trace "parseNode" $ 
@@ -134,7 +136,6 @@ parseNode t lineNum nodeType = --trace "parseNode" $
                                 !t0                     = if T.null t0'' then t0' else T.dropEnd 2 t0' 
                                 !ps                     = splitPCs t0 
                                 (!cs, !pcs)             = unzip ps
-                                !pc                     = foldr (/\) ttPC pcs
+                                !pc                     = foldr (/\) allConfigs pcs
                             in  (T.concat cs, pc, t0'')
           --isCPPDirective = T.isPrefixOf (T.pack "#")
--}

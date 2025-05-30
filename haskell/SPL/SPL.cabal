@@ -30,6 +30,7 @@ library
       PropBDD
       ShallowTypes
       SPL
+      VList
       VPrelude
   hs-source-dirs:
       src

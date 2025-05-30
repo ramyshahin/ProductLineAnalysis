@@ -1,13 +1,13 @@
 {-# LANGUAGE CPP, DeriveGeneric, DeriveAnyClass, BangPatterns #-}
 -- #define CASE_TERMINATION
-#define RETURN 
+-- #define RETURN 
 -- #define RETURN_AVG
 -- #define GOTOS
 -- #define DANGLING_SWITCH
 -- #define CALL_DENSITY
 
 module Main where
-{-
+
 import CFG
 import qualified VCFG as V
 import CFGParser
@@ -63,14 +63,15 @@ getFunctionNodes :: [CFGNode] -> [CFGNode]
 getFunctionNodes = filter (\n -> case n of 
                                     (CFGNode _ _ _ (CFGFunc _) _ _)   -> True
                                     _                                 -> False)
-getFunctionNodes' = liftV getFunctionNodes
+getFunctionNodes' = v getFunctionNodes
 
---bruteforce :: (Var CFG, [String]) -> Var [CFGNode]
+#ifdef ANALYZE
+--bruteforce :: (V CFG, [String]) -> V [CFGNode]
 bruteforce (ns, features) = 
     let configs  = getAllConfigs features
         inVecs'   = zip (map (index ns) configs) configs
         inVecs    = filter (\(i, _) -> not (null i)) inVecs'
-        --(Var ns') = ns
+        --(V ns') = ns
     in  --trace (show (length ns')) $
         mkVars $ map (\(input, pc) -> --trace (show pc) $
                             (analyze (head input), pc)) 
@@ -79,36 +80,40 @@ bruteforce (ns, features) =
 shallow c = (liftV analyze) c
 
 deep c = Deep.analyze c
+-- ANALYZE
+#endif
 
-nodes' = liftV nodes
+nodes' = v nodes
 
 data Env = Env {
-    deepCFG     :: Var V.CFG,
-    shallowCFG  :: Var CFG,
+    deepCFG     :: V V.CFG,
+    shallowCFG  :: V CFG,
     fileName    :: String,
     features    :: [String],
     configs     :: Int,
     nodeCount   :: Int,
     hdr         :: String
-    } deriving (Generic, NFData)
+    } deriving (Generic
+    --, NFData
+    )
 
 setupEnv filename = do
     !cfg <- readCFG filename
     let !nodes = (V._nodes cfg)
     let !nodeCount = nodes `seq` length nodes
     !features <- cfg `seq` getFeatures
-    let !deep = cfg ^| ttPC
-    let !shallow@(Var sh') = V.toShallowCFG cfg
+    let !deep = cfg ^| allConfigs
+    let !shallow@(V sh') = V.toShallowCFG cfg
     let !featCount = deep `seq` shallow `seq` length features
     let !configCount = length (getAllConfigs features)
     let presentConfigs = length sh'
     let hdr = foldr (\s t -> s ++ "," ++ t) "" 
             [filename, show nodeCount, show featCount, show configCount, show presentConfigs]
     let env = Env deep shallow filename features configCount nodeCount hdr
-    putStrLn $ "Analysis:        " ++ analysis
+    --putStrLn $ "Analysis:        " ++ analysis
     putStrLn $ "File:            " ++ filename
     putStrLn $ "Node#:           " ++ (show $ nodeCount)
-    --putStrLn $ "Features:        " ++ (show features)
+    putStrLn $ "Features:        " ++ (show features)
     putStrLn $ "Feature#:        " ++ (show $ featCount)
     putStrLn $ "Config#:         " ++ (show $ configCount)
     putStrLn $ "Present config#: " ++ (show $ presentConfigs)
@@ -177,18 +182,14 @@ main = defaultMain [ bgroup "main"
                             bench "deep"        $ nfIO tDeep        --cfg
                             ] ]
 -}
---{-
-fname = "xyz.cfg"
+
+fname = "test1.cfg"
 
 main = do
     env <- setupEnv fname
     --putStrLn $ "Features: " ++ (show feats)
-    let result = deep $ deepCFG env
+    --let result = deep $ deepCFG env
     --let result = bruteforce (shallowCFG env, features env) 
-    putStrLn $ show result
+    --putStrLn $ show result
     putStrLn "Done."
--- -}
--}
 
-main = do
-    putStrLn "Done."

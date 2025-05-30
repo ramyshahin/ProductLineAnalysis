@@ -5,6 +5,7 @@ module VPrelude where
 
 import qualified Prelude as P
 import SPL 
+--import VList
 
 --
 -- Booleans

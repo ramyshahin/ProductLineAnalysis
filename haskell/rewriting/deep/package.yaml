@@ -63,6 +63,7 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - deep
+    - QuickCheck
     when:
       - condition: false
         other-modules: Paths_Deep

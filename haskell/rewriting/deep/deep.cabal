@@ -73,12 +73,15 @@ test-suite rewriter-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
+      TestList
+      TestPrelude
       Paths_deep
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      SPL
+      QuickCheck
+    , SPL
     , base >=4.7 && <5
     , common
     , deep

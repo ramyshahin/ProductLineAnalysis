@@ -14,7 +14,8 @@ module PropBDD(
     implies,
     tt,
     ff,
-    disj
+    disj,
+    getVars
 ) where
 
 import Cudd.Cudd

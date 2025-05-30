@@ -9,6 +9,7 @@ TEST_FILES="
     TestRecursive1
     TestRecursive2
     TestBool
+    TestList
     "
 
 ./clean.sh
