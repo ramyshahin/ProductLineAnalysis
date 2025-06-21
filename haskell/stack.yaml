@@ -37,7 +37,6 @@ extra-lib-dirs: [/usr/local/lib]
 #  - auto-update
 #  - wai
 packages:
-- cudd
 - SPL
 - rewriting/common
 - rewriting/shallow
@@ -52,17 +51,19 @@ extra-deps:
 #- Glob-0.9.3@sha256:d6f8d3000651a7d72fe468f3840f59fe785dc35cfc16dc76a62821cd798f34dc
 #- fswatch-0.1.0.6@sha256:56fefeb2c72f6d147dacfc864dc30089b8ee3509064e092f69ad3d548197389b
 #- haskell-tools-builtin-refactorings-1.1.1.0@sha256:a532a1bf5d94ae760f64626aea34e402df05bd763ba8038a035e9186e12eb21b
+- c2hs-0.28.8
+- cudd-0.1.0.4
 - haskell-tools-prettyprint-1.1.1.0
 - haskell-tools-refactor-1.1.1.0
 - haskell-tools-ast-1.1.1.0
 - haskell-tools-backend-ghc-1.1.1.0
 - haskell-tools-rewrite-1.1.1.0
+- language-c-0.10.0
 - Stack-0.4.0
 - splitmix-0.0.5@sha256:4a49661be63f5aea0e132e9ab51be918789bb4dceb4ab9b15b85ba9cbbef5999,5412
 - criterion-measurement-0.1.2.0
 - criterion-1.5.6.2
 - graphviz-2999.20.0.4
-- language-c-0.8.3
 - text-1.2.3.1
 - QuickCheck-2.14
 - deepseq-1.4.4.0
