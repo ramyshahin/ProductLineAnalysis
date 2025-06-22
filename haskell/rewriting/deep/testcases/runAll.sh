@@ -18,5 +18,4 @@ TEST_FILES="
 for f in $TEST_FILES
 do
     ./run.sh "$f"
-    diff $f'Deep.hs' $f'Deep.expected'
 done

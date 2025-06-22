@@ -6,3 +6,4 @@ rm -f ${MODULE}Deep.hs
 #stack exec --profile -- deep-rewriter-exe "${MODULE}" >> ${MODULE}Deep.hs +RTC -xs
 stack exec -- deep-rewriter-exe "${MODULE}" >> ${MODULE}Deep.hs
 stack ghc ${MODULE}Deep.hs #Main.hs
+diff ${MODULE}'Deep.hs' ${MODULE}'Deep.expected'
