@@ -27,6 +27,8 @@ import Rewrite.Common
 cntxtVar = "__cntxt__"
 dummyVar = "__dummy__"
 
+allConfigs = mkVar $ mkName "allConfigs"
+
 mkV :: Expr -> Expr
 mkV e = mkParen $ --(mkInfixApp e upOp $ cntxtExpr)
             mkApp defaultLift e
@@ -47,6 +49,8 @@ cntxtExpr   = mkVar $ mkName vCntxt
 --ttExpr      = mkVar $ mkName vTT
 restrictOp  = mkUnqualOp "/^"
 upOp        = mkUnqualOp "^|"
+conj        = mkUnqualOp "/\\"
+
 --notSupported :: a -> a
 notSupported m x = trace (m ++ ": Not supported: " ++ prettyPrint x) x
 notSupported' m x y = trace (m ++ ": Not supported: " ++ prettyPrint x) y 

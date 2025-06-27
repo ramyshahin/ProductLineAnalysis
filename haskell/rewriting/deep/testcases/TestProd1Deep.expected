@@ -4,10 +4,11 @@ import VPrelude
 import Data.List -- TODO: without a dummy import, indentation goes wrong
 
 data I_T = I_T VInt VInt
-data VT = VT_PoS { f_T :: SumOption I_T }
-instance VClass VT where nil = VT_PoS nil
-                         comb a b = VT_PoS (comb (f_T a) (f_T b))
-instance VClass I_T where nil = I_T nil nil
-                          comb (I_T a1 a2) (I_T b1 b2) = I_T ((comb a1 b1)) ((comb a2 b2))
-consI_T x r = r { f_T = x }
+
+type VT = V I_T
+fstT :: VT -> VInt
+
+fstT t  = match t (\(t, pc) -> let __cntxt__ = __cntxt__ /\ pc in case t of I_T f s -> (f /^ __cntxt__))
+sndT :: VT -> VInt
+sndT t  = match t (\(t, pc) -> let __cntxt__ = __cntxt__ /\ pc in case t of I_T f s -> (s /^ __cntxt__))
 

@@ -4,7 +4,8 @@
 module VPrelude where
 
 import qualified Prelude as P
-import SPL 
+import SPL
+import VBool
 --import VList
 
 --
@@ -140,4 +141,5 @@ match_ (x : xs) =
         Present (v, pc) -> (restrict pc v) : match_ xs
 -}
 
- 
+__cntxt__ :: PresenceCondition
+__cntxt__ = allConfigs

@@ -3,6 +3,7 @@ module VList where
 import SPL
 import VPrelude
 
+{-
 data I_Nil a = I_Nil
 
 data I_Cons a = I_Cons a ((VList a))
@@ -24,4 +25,4 @@ tail :: VClass a => (VList a) -> (VList a)
 tail xs  = match [(\(Present (I_Nil, pc)) r -> (consI_Nil (Present (I_Nil, allConfigs)) nil)) (f_Nil (xs)), (\(Present (I_Cons x xs, pc)) r -> xs) (f_Cons (xs))]
 len :: VClass a => (VList a) -> VInt
 len xs  = match [(\(Present (I_Nil, pc)) r -> ((v 0))) (f_Nil (xs)), (\(Present (I_Cons x xs', pc)) r -> ((v 1)) + len xs') (f_Cons (xs))]
-
+-}

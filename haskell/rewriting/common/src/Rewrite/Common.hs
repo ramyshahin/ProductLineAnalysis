@@ -17,7 +17,7 @@ fmapOp = mkUnqualOp "<$>"
 mkVarT = mkVar (mkName "mkVarT")
 mkVars = mkVar (mkName "mkVars")
 --tt     = mkVar (mkName "tt")
-tyVar  = mkVarType $ mkName "Var"
+tyVar  = mkVarType $ mkName "V"
 
 pat2expr (VarPat n) = mkVar n 
 

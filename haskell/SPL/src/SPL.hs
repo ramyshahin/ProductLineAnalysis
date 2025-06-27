@@ -9,6 +9,7 @@
 --{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE KindSignatures, MultiParamTypeClasses #-}
 --{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, FlexibleInstances, ExplicitForAll #-}
@@ -16,20 +17,24 @@
 module SPL(
     V (..),
     v,
+    PresenceCondition,
     Val,
     VClass (..),
     SumOption (..),
     I_VProxy,
-    resolveVProxy,
-    match,
+    --resolveVProxy,
+    --match,
     --restrict, -- from VClass
-    combs,  
+    --combs,  
+    match,
     union,  
-    unions,
+    toSubV,
+    --unions,
     apply,
     annotate,
     (^|),
-    --(/^),
+    (/^),
+    (/\),
     (===),
     allConfigs,
     mkVars,
@@ -51,14 +56,45 @@ import Debug.Trace
 import System.Mem.StableName
 import System.IO.Unsafe
 import GHC.Generics (Generic, Generic1)
+
 {-
-import Control.Monad
-import Data.List 
-import Data.Maybe 
-import qualified Data.Set       as S  
-import Control.Parallel.Strategies
-import Control.DeepSeq
+    invariants on presence conditions
 -}
+disjointPCs :: PresenceCondition -> PresenceCondition -> Bool
+disjointPCs pc1 pc2 = 
+    let conj = pc1 /\ pc2
+    in  conj == noConfigs
+
+disjointnessInv :: [PresenceCondition] -> Bool
+disjointnessInv [] = True
+disjointnessInv (pc : []) = True
+disjointnessInv (pc : pcs) = (all (\x -> disjointPCs pc x) pcs) && disjointnessInv pcs
+
+completenessInv :: [PresenceCondition] -> Bool
+completenessInv pcs = (foldr (\/) noConfigs pcs) == allConfigs
+
+{-
+    Typeclasses
+-}
+--class SubVClass (a :: * -> *) where
+class SubVClass a where
+    pcs         :: a -> [PresenceCondition]
+    nil         :: a
+    comb        :: a -> a -> a
+    restrict'   :: PresenceCondition -> a -> a
+    
+footprint :: SubVClass a => a -> PresenceCondition
+footprint x = foldr (\/) noConfigs (pcs x)
+
+
+
+--class VClass (a :: * -> *) (b :: * -> *) where
+class SubVClass b => VClass a b where
+    combs       :: [b] -> a
+    restrict    :: PresenceCondition -> a -> b
+    --proxy       :: a -> a
+    
+(/^) x pc = restrict pc x
 
 {-# INLINE (===) #-}
 (===) :: a -> a -> Bool
@@ -81,8 +117,19 @@ type Context = PresenceCondition
 --type Val a = (Maybe a, PresenceCondition)
 type Val a = (a, PresenceCondition)
 
+
 --instance Eq SPLOption a where
 --    (==) a b = (getValue a == getValue b) && sat(getPresenceCondition a && getPresenceCondition b)
+
+newtype SubV t = SubV [(Val t)]
+
+disjInv   :: SubV a -> Bool
+disjInv x = disjointnessInv (pcs x) 
+
+mkSubV :: [Val a] -> SubV a
+mkSubV xs =
+    let r = SubV xs
+    in assert (disjInv r) r
 
 -- when lifting a product value to a product line value, we might end up with
 -- different values for each product in the product line. This is why a value is
@@ -94,18 +141,80 @@ type Val a = (a, PresenceCondition)
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
 newtype V t = V [(Val t)]
-    deriving (Generic)
+    --deriving (Generic)
 
-emptyV :: V a
-emptyV = V []
+toSubV :: V a -> SubV a
+toSubV (V xs) = mkSubV xs
+
+mkV :: [Val a] -> V a
+mkV xs =
+    let r = V xs
+    in assert (disjInv (toSubV r) && compInv r) r
+
+emptyV :: SubV a
+emptyV = mkSubV []
+
+union :: SubV t -> SubV t -> SubV t
+union x@(SubV a) y@(SubV b) = mkSubV (a ++ b)
+
+unions :: [SubV t] -> V t 
+unions xs = 
+    let (SubV ys) = foldr union emptyV xs
+    in mkV ys
+
+instance SubVClass (SubV a) where
+    pcs (SubV xs)   = snd $ unzip xs        
+    nil             = emptyV
+    comb            = union  
+    restrict' pc v'@(SubV v) =
+        if      pc == allConfigs then v'
+        else if pc == noConfigs then emptyV
+        else    mkSubV [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p] 
+    
+--combs :: (SubVClass a, VClass b) => [a] -> b
+--combs xs = 
+--    let r = foldr comb nil xs
+--    in assert (disjInv r && compInv r) r
+
+instance VClass (V a) (SubV a) where
+    combs = unions 
+    restrict pc v'@(V v) =
+        if      pc == allConfigs then (toSubV v')
+        else if pc == noConfigs then emptyV
+        else    mkSubV [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p] 
+   -- nil  = V []
+    {-
+    isNil (V xs) = null xs 
+    at   = definedAt
+    --cons v pc (Var vs) = Var $ (v,pc) : vs
+    -}
+    --comb = SPL.union
+{-
+    caseSplitter i@(V input) splitter range = --assert (compInv i) $
+        let initV = V.replicate range nil
+            xs = foldl 
+                    (\vec (v, pc) -> let index = splitter v 
+                                         (V item)  = vec V.! index
+                                         item' = V $ (v,pc) : item
+                                     in  vec V.// [(index, item')]) 
+                 initV input 
+            ret = V.toList xs
+        in  --trace (foldl (++) "splits:\t" (map showPCs ret)) $ 
+            assert (partitionInv i ret) ret
+-}
+    
+        --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
 
 --instance NFData (V a) where
 --    rnf (Var !xs) = xs `seq` (map (\(!x,!pc) -> x `seq` pc `seq` ()) xs) `seq` ()
 
-disjInv :: V t -> Bool
-disjInv v'@(V v) =
-    let ret = all (\((_, pc1),(_, pc2)) -> PC.empty (pc1 /\ pc2)) (pairs v)
-    in  if (not ret) then trace (showPCs v') ret else ret
+--disjInv :: V t -> Bool
+--disjInv v'@(V v) =
+--    let ret = all (\((_, pc1),(_, pc2)) -> PC.empty (pc1 /\ pc2)) (pairs v)
+--    in  if (not ret) then trace (showPCs v') ret else ret
+
+compInv   :: V a -> Bool
+compInv x = completenessInv (pcs (toSubV x))
 
 showPCs :: V a -> String
 showPCs (V v) = "{" ++ (L.intercalate ", " (map (\(_,pc) -> show pc) v)) ++ "}"
@@ -269,11 +378,6 @@ subst :: PresenceCondition -> Var t -> Var t
 subst pc (Var v) =
     Var (filter (\(_,pc') -> (not . PC.empty) (pc /\ pc')) v)
 
---disjointnessInv :: Show t => Var t -> Var t -> Bool
---disjointnessInv x@(Var a) y@(Var b) = 
---    let conjunctions = [andBDD pc1 pc2 | (_,pc1) <- a, (_,pc2) <- b]
---    in  trace ((show x) ++ " U " ++ show y) $ all (== ff) conjunctions
-
 tracePCs :: Var t -> String
 tracePCs (Var xs) = foldl (\s (_,r) -> s ++ " " ++ (show r)) "" xs
 
@@ -291,32 +395,22 @@ getFeatures = do
 --union2 :: Var (Var t) -> Var t 
 --union2 (Var xs') = unions (map (\(x,pc) -> (restrict pc x)) xs')
 
-union :: V t -> V t -> V t
-union x@(V a) y@(V b) =
-    let result = V (a ++ b)
-    in {-trace (tracePCs x) $ trace (tracePCs y) $ assert (inv result)-} result
-
-unions :: [V t] -> V t 
-unions xs = foldr SPL.union (V []) xs
-
 pairs :: [t] -> [(t,t)]
 pairs [] = []
 pairs xs = zip xs (tail xs)
 
 {-# INLINE apply_ #-}
-apply_ :: Val (a -> b) -> V a -> V b
+apply_ :: Val (a -> b) -> V a -> SubV b
 apply_ (fn, !fnpc) x'@(V x)  = --localCtxt fnpc $
-    mkVars $ [(fn v, pc') | (v, !pc) <- x, let !pc' = fnpc /\ pc, (not . PC.empty) pc'] --map (\(v, pc) -> ) xs
+    mkSubV $ [(fn v, pc') | (v, !pc) <- x, let !pc' = fnpc /\ pc, (not . PC.empty) pc'] --map (\(v, pc) -> ) xs
         --xs = filter (\(_, pc) -> sat (fnpc /\ pc)) x in 
     
 
 {-# INLINE apply #-}
 apply :: V (a -> b) -> V a -> V b
-apply f@(V fn) x = assert (disjInv f) $
-     assert (disjInv x) $ --compact $
-     unions [apply_ f x | f <- fn] 
+apply f@(V fn) x = 
+     combs [apply_ f x | f <- fn] 
 
---(/^) x pc = restrict pc x
 {-
 
 --instance Foldable Var where
@@ -331,18 +425,6 @@ apply f@(V fn) x = assert (disjInv f) $
 cond :: Bool -> a -> a -> a
 cond p a b = if p then a else b
 -}
--- VClass type class
-class VClass a where
-    nil  :: a
---    isNil:: a -> Bool
---    at   :: a -> PresenceCondition
-    comb :: a -> a -> a 
-    --caseSplitter :: a b -> (b -> Int) -> Int -> [a b] 
---    combs :: [a] -> a
---    combs = foldr comb nil
---    restrict :: PresenceCondition -> a -> a
-    proxy :: a -> a
-    proxy _ = nil 
 
 {-
 class GVClass f where
@@ -354,37 +436,6 @@ instance GVClass U1 where
     gcomb a b = ...
 -}
 
-combs :: VClass a => [a] -> a
-combs = foldr comb nil
-
-instance VClass (V a) where
-    nil  = V []
-    {-
-    isNil (V xs) = null xs 
-    at   = definedAt
-    --cons v pc (Var vs) = Var $ (v,pc) : vs
-    -}
-    comb = SPL.union
-{-
-    caseSplitter i@(V input) splitter range = --assert (compInv i) $
-        let initV = V.replicate range nil
-            xs = foldl 
-                    (\vec (v, pc) -> let index = splitter v 
-                                         (V item)  = vec V.! index
-                                         item' = V $ (v,pc) : item
-                                     in  vec V.// [(index, item')]) 
-                 initV input 
-            ret = V.toList xs
-        in  --trace (foldl (++) "splits:\t" (map showPCs ret)) $ 
-            assert (partitionInv i ret) ret
--}
-{-
-    restrict pc v'@(V v) =
-        if      pc == allConfigs then v'
-        else if pc == noConfigs then V []
-        else    V [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p]
-        --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
--}
 {-
 instance VClass [a] where -- VList where
     nil  = VDeep []
@@ -645,12 +696,13 @@ list1 = x ^: list0
 data SumOption a =
    Present (Val a) | Absent
 
+{-
 instance (VClass a) => VClass (SumOption a) where
     nil = Absent
     comb Absent y = y
     comb x Absent = x
     comb (Present (x, xpc)) (Present (y, ypc)) = Present (comb x y, xpc \/ ypc)
-
+-}
 --instance P.Functor SumOption where
 --    fmap f Absent = Absent
 --    fmap f (Present (x, pc)) = Present (f x, pc)
@@ -660,15 +712,20 @@ instance (VClass a) => VClass (SumOption a) where
 
 data I_VProxy a = I_VProxy a
 
-resolveVProxy :: VClass a => SumOption (I_VProxy a) -> a
-resolveVProxy s = 
-    case s of 
-        Absent -> nil
-        Present (I_VProxy y, _) -> y
+--resolveVProxy :: VClass a => SumOption (I_VProxy a) -> a
+--resolveVProxy s = 
+--    case s of 
+--        Absent -> nil
+--        Present (I_VProxy y, _) -> y
 
+{-
 instance (VClass a) => VClass (I_VProxy a) where
     nil = I_VProxy nil
     comb (I_VProxy x) (I_VProxy y) = I_VProxy (comb x y)
+-}
 
-match :: (VClass a) => [a -> a] -> a
-match xs = foldr (\f x -> f x) nil ((\x -> proxy x) : xs)
+--match :: (VClass a) => [a -> a] -> a
+--match xs = foldr (\f x -> f x) nil ((\x -> proxy x) : xs)
+
+match :: V a -> (Val a -> SubV b) -> V b
+match (V t) f = unions (map (f) t)

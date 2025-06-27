@@ -132,5 +132,5 @@ _nodes' vs =
             in  --map (\x -> V [x]) ns 
                 map (\v -> mkV dummyNode v) ns
 
-_nID' :: V CFGNode -> V Int
-_nID' (V n) = foldr union emptyV $ map (\(n', pc) -> (_nID n') ^| pc) n
+--_nID' :: V CFGNode -> V Int
+--_nID' (V n) = foldr union emptyV $ map (\(n', pc) -> (_nID n') ^| pc) n

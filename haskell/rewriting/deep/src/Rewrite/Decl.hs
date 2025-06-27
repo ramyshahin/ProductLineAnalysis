@@ -157,6 +157,23 @@ cons2innerType globals dh tn c =
                 vclassInst = mkVClassInst (getType declHead) name tNames True False
             in  ((mkDataDecl mkDataKeyword Nothing declHead [newCons] [], dObj), vclassInst, (n,declHead)) 
 
+mkInnerType :: Declarations -> DeclHead -> Name -> [ConDecl] -> (Decl, Name) --((Decl, Decl), Decl, (Name, DeclHead))
+mkInnerType globals dh tn' cs = 
+    let tn = innerName tn'
+        declHead = renameDeclHead dh tn
+        cs' = map (\c -> case c of
+                    ConDecl n ts ->
+                        let name     = innerName n 
+                            ts'      = _annListElems ts
+                            ts''     = map rewriteType ts'
+                            tNames   = map getTypeName ts''
+                            newCons  = mkConDecl name ts'' 
+                            fullTypename = mkName $ getTypeName' False True declHead
+                            dObj     = mkInnerCons n (defaultName tn) --(map getTypeName ts'')
+                            vclassInst = mkVClassInst (getType declHead) name tNames True False
+                        in newCons
+                    ) cs
+            in  (mkDataDecl mkDataKeyword Nothing declHead cs' [], tn) --, dObj), vclassInst, (n,declHead)) 
 {-
 emptyVar :: Name -> Expr
 emptyVar n = 
@@ -189,6 +206,7 @@ mkInnerCons n defObjName = --params =
     in  mkValueBinding $
             mkSimpleBind (mkAppPat cName [paramX, paramR]) (mkUnguardedRhs $ recUpdate) Nothing
 
+{-
 mkProdCons :: DeclHead -> [DeclHead] -> Bool -> ConDecl
 mkProdCons dh dhs' recursive =
     let dhs = if recursive then (mkDeclHeadApp (mkNameDeclHead (innerName (proxyName ""))) (mkTypeVar vtname')) : dhs' else dhs'
@@ -201,6 +219,7 @@ mkProdCons dh dhs' recursive =
         tname  = (consNameSOP . prettyPrint) vtname
         fields = map (\dh -> mkFieldDecl [toField dh] $ toType dh) dhs
     in mkRecordConDecl (mkName tname) fields
+-}
 
 -- rewrite constructor declaration
 rewriteConDecl :: Declarations -> DeclHead -> ConDecl -> ConDecl
@@ -381,19 +400,31 @@ rewriteDecl globals d =
                 --conss       = length cns'
                 --consNames   = map getConName (_annListElems cns) 
                 recursive   = isRecursive d
-                (innerTypes', vclassInsts, dhs') = unzip3 $ map (cons2innerType globals hd tname') cns'
-                (innerTypes, defObjs) = unzip innerTypes'
-                (names,dhss)= unzip dhs'
-                prodCons    = mkProdCons hd dhss recursive -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
-                liftdConss  = map (rewriteConDecl globals hd) cns'
-                def         = mkDefObj tname' (length cns') 
-                vclassInst  = mkVClassInst (getType hd) ((mkName . consNameSOP . prettyPrint) tname) names False recursive
-            in  innerTypes ++ 
-                [mkDataDecl newType (_annMaybe ctxt) newDeclHead --liftdConss
-                    [prodCons]
-                    (_annListElems drv), vclassInst] ++ 
-                    vclassInsts ++
+                (innerType, innerName)   = mkInnerType globals hd otname cns'
+                --(innerTypes', vclassInsts, dhs') = unzip3 $ map (cons2innerType globals hd tname') cns'
+                --(innerTypes, defObjs) = unzip innerTypes'
+                --inner = head innerTypes
+                --(names,dhss)= unzip dhs'
+                --prodCons    = mkProdCons hd dhss recursive -- map (mkName . (getTypeName False True)) dhs -- (_annListElems cns)
+                --liftdConss  = map (rewriteConDecl globals hd) cns'
+                --def         = mkDefObj tname' (length cns') 
+                --vclassInst  = mkVClassInst (getType hd) ((mkName . consNameSOP . prettyPrint) tname) names False recursive
+                -- workaround because mkTypeDecl is buggy
+                --mkTypeDecl hd (mkTypeApp tyVar (mkVarType (getName newDeclHead)))
+                vt = mkValueBinding $ mkFunctionBind 
+                    [mkMatch (mkMatchLhs (mkName "type") [mkVarPat $ tname]) 
+                         (mkUnguardedRhs $ (mkApp (mkVar $ mkName "V") (mkVar $ innerName))) Nothing]
+                --vt          = mkTypeDecl hd (mkTypeApp tyVar (mkVarType innerName))
+            in  [innerType, vt]
+                --[mkDataDecl newType (_annMaybe ctxt) newDeclHead --liftdConss
+                    --[prodCons]
+                --    []
+                --    (_annListElems drv)
+                    --, vclassInst
+                --    ] ++ 
+                    --[mkTypeDecl (mkVarT innerType) (mkVarType innerType)] -- ++
+                    --vclassInsts ++
                     --innerTypes ++ 
-                    defObjs -- ++ 
+                    --defObjs -- ++ 
                     --map (liftConstructor tname cns') (zip cns' [0..])
         _ -> [notSupported "rewriteDecl" d]

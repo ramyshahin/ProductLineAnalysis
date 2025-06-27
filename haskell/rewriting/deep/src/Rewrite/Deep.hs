@@ -29,6 +29,8 @@ deepRewrite = ModuleRefactoring "DeepRewrite" (localRefactoring deep)
 run :: String -> String -> IO ()
 run = tryRefactor (localRefactoring . (\_ -> deep))
     
+cntxtInit = mkValueBinding $ mkSimpleBind cntxtPat (mkUnguardedRhs allConfigs) Nothing
+
 deep :: LocalRefactoring
 deep mod = do
     let decls = getModuleDeclarations mod

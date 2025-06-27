@@ -9,7 +9,14 @@ import Rewrite.ValueBind
 import qualified Data.Set as S
 
 restrictExpr :: Expr -> Expr
-restrictExpr e = mkParen $ mkInfixApp e restrictOp cntxtExpr
+restrictExpr e = 
+    case e of
+        Lit _ -> mkParen $ mkInfixApp e restrictOp cntxtExpr
+        Var _ -> mkParen $ mkInfixApp e restrictOp cntxtExpr
+        InfixApp arg1 op arg2 -> mkInfixApp (restrictExpr arg1) op (restrictExpr arg2)
+        PrefixApp op arg -> mkApp liftedNeg (restrictExpr arg)
+        App fun arg ->  mkApp fun (restrictExpr arg)
+        _ -> trace ("Unhandled Expr " ++ prettyPrint e) $ e
 
 liftExpr :: Declarations -> Declarations -> Bool -> Expr -> Expr
 liftExpr globals locals inConstructor e = mkParen $ 
@@ -81,8 +88,10 @@ rewriteAlt' globals locals inConstructor (Alt p (CaseRhs e) xs) =
         rhs     = mkCaseRhs $ rewriteExpr globals (S.union locals params') inConstructor e
     in  mkAlt p rhs (_annMaybe xs)
 
-rewriteAlt :: Declarations -> Declarations -> Expr -> Alt -> Expr
+rewriteAlt :: Declarations -> Declarations -> Expr -> Alt -> Alt
 rewriteAlt globals locals c (Alt p (CaseRhs e) _) =
+    mkAlt (rewriteCasePattern p) (mkCaseRhs (restrictExpr (rewriteExpr globals locals False e))) Nothing
+{-
     let e' = rewriteExpr globals locals False e
         p' = mkParenPat $ 
                 mkAppPat presentCons [mkTuplePat [rewriteCasePattern p, (mkVarPat . mkName) "pc"] ]
@@ -91,11 +100,31 @@ rewriteAlt globals locals c (Alt p (CaseRhs e) _) =
         r = mkVarPat $ mkName "r"
     in  --mkInfixApp (mkParen (mkLambda [p'] e')) fmapOp field
         mkApp (mkParen (mkLambda [p', r] e')) field
+-}
+
+expr2name :: Expr -> Name
+expr2name e =
+    case e of 
+        Var v -> v
+        _ -> trace ("Unsupported expr2name expression: " ++ prettyPrint e) $ mkName ""
+
+expr2pat :: Expr -> Pattern 
+expr2pat e =
+    case e of
+        Var v -> mkVarPat v
+        App f a -> mkAppPat (expr2name f) [(expr2pat a)]
+        _ -> trace ("Unsupported expr2pat expression: " ++ prettyPrint e) $ mkVarPat (mkName "")
 
 rewriteCase :: Declarations -> Declarations -> Expr -> [Alt] -> Expr
 rewriteCase globals locals c alts =
-    mkApp symMatch $
-    mkList $ map (rewriteAlt globals locals c) alts
+    let --w = mkName "v"
+        pc = mkName "pc"
+    in mkApp (mkApp symMatch c)
+          (mkParen (mkLambda [mkTuplePat [expr2pat c, mkVarPat pc]]
+                    (mkLet [mkLocalValBind (mkSimpleBind cntxtPat (mkUnguardedRhs (mkInfixApp cntxtExpr conj (mkVar pc))) Nothing)]
+                        
+                        (mkCase (rewriteExpr globals locals False c) (map (rewriteAlt globals locals c) alts))
+          )))
 
 rewriteLocalBind :: Declarations -> Declarations -> Bool -> LocalBind -> (LocalBind, S.Set String)
 rewriteLocalBind globals locals inConstructor lb =
