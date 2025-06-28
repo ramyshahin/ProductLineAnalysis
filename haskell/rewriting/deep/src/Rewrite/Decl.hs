@@ -377,6 +377,15 @@ proxyCns t =
     let n = getTypeName t
     in  mkConDecl (mkName $ ("Proxy_" ++ prettyPrint n)) [t]
 
+mkVType :: Type -> Name -> Name -> Decl
+mkVType t tname innerName = 
+    let tvars = getTypeVars' t
+        fullLHSType = map mkVarPat (tname : tvars) 
+        fullRHSType = foldl mkApp (mkVar innerName) (map mkVar tvars)
+    in  mkValueBinding $ mkFunctionBind 
+                    [mkMatch (mkMatchLhs (mkName "type") fullLHSType) 
+                         (mkUnguardedRhs $ (mkApp (mkVar $ mkName "V") (if tvars == [] then fullRHSType else mkParen fullRHSType))) Nothing]
+
 -- data VLList a = VLList_PoS { 
 --    f_Proxy_LList :: SumOption (I_Proxy_LList a), 
 --    f_NNil :: SumOption (I_NNil a), 
@@ -411,9 +420,7 @@ rewriteDecl globals d =
                 --vclassInst  = mkVClassInst (getType hd) ((mkName . consNameSOP . prettyPrint) tname) names False recursive
                 -- workaround because mkTypeDecl is buggy
                 --mkTypeDecl hd (mkTypeApp tyVar (mkVarType (getName newDeclHead)))
-                vt = mkValueBinding $ mkFunctionBind 
-                    [mkMatch (mkMatchLhs (mkName "type") [mkVarPat $ tname]) 
-                         (mkUnguardedRhs $ (mkApp (mkVar $ mkName "V") (mkVar $ innerName))) Nothing]
+                vt = mkVType (getType hd) tname innerName
                 --vt          = mkTypeDecl hd (mkTypeApp tyVar (mkVarType innerName))
             in  [innerType, vt]
                 --[mkDataDecl newType (_annMaybe ctxt) newDeclHead --liftdConss
