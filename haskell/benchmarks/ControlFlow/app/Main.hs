@@ -97,6 +97,7 @@ data Env = Env {
     --, NFData
     )
 
+{-
 setupEnv filename = do
     !cfg <- readCFG filename
     let !nodes = (V._nodes cfg)
@@ -118,6 +119,7 @@ setupEnv filename = do
     putStrLn $ "Config#:         " ++ (show $ configCount)
     putStrLn $ "Present config#: " ++ (show $ presentConfigs)
     return env
+-}
 
 reportResults s cfg = do
     let result = s cfg
@@ -186,7 +188,7 @@ main = defaultMain [ bgroup "main"
 fname = "test1.cfg"
 
 main = do
-    env <- setupEnv fname
+    --env <- setupEnv fname
     --putStrLn $ "Features: " ++ (show feats)
     --let result = deep $ deepCFG env
     --let result = bruteforce (shallowCFG env, features env) 

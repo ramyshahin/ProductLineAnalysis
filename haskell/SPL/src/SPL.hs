@@ -251,7 +251,7 @@ instance Show a => Show (V a) where
 --    (/=) x y = not (x == y)
 -}
 v :: a -> V a
-v = (^| allConfigs)
+v x = V [(x,allConfigs)]
 
 instance Functor V where
     fmap :: (a -> b) -> V a -> V b
@@ -300,11 +300,11 @@ instance Monad VarM where
 --    Var (t :: *)                      = Var' t
 
 -}
-mkVar :: t -> PresenceCondition -> V t
+mkVar :: t -> PresenceCondition -> SubV t
 {-# INLINE mkVar #-}
-mkVar v pc = V [(v,pc)]
+mkVar v pc = SubV [(v,pc)]
 
-(^|) :: t -> PresenceCondition -> V t
+(^|) :: t -> PresenceCondition -> SubV t
 x ^| pc = mkVar x pc
 infixl 9 ^|
 

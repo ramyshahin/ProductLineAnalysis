@@ -4,13 +4,13 @@ import VPrelude
 import Data.List -- TODO: without a dummy import, indentation goes wrong
 
 x :: VInt
-x = ((v 3))
+x = (v 3)
 
 y :: VInt
-y = ((v 7))
+y = (v 7)
 
 z :: VInt
-z = ((v 9))
+z = (v 9)
 
 foo :: VInt -> VInt -> VInt -> VInt
 foo x y z  = (bar x y) + (baz z)
@@ -24,5 +24,5 @@ baz x  = negate (x)
 f = baz
 g = baz
 
-x' = f (f (g ((v 2))))
+x' = f (f (g (v 2)))
 

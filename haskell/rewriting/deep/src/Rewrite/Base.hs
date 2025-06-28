@@ -51,6 +51,9 @@ restrictOp  = mkUnqualOp "/^"
 upOp        = mkUnqualOp "^|"
 conj        = mkUnqualOp "/\\"
 
+toSubV' = "toSubV"
+toSubV  = mkVar $ mkName toSubV'
+
 --notSupported :: a -> a
 notSupported m x = trace (m ++ ": Not supported: " ++ prettyPrint x) x
 notSupported' m x y = trace (m ++ ": Not supported: " ++ prettyPrint x) y 

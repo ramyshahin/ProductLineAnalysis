@@ -51,6 +51,7 @@ data CFGNode = CFGNode {
 
 dummyCNode = C.CFGNode 0 (T.pack "") (T.pack "") (CFGDummy (T.pack "")) [] []
 
+{-
 toShallowNode :: (CFGNode, PresenceCondition) -> V C.CFGNode
 toShallowNode (n, pc) = 
     let ps = lv2vl $ _preds n
@@ -58,6 +59,7 @@ toShallowNode (n, pc) =
         d  = (C.CFGNode ^| pc) <*> ((_nID n) ^| pc) <*> ((_fname n) ^| pc) <*> ((text n) ^| pc) 
                                <*> ((ast n) ^| pc) <*> ps <*> ss
     in  fixCompleteness d
+-}
 
 data CFG = CFG {
     nodes :: M.ListMultimap Int (CFGNode, PresenceCondition)
@@ -75,6 +77,7 @@ mkShallowCFG  ns = C.CFG $! foldr (\n m -> M.append (C._nID n) n m) M.empty ns
 mkShallowCFG' = --trace ("Variants: " ++ (show (length ns'))) $ 
     apply $ v mkShallowCFG
 
+{-
 toShallowCFG :: CFG -> V C.CFG
 toShallowCFG c =
     let ns = _nodes c
@@ -83,6 +86,7 @@ toShallowCFG c =
         ret = mkShallowCFG' vl
     in  --trace ("V Node count: " ++ (show (length vl'))) $
         ret
+-}
 
 {-
 _succs' :: V CFG -> V CFGNode -> [V CFGNode]

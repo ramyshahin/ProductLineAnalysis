@@ -314,7 +314,7 @@ rewriteValueBind :: Declarations -> ValueBind -> Decl
 rewriteValueBind globals vb = mkValueBinding $ case vb of
     SimpleBind p rhs bs -> 
         let locals = getPatternVars p
-        in  mkSimpleBind p (rewriteRhs globals locals False rhs) (_annMaybe bs)
+        in  mkSimpleBind p (rewriteRhs globals locals False False rhs) (_annMaybe bs)
     FunctionBind ms -> 
         mkFunctionBind (
             map (\m -> rewriteMatch globals (getMatchVars m) False m) (_annListElems ms)) 

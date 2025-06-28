@@ -3,15 +3,6 @@ import SPL
 import VPrelude
 import Data.List -- TODO: without a dummy import, indentation goes wrong
 
-data I_False = I_False
-data I_True = I_True
-data VB = VB_PoS { f_False :: SumOption I_False, f_True :: SumOption I_True }
-instance VClass VB where nil = VB_PoS nil nil
-                         comb a b = VB_PoS (comb (f_False a) (f_False b)) (comb (f_True a) (f_True b))
-instance VClass I_False where nil = I_False
-                              comb I_False I_False = I_False
-instance VClass I_True where nil = I_True
-                             comb I_True I_True = I_True
-consI_False x r = r { f_False = x }
-consI_True x r = r { f_True = x }
+data I_B = I_False | I_True
+type VB = V I_B
 
