@@ -44,6 +44,9 @@ rewritePrimitiveFuncName s = mkVar $ mkName (s) -- ++ "\'")
 mkRestrictExpr :: Expr -> Expr
 mkRestrictExpr e = mkParen $ mkInfixApp e restrictOp cntxtExpr
 
+mkLiftedExpr :: Expr -> Expr
+mkLiftedExpr e = mkParen $ mkInfixApp e upOp cntxtExpr
+
 {-
 rewriteVar :: Declarations -> Declarations -> Bool -> Bool -> Name -> Expr
 rewriteVar globals locals inConstructor bRestrict vn = 
@@ -202,8 +205,10 @@ rewriteExpr globals locals inConstructor bRestrict e =
     case e of 
         Lit l -> liftExpr globals locals inConstructor bRestrict e
         Var n -> let e' = rewriteVar' n
-                 in if isConstructor e && not inConstructor 
-                    then liftExpr globals locals inConstructor bRestrict e' 
+                 in if isConstructorName n 
+                    then    if inConstructor
+                            then mkVar $ innerName n
+                            else liftExpr globals locals inConstructor bRestrict e'
                     else if bRestrict 
                          then mkRestrictExpr e'
                          else e' 
@@ -220,8 +225,13 @@ rewriteExpr globals locals inConstructor bRestrict e =
         App fun arg ->  let inCons = isConstructor fun
                             fun' = rewriteExpr globals locals inCons bRestrict fun
                             arg' = rewriteExpr globals locals inCons bRestrict arg
-                            e' = mkApp fun' arg'
-                        in  {-if inCons then rewriteConstructor {-globals locals inConstructor e False-} e' else-} e'
+                            e'   = mkApp fun' arg'
+                            e''  =  if inCons
+                                    then if bRestrict
+                                         then mkLiftedExpr e'
+                                         else liftExpr globals locals inConstructor False e'
+                                    else e' 
+                        in  {-if inCons then rewriteConstructor {-globals locals inConstructor e False-} e' else-} e''
                             {-
                             case fun of
                              

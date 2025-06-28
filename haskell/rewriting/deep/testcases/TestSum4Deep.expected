@@ -3,18 +3,11 @@ import SPL
 import VPrelude
 import Data.List -- TODO: without a dummy import, indentation goes wrong
 
-data I_None = I_None
+data I_IntOption = I_None | I_Some VInt
 
-data I_Some = I_Some VInt
-data VIntOption = VIntOption_PoS { f_None :: SumOption I_None, f_Some :: SumOption I_Some }
-instance VClass VIntOption where nil = VIntOption_PoS nil nil
-                                 comb a b = VIntOption_PoS (comb (f_None a) (f_None b)) (comb (f_Some a) (f_Some b))
-instance VClass I_None where nil = I_None
-                             comb I_None I_None = I_None
-instance VClass I_Some where nil = I_Some nil
-                             comb (I_Some a1) (I_Some b1) = I_Some ((comb a1 b1))
-consI_None x r = r { f_None = x }
-consI_Some x r = r { f_Some = x }
+type VIntOption = V I_IntOption
 plus :: VIntOption -> VIntOption -> VIntOption
-plus a b  = match [(\(Present (I_None, pc)) r -> (consI_None (Present (I_None, allConfigs)) nil)) (f_None (a)), (\(Present (I_Some x, pc)) r -> match [(\(Present (I_None, pc)) r -> (consI_None (Present (I_None, allConfigs)) nil)) (f_None (b)), (\(Present (I_Some y, pc)) r -> (consI_Some (Present (I_Some (x + y), allConfigs)) nil)) (f_Some (b))]) (f_Some (a))]
+plus a b  = match a (\(a, pc) -> let __cntxt__ = __cntxt__ /\ pc in case a of I_None -> (I_None ^| __cntxt__)
+                                                                              I_Some x -> toSubV (match b (\(b, pc) -> let __cntxt__ = __cntxt__ /\ pc in case b of I_None -> (I_None ^| __cntxt__)
+                                                                                                                                                                    I_Some y -> (I_Some (toSubV ((x /^ __cntxt__) + (y /^ __cntxt__))) ^| __cntxt__))))
 

@@ -121,16 +121,6 @@ type Val a = (a, PresenceCondition)
 --instance Eq SPLOption a where
 --    (==) a b = (getValue a == getValue b) && sat(getPresenceCondition a && getPresenceCondition b)
 
-newtype SubV t = SubV [(Val t)]
-
-disjInv   :: SubV a -> Bool
-disjInv x = disjointnessInv (pcs x) 
-
-mkSubV :: [Val a] -> SubV a
-mkSubV xs =
-    let r = SubV xs
-    in assert (disjInv r) r
-
 -- when lifting a product value to a product line value, we might end up with
 -- different values for each product in the product line. This is why a value is
 -- lifted into a set of values, each with a path condition. An important
@@ -141,7 +131,16 @@ mkSubV xs =
 -- affects performance as we are now degenerating into brute force analysis
 -- across all possible products.
 newtype V t = V [(Val t)]
-    --deriving (Generic)
+
+type SubV t = V t
+
+disjInv   :: SubV a -> Bool
+disjInv x = disjointnessInv (pcs x) 
+
+mkSubV :: [Val a] -> SubV a
+mkSubV xs =
+    let r = V xs
+    in assert (disjInv r) r
 
 toSubV :: V a -> SubV a
 toSubV (V xs) = mkSubV xs
@@ -155,18 +154,18 @@ emptyV :: SubV a
 emptyV = mkSubV []
 
 union :: SubV t -> SubV t -> SubV t
-union x@(SubV a) y@(SubV b) = mkSubV (a ++ b)
+union x@(V a) y@(V b) = mkSubV (a ++ b)
 
 unions :: [SubV t] -> V t 
 unions xs = 
-    let (SubV ys) = foldr union emptyV xs
+    let (V ys) = foldr union emptyV xs
     in mkV ys
 
 instance SubVClass (SubV a) where
-    pcs (SubV xs)   = snd $ unzip xs        
+    pcs (V xs)   = snd $ unzip xs        
     nil             = emptyV
     comb            = union  
-    restrict' pc v'@(SubV v) =
+    restrict' pc v'@(V v) =
         if      pc == allConfigs then v'
         else if pc == noConfigs then emptyV
         else    mkSubV [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p] 
@@ -302,7 +301,7 @@ instance Monad VarM where
 -}
 mkVar :: t -> PresenceCondition -> SubV t
 {-# INLINE mkVar #-}
-mkVar v pc = SubV [(v,pc)]
+mkVar v pc = V [(v,pc)]
 
 (^|) :: t -> PresenceCondition -> SubV t
 x ^| pc = mkVar x pc
