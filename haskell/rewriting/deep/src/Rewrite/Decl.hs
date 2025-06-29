@@ -84,11 +84,11 @@ rewriteTypeSig :: Declarations -> TypeSignature -> Decl
 rewriteTypeSig globals (TypeSignature ns t) = 
     let n       = head $ _annListElems ns
         t'      = rewriteType t
-        ctxt    = mkTypeClassContext t
-        sig     = mkTypeSignature n $ 
-            case ctxt of 
-                Nothing -> t'
-                Just c  -> mkCtxType c t'
+        --ctxt    = mkTypeClassContext t
+        sig     = mkTypeSignature n t'
+        --    case ctxt of 
+        --        Nothing -> t'
+        --        Just c  -> mkCtxType c t'
     in  mkTypeSigDecl sig
         
 {-
@@ -142,6 +142,7 @@ getTypeVars' t = nubBy (\x y -> prettyPrint x == prettyPrint y) $
         ParenType t -> getTypeVars' t 
         _ -> notSupported' "getTypeVars'" t []
 
+{-
 cons2innerType :: Declarations -> DeclHead -> Name -> ConDecl -> ((Decl, Decl), Decl, (Name, DeclHead))
 cons2innerType globals dh tn c = 
     case c of
@@ -156,9 +157,10 @@ cons2innerType globals dh tn c =
                 dObj     = mkInnerCons n (defaultName tn) --(map getTypeName ts'')
                 vclassInst = mkVClassInst (getType declHead) name tNames True False
             in  ((mkDataDecl mkDataKeyword Nothing declHead [newCons] [], dObj), vclassInst, (n,declHead)) 
+-}
 
-mkInnerType :: Declarations -> DeclHead -> Name -> [ConDecl] -> (Decl, Name) --((Decl, Decl), Decl, (Name, DeclHead))
-mkInnerType globals dh tn' cs = 
+mkInnerType :: Declarations -> DeclHead -> Name -> Bool -> [ConDecl] -> (Decl, Name) --((Decl, Decl), Decl, (Name, DeclHead))
+mkInnerType globals dh tn' recursive cs = 
     let tn = innerName tn'
         declHead = renameDeclHead dh tn
         cs' = map (\c -> case c of
@@ -168,12 +170,14 @@ mkInnerType globals dh tn' cs =
                             ts''     = map rewriteType ts'
                             tNames   = map getTypeName ts''
                             newCons  = mkConDecl name ts'' 
-                            fullTypename = mkName $ getTypeName' False True declHead
-                            dObj     = mkInnerCons n (defaultName tn) --(map getTypeName ts'')
-                            vclassInst = mkVClassInst (getType declHead) name tNames True False
+                            --fullTypename = mkName $ getTypeName' False True declHead
+                            --dObj     = mkInnerCons n (defaultName tn) --(map getTypeName ts'')
+                            --vclassInst = mkVClassInst (getType declHead) name tNames True False
                         in newCons
                     ) cs
-            in  (mkDataDecl mkDataKeyword Nothing declHead cs' [], tn) --, dObj), vclassInst, (n,declHead)) 
+        it = getType declHead
+        cs'' = (mkConDecl (proxyName tn') [it]) : cs'
+    in  (mkDataDecl mkDataKeyword Nothing declHead cs'' [], tn) --, dObj), vclassInst, (n,declHead)) 
 {-
 emptyVar :: Name -> Expr
 emptyVar n = 
@@ -327,13 +331,16 @@ isCompType t =
         ParenType t -> isCompType t 
         _ -> False
 
+{-
 mkTypeClassContext :: Type -> Maybe Context
 mkTypeClassContext t =
     let varTypes = map mkVarType (getTypeVars' t)
     in  if length varTypes == 0 
         then Nothing 
         else (Just . mkContext) $ mkClassAssert vclassName varTypes 
-    
+-}
+
+{-
 mkVClassInst :: Type -> Name -> [Name] -> Bool -> Bool -> Decl
 mkVClassInst t consName names' inner recursive = 
     let paramCount = if recursive then 1 + length names' else length names'
@@ -371,6 +378,7 @@ mkVClassInst t consName names' inner recursive =
     in mkInstanceDecl Nothing 
         (mkInstanceRule ctxt (mkAppInstanceHead (mkInstanceHead vclassName) t'))
         (Just $ mkInstanceBody ([nilBind, combBind] ++ if recursive then [proxyBind] else [])) 
+-}
 
 proxyCns :: Type -> ConDecl
 proxyCns t = 
@@ -409,7 +417,7 @@ rewriteDecl globals d =
                 --conss       = length cns'
                 --consNames   = map getConName (_annListElems cns) 
                 recursive   = isRecursive d
-                (innerType, innerName)   = mkInnerType globals hd otname cns'
+                (innerType, innerName)   = mkInnerType globals hd otname recursive cns'
                 --(innerTypes', vclassInsts, dhs') = unzip3 $ map (cons2innerType globals hd tname') cns'
                 --(innerTypes, defObjs) = unzip innerTypes'
                 --inner = head innerTypes

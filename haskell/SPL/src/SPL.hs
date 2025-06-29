@@ -89,9 +89,9 @@ footprint x = foldr (\/) noConfigs (pcs x)
 
 
 --class VClass (a :: * -> *) (b :: * -> *) where
-class SubVClass b => VClass a b where
-    combs       :: [b] -> a
-    restrict    :: PresenceCondition -> a -> b
+class SubVClass b => VClass b where
+    combs       :: [b] -> b
+    restrict    :: PresenceCondition -> b -> b
     --proxy       :: a -> a
     
 (/^) x pc = restrict pc x
@@ -175,7 +175,7 @@ instance SubVClass (SubV a) where
 --    let r = foldr comb nil xs
 --    in assert (disjInv r && compInv r) r
 
-instance VClass (V a) (SubV a) where
+instance VClass (V a) where
     combs = unions 
     restrict pc v'@(V v) =
         if      pc == allConfigs then (toSubV v')

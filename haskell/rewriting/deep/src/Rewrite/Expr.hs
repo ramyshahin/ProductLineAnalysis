@@ -223,7 +223,10 @@ rewriteExpr globals locals inConstructor bRestrict e =
                 else e'
         PrefixApp op arg -> mkApp liftedNeg (rewriteExpr globals locals inConstructor bRestrict arg)
         App fun arg ->  let inCons = isConstructor fun
-                            fun' = rewriteExpr globals locals inCons bRestrict fun
+                            fun' = 
+                                case fun of
+                                    Var _   -> fun
+                                    _       -> rewriteExpr globals locals inCons bRestrict fun
                             arg' = rewriteExpr globals locals inCons bRestrict arg
                             e'   = mkApp fun' arg'
                             e''  =  if inCons

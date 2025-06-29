@@ -62,7 +62,7 @@ symMatch = mkVar $ mkName "match"
 
 type Declarations = S.Set String
 
-proxyName tn = mkName $ "VProxy" ++ tn 
+proxyName tn = mkName $ "Proxy_" ++ prettyPrint tn 
 
 isProxyType :: String -> Bool
 isProxyType = isPrefixOf "I_VProxy"
