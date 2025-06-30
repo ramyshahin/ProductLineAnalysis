@@ -3,10 +3,10 @@ import SPL
 import VPrelude
 import Data.List -- TODO: without a dummy import, indentation goes wrong
 
-data I_Option a = I_None | I_Some a
+data I_Option a = I_None | I_Some (V a)
 
 type VOption a = V (I_Option a)
-plus :: (VOption VInt) -> (VOption VInt) -> (VOption VInt)
+plus :: VOption Int -> VOption Int -> VOption Int
 plus a b  = match a (\(a, pc) -> let __cntxt__ = __cntxt__ /\ pc in case a of I_None -> (I_None ^| __cntxt__)
                                                                               I_Some x -> toSubV (match b (\(b, pc) -> let __cntxt__ = __cntxt__ /\ pc in case b of I_None -> (I_None ^| __cntxt__)
                                                                                                                                                                     I_Some y -> (I_Some (toSubV ((x /^ __cntxt__) + (y /^ __cntxt__))) ^| __cntxt__))))

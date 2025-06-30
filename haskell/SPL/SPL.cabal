@@ -24,13 +24,14 @@ source-repository head
 
 library
   exposed-modules:
+      BoolDeep
       DeepTypes
       Gen
+      ListDeep
       PresenceCondition
       PropBDD
       ShallowTypes
       SPL
-      VBool
       VList
       VPrelude
   hs-source-dirs:

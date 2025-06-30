@@ -1,4 +1,4 @@
-module TestList where
+module List where
 import Data.Maybe
 
 data List a = Nil | Cons a (List a)

@@ -8,8 +8,6 @@ TEST_FILES="
     TestSum5
     TestRecursive1
     TestRecursive2
-    TestBool
-    TestList
     "
 
 ./clean.sh

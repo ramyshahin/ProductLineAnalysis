@@ -3,20 +3,12 @@ import SPL
 import VPrelude
 import Data.List -- TODO: without a dummy import, indentation goes wrong
 
-data I_NNil a = I_NNil
+data I_LList a = Proxy_LList (VLList a) | I_NNil | I_CCons (V a) (VLList a)
 
-data I_CCons a = I_CCons a ((VLList a))
-data VLList a = VLList_PoS { f_VProxyVLList :: SumOption (I_VProxy (VLList a)), f_NNil :: SumOption (I_NNil a), f_CCons :: SumOption (I_CCons a) }
-instance  VClass a =>VClass ((VLList a)) where nil = VLList_PoS nil nil nil
-                                               comb a b = VLList_PoS (comb (f_VProxyVLList a) (f_VProxyVLList b)) (comb (f_NNil a) (f_NNil b)) (comb (f_CCons a) (f_CCons b))
-                                               proxy = resolveVProxy . f_VProxyVLList
-instance  VClass a =>VClass (I_NNil a) where nil = I_NNil
-                                             comb I_NNil I_NNil = I_NNil
-instance  VClass a =>VClass (I_CCons a) where nil = I_CCons nil nil
-                                              comb (I_CCons a1 a2) (I_CCons b1 b2) = I_CCons ((comb a1 b1)) ((comb a2 b2))
-consI_NNil x r = r { f_NNil = x }
-consI_CCons x r = r { f_CCons = x }
-llength :: VClass a => (VLList a) -> VInt
-llength l  = match [(\(Present (I_NNil, pc)) r -> ((v 0))) (f_NNil (l)), (\(Present (I_CCons x xs, pc)) r -> ((v 1)) + llength xs) (f_CCons (l))]
+type VLList a = V (I_LList a)
+llength :: VLList a -> VInt
+llength l  = match l (\(l, pc) -> let __cntxt__ = __cntxt__ /\ pc in case l of Proxy_LList x -> (llength x) /^ __cntxt__
+                                                                               I_NNil -> (0 ^| __cntxt__)
+                                                                               I_CCons x xs -> toSubV ((1 ^| __cntxt__) + llength (xs /^ __cntxt__)))
 
 

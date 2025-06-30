@@ -200,6 +200,12 @@ rewriteConstructor e = liftExpr globals locals inConstructor e
         --Lambda _ _ -> e
         --_ -> trace ("restrictExpr: Unhandled Expr " ++ prettyPrint e) $ e
 
+rewriteFun :: Expr -> Expr
+rewriteFun fun =
+    case fun of
+        Var n   -> if isConstructorName n then mkVar $ innerName n else fun
+        _       -> rewriteExpr phi phi False False fun
+
 rewriteExpr :: Declarations -> Declarations -> Bool -> Bool -> Expr -> Expr
 rewriteExpr globals locals inConstructor bRestrict e = 
     case e of 
@@ -223,10 +229,7 @@ rewriteExpr globals locals inConstructor bRestrict e =
                 else e'
         PrefixApp op arg -> mkApp liftedNeg (rewriteExpr globals locals inConstructor bRestrict arg)
         App fun arg ->  let inCons = isConstructor fun
-                            fun' = 
-                                case fun of
-                                    Var _   -> fun
-                                    _       -> rewriteExpr globals locals inCons bRestrict fun
+                            fun' = rewriteFun fun       
                             arg' = rewriteExpr globals locals inCons bRestrict arg
                             e'   = mkApp fun' arg'
                             e''  =  if inCons
@@ -250,8 +253,8 @@ rewriteExpr globals locals inConstructor bRestrict e =
                                             -}
         If c t e -> mkApp   (mkApp  
                         (mkApp  liftedCond  (mkParen (rewriteExpr globals locals inConstructor bRestrict c)))
-                        (mkParen $ mkLambda [cntxtPat] (rewriteBranch globals locals bRestrict t)))
-                        (mkParen $ mkLambda [cntxtPat] (rewriteBranch globals locals bRestrict e))
+                        (mkParen $ rewriteBranch globals locals bRestrict t))
+                        (mkParen $ rewriteBranch globals locals bRestrict e)
         Case v alts -> 
             let e' = rewriteCase globals locals v (_annListElems alts) 
             in  if bRestrict

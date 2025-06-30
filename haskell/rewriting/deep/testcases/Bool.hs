@@ -1,6 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module TestBool where
+module Bool where
 import Data.List -- TODO: without a dummy import, indentation goes wrong
 
 data Bool = False | True
@@ -17,8 +17,8 @@ ite c x y =
         True -> x
         False -> y
 
-(&&) :: Bool -> Bool -> Bool
-x && y = ite x y False
+and :: Bool -> Bool -> Bool
+and x y = if x then y else False
 
-(||) :: Bool -> Bool -> Bool 
-x || y = ite x True y
+or :: Bool -> Bool -> Bool 
+or x y = if x then True else y

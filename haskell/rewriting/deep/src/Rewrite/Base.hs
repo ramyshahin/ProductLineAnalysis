@@ -43,6 +43,8 @@ primitiveFuncNames = S.fromList ["not", "head", "tail", "null", "fst", "snd", "m
 
 vCntxt      = "__cntxt__"
 --vTT         = "ttPC"
+varT        = mkVarType $ mkName "V"
+vlistT      = mkVarType $ mkName "VList"
 defaultLift = mkVar (mkName "v")
 cntxtPat    = mkVarPat (mkName vCntxt)
 cntxtExpr   = mkVar $ mkName vCntxt
@@ -61,6 +63,8 @@ notSupported' m x y = trace (m ++ ": Not supported: " ++ prettyPrint x) y
 symMatch = mkVar $ mkName "match"
 
 type Declarations = S.Set String
+
+phi = S.fromList ([] :: [String])
 
 proxyName tn = mkName $ "Proxy_" ++ prettyPrint tn 
 
@@ -97,7 +101,7 @@ mkVarTOp = mkVar (mkName "mkVarT")
 compOp   = mkUnqualOp "."
 dollarOp = mkUnqualOp "$"
 
-liftedCond = mkVar (mkName "liftedCond")
+liftedCond = mkVar (mkName "ite")
 liftedNeg = mkVar (mkName "negate")
 liftedCase = mkVar (mkName "liftedCase")
 

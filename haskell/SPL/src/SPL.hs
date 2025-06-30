@@ -9,7 +9,7 @@
 --{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE KindSignatures, MultiParamTypeClasses #-}
+{-# LANGUAGE KindSignatures, MultiParamTypeClasses, AllowAmbiguousTypes #-}
 --{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, FlexibleInstances, ExplicitForAll #-}
@@ -77,23 +77,30 @@ completenessInv pcs = (foldr (\/) noConfigs pcs) == allConfigs
     Typeclasses
 -}
 --class SubVClass (a :: * -> *) where
+    {-
 class SubVClass a where
     pcs         :: a -> [PresenceCondition]
     nil         :: a
     comb        :: a -> a -> a
     restrict'   :: PresenceCondition -> a -> a
-    
-footprint :: SubVClass a => a -> PresenceCondition
-footprint x = foldr (\/) noConfigs (pcs x)
-
-
+    -}
 
 --class VClass (a :: * -> *) (b :: * -> *) where
-class SubVClass b => VClass b where
-    combs       :: [b] -> b
-    restrict    :: PresenceCondition -> b -> b
+class VClass b where
+    items       :: b a -> [Val a]
+    pcs         :: b a -> [PresenceCondition]
+    nil         :: b a
+    comb        :: b a -> b a -> b a
+    combs       :: [b a] -> b a
+    restrict    :: PresenceCondition -> b a -> b a
+    footprint   :: b a -> PresenceCondition
+    
+
     --proxy       :: a -> a
     
+--footprint :: VClass b _ => b -> PresenceCondition
+--footprint x = foldr (\/) noConfigs (pcs x)
+
 (/^) x pc = restrict pc x
 
 {-# INLINE (===) #-}
@@ -161,6 +168,7 @@ unions xs =
     let (V ys) = foldr union emptyV xs
     in mkV ys
 
+{-
 instance SubVClass (SubV a) where
     pcs (V xs)   = snd $ unzip xs        
     nil             = emptyV
@@ -169,18 +177,25 @@ instance SubVClass (SubV a) where
         if      pc == allConfigs then v'
         else if pc == noConfigs then emptyV
         else    mkSubV [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p] 
-    
+-}
+
 --combs :: (SubVClass a, VClass b) => [a] -> b
 --combs xs = 
 --    let r = foldr comb nil xs
 --    in assert (disjInv r && compInv r) r
 
-instance VClass (V a) where
+instance VClass V where
+    items (V xs) = xs
+    pcs (V xs)   = snd $ unzip xs        
+    nil             = emptyV
+    comb            = union  
     combs = unions 
     restrict pc v'@(V v) =
         if      pc == allConfigs then (toSubV v')
         else if pc == noConfigs then emptyV
         else    mkSubV [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p] 
+    footprint x = foldr (\/) noConfigs (pcs x)    
+
    -- nil  = V []
     {-
     isNil (V xs) = null xs 
@@ -726,5 +741,5 @@ instance (VClass a) => VClass (I_VProxy a) where
 --match :: (VClass a) => [a -> a] -> a
 --match xs = foldr (\f x -> f x) nil ((\x -> proxy x) : xs)
 
-match :: V a -> (Val a -> SubV b) -> V b
-match (V t) f = unions (map (f) t)
+match :: (VClass a, VClass b) => a a' -> (Val a' -> b b') -> b b'
+match t f = combs (map f (items t))

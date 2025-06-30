@@ -48,23 +48,23 @@ getDeclaredName d =
 --isTypeVar :: Name -> Bool
 --isTypeVar n = isLower $ head $ prettyPrint n
 
-rewriteType :: Type -> Type
-rewriteType t = case t of
+rewriteType :: Type -> Bool -> Type
+rewriteType t hd = case t of
     -- arrow types (e.g., Int -> Int)
     FunctionType a b    -> 
-        mkFunctionType (rewriteType a) (rewriteType b)
+        mkFunctionType (rewriteType a hd) (rewriteType b hd)
     -- parenthesized type application (e.g., (Int), Maybe (Maybe Int))
-    ParenType t         -> mkParenType (rewriteType t)
+    ParenType t         -> mkParenType (rewriteType t hd)
     -- tuple notation (e.g., (Int, Int))
     TupleType ts        -> 
-        mkTupleType (map rewriteType (_annListElems ts))
+        mkTupleType (map (\t -> rewriteType t False) (_annListElems ts))
     -- list notation (e.g., [Int])
     -- TODO: we only lift the element type for now
-    ListType t          -> mkListType (rewriteType t)
+    ListType t          -> mkTypeApp vlistT (rewriteType t False)
     -- first-order types (e.g., Int, String)
-    VarType  n          -> mkVarType (liftedTypeName n)
-    TypeApp t1 t2       -> mkParenType $
-        mkTypeApp (rewriteType t1) (rewriteType t2)
+    VarType  n          -> if isTypeVar n && hd then mkParenType $ mkTypeApp varT t else mkVarType (liftedTypeName n)
+    TypeApp t1 t2       -> --mkParenType $
+        mkTypeApp (rewriteType t1 hd) t2 --(rewriteType t2 False)
     -- TODO: handle other cases
     _ -> notSupported "rewriteType" t
 
@@ -83,7 +83,7 @@ getHeadTypeName t =
 rewriteTypeSig :: Declarations -> TypeSignature -> Decl
 rewriteTypeSig globals (TypeSignature ns t) = 
     let n       = head $ _annListElems ns
-        t'      = rewriteType t
+        t'      = rewriteType t True
         --ctxt    = mkTypeClassContext t
         sig     = mkTypeSignature n t'
         --    case ctxt of 
@@ -167,7 +167,7 @@ mkInnerType globals dh tn' recursive cs =
                     ConDecl n ts ->
                         let name     = innerName n 
                             ts'      = _annListElems ts
-                            ts''     = map rewriteType ts'
+                            ts''     = map (\t -> rewriteType t True) ts'
                             tNames   = map getTypeName ts''
                             newCons  = mkConDecl name ts'' 
                             --fullTypename = mkName $ getTypeName' False True declHead
@@ -175,8 +175,8 @@ mkInnerType globals dh tn' recursive cs =
                             --vclassInst = mkVClassInst (getType declHead) name tNames True False
                         in newCons
                     ) cs
-        it = getType declHead
-        cs'' = (mkConDecl (proxyName tn') [it]) : cs'
+        it = rewriteType (getType dh) True
+        cs'' = if recursive then (mkConDecl (proxyName tn') [it]) : cs' else cs'
     in  (mkDataDecl mkDataKeyword Nothing declHead cs'' [], tn) --, dObj), vclassInst, (n,declHead)) 
 {-
 emptyVar :: Name -> Expr
@@ -184,7 +184,6 @@ emptyVar n =
     if   isTypeVar n 
     then mkParen $ mkApp (mkVar $ mkName "Var") (mkList [])
     else mkVar $ defaultName n
--}
 
 mkDefObj :: Name -> Int -> Decl
 mkDefObj typeName consCount =
@@ -210,7 +209,6 @@ mkInnerCons n defObjName = --params =
     in  mkValueBinding $
             mkSimpleBind (mkAppPat cName [paramX, paramR]) (mkUnguardedRhs $ recUpdate) Nothing
 
-{-
 mkProdCons :: DeclHead -> [DeclHead] -> Bool -> ConDecl
 mkProdCons dh dhs' recursive =
     let dhs = if recursive then (mkDeclHeadApp (mkNameDeclHead (innerName (proxyName ""))) (mkTypeVar vtname')) : dhs' else dhs'
@@ -226,6 +224,7 @@ mkProdCons dh dhs' recursive =
 -}
 
 -- rewrite constructor declaration
+{-
 rewriteConDecl :: Declarations -> DeclHead -> ConDecl -> ConDecl
 rewriteConDecl globals hd d = 
     case d of
@@ -237,7 +236,7 @@ rewriteConDecl globals hd d =
                                 rewriteType t)
                      (_annListElems ts))
         _ -> notSupported "rewriteConDecl" d
-
+-}
 rewriteDeclHead :: Declarations -> DeclHead -> DeclHead
 rewriteDeclHead decls dh =
     case dh of

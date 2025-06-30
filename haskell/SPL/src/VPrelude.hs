@@ -1,29 +1,31 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module VPrelude where
+module VPrelude (
+    module VPrelude,
+    module ShallowTypes,
+    module BoolDeep,
+    module ListDeep
+)where
 
 import qualified Prelude as P
 import SPL
-import VBool
+import ShallowTypes 
+import BoolDeep
+import ListDeep
 --import VList
 
 --
 -- Booleans
 --
 
-{-
-type VBool = V P.Bool 
-
 (&&) :: VBool -> VBool -> VBool
-a && b = (P.pure (P.&&)) P.<*> a P.<*> b 
+a && b = and a b
 
 (||) :: VBool -> VBool -> VBool
-a || b = (P.pure (P.||)) P.<*> a P.<*> b 
+a || b = or a b
 
-not :: VBool -> VBool
-not a = (P.pure P.not) P.<*> a 
-
+{-
 class P.Eq a => VEq a where
     (==) :: V a -> V a -> VBool
     a == b = (P.pure (P.==)) P.<*> a P.<*> b 
@@ -64,31 +66,8 @@ infix 4 >=
 --
 -- Integers
 --
-type VInt = V P.Int 
 
-class P.Num a => VNum a where
-    (+) :: V a -> V a -> V a 
-    x + y = (P.pure (P.+)) P.<*> x P.<*> y
-
-    (*) :: V a -> V a -> V a 
-    x * y = (P.pure (P.*)) P.<*> x P.<*> y
-
-    (-) :: V a -> V a -> V a 
-    x - y = (P.pure (P.-)) P.<*> x P.<*> y  
-
-    negate :: V a -> V a
-    negate x = (P.pure P.negate) P.<*> x
-
-    abs :: V a -> V a
-    abs x = (P.pure P.abs) P.<*> x
-
-    signum :: V a -> V a
-    signum x = (P.pure P.signum) P.<*> x
-
-    fromInteger :: V P.Integer -> V a 
-    fromInteger x = (P.pure P.fromInteger) P.<*> x
-
-instance VNum P.Int
+--type VInt = V Int 
 
 {-
 instance VEq P.Int
