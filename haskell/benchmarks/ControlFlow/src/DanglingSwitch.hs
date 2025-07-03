@@ -9,6 +9,7 @@ import Data.Maybe
 import Debug.Trace
 --import qualified Data.MultiMap as M
 
+{-
 find :: Int -> [Int] -> Bool
 find n _ns = --trace "find" $
     case _ns of
@@ -64,3 +65,4 @@ analyze cfg = --trace (show ns) $
     let _ns = _nodes cfg 
         switches = filter isSwitch _ns 
     in  filter (not . (danglingSwitch cfg)) switches
+-}

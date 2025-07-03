@@ -2,7 +2,7 @@
 
 module CFGParser where
 
-import VCFG
+import CFG
 import NodeTypes
 import Language.C.Parser
 import Language.C.Data.InputStream
@@ -23,7 +23,7 @@ type PCExpr = PresenceCondition
 
 --dummyNode = CFGNode 0 T.empty (CFGDummy T.empty) [] []
 
-mkVNode' = liftV5 CFGNode
+--mkVNode' = liftV5 CFGNode
 
 processEdge :: T.Text -> ((Int, Int), PCExpr)
 processEdge t = --trace "processEdge" $
@@ -43,26 +43,28 @@ processNode edges record =
         cCode       = T.intercalate ";" $ L.init rest
         !pc         = parsePC $! T.unpack (L.last rest)
         (!ast, !pc', fname) = parseNode cCode lineNum t
-        !preds      = map (\((f,_), pc) -> mkV 0 (f,pc)) $ filter (\((_,t),_) -> t == id) edges
-        !succs      = map (\((_,t), pc) -> mkV 0 (t,pc)) $ filter (\((f,_),_) -> f == id) edges
-        !node       = CFGNode id fname cCode ast preds succs
+        -- !preds      = map (\((f,_), pc) -> mkV 0 (f,pc)) $ filter (\((_,t),_) -> t == id) edges
+        -- !succs      = map (\((_,t), pc) -> mkV 0 (t,pc)) $ filter (\((f,_),_) -> f == id) edges
+        !node       = CFGNode id fname cCode ast --preds succs
     in  assert (n == "N") $
         assert (length rest >= 2) $! 
         --fixCompleteness dummyNode node
         (node, pc /\ pc')
 
-readCFG :: String -> IO (CFG)
+readCFG :: String -> IO CFG
 readCFG inputFileName = do
     fileTxt <- TIO.readFile inputFileName
-    let lines' = T.lines fileTxt
-    let lines  = L.nub lines'
+    let lines = (L.nub . T.lines) fileTxt
     let (nodeRecs, edgeRecs) = L.partition (\t -> T.head t == 'N') lines
-    let edges = map processEdge edgeRecs
-    let nodes = map (processNode edges) nodeRecs
-    return $ mkCFG nodes
+    let edges' = map processEdge edgeRecs
+    let nodes' = map (processNode edges') nodeRecs
+    let nodes = (fst. unzip) nodes'
+    let nodemap = foldr (\n'@(n,pc) m -> MM.append (_nID n) n' m) MM.empty nodes'
+    let edges = map (\((from,to), pc) -> CFGEdge ((fst . head) $ nodemap MM.! from) ((fst . head) $ nodemap MM.! to)) edges'
+    return $ CFG nodes edges
 
-mkCFG :: [(CFGNode, PresenceCondition)] -> CFG
-mkCFG  ns = CFG $ foldr (\n'@(n,pc) m -> MM.append (_nID n) n' m) MM.empty ns
+--mkCFG :: [(CFGNode, PresenceCondition)] -> CFG
+--mkCFG  ns = CFG $ foldr (\n'@(n,pc) m -> MM.append (_nID n) n' m) MM.empty ns
 
 --mkVCFG :: [VCFGNode] -> VCFG
 --mkVCFG  ns = CFG $ foldr (\n m -> MM.insert (_nID n) n m) MM.empty ns

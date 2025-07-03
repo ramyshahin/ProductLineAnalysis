@@ -9,7 +9,7 @@ module VCFG
 import Control.Exception
 import Control.Applicative
 import Language.C.Syntax.AST
-import qualified CFG as C
+import CFG
 import qualified Data.Text as T
 import qualified Data.Multimap as M
 import GHC.Generics (Generic)
@@ -36,7 +36,7 @@ data NodeType =
   | CFGFuncRoot T.Text
   | CFGDummy    T.Text
     deriving (Show, Generic, NFData)
--}
+
 
 data CFGNode = CFGNode {
     _nID :: Int,
@@ -48,19 +48,24 @@ data CFGNode = CFGNode {
     } deriving (Show
     --, Generic
     )
-
-dummyCNode = C.CFGNode 0 (T.pack "") (T.pack "") (CFGDummy (T.pack "")) [] []
-
-{-
-toShallowNode :: (CFGNode, PresenceCondition) -> V C.CFGNode
-toShallowNode (n, pc) = 
-    let ps = lv2vl $ _preds n
-        ss = lv2vl $ __succs n
-        d  = (C.CFGNode ^| pc) <*> ((_nID n) ^| pc) <*> ((_fname n) ^| pc) <*> ((text n) ^| pc) 
-                               <*> ((ast n) ^| pc) <*> ps <*> ss
-    in  fixCompleteness d
 -}
 
+-- dummyCNode = C.CFGNode 0 (T.pack "") (T.pack "") (CFGDummy (T.pack "")) [] []
+
+toShallowNode :: (CFGNode, PresenceCondition) -> V CFGNode
+toShallowNode (n, pc) = 
+    let --ps = lv2vl $ _preds n
+        --ss = lv2vl $ __succs n
+        d  = (CFGNode ^| pc) <*> ((_nID n) ^| pc) <*> ((_fname n) ^| pc) <*> ((text n) ^| pc) 
+                               <*> ((ast n) ^| pc)
+    in  fixCompleteness d
+
+toShallowEdge :: (CFGEdge, PresenceCondition) -> V CFGEdge
+toShallowEdge ((CFGEdge f t), pc) = 
+    let d  = (CFGEdge ^| pc) <*> (f ^| pc) <*> (t ^| pc) 
+    in  fixCompleteness d
+
+{-
 data CFG = CFG {
     nodes :: M.ListMultimap Int (CFGNode, PresenceCondition)
 }
@@ -70,23 +75,24 @@ instance NFData CFG where
 
 _nodes :: CFG -> [(CFGNode, PresenceCondition)]
 _nodes cfg = (snd . unzip . M.toList) $ nodes cfg
+-}
 
-mkShallowCFG :: [C.CFGNode] -> C.CFG
-mkShallowCFG  ns = C.CFG $! foldr (\n m -> M.append (C._nID n) n m) M.empty ns
+mkShallowCFG :: [CFGNode] -> [CFGEdge] -> CFG
+mkShallowCFG ns es = CFG ns es 
 
-mkShallowCFG' = --trace ("Variants: " ++ (show (length ns'))) $ 
-    apply $ v mkShallowCFG
+mkShallowCFG' ns es = --trace ("Variants: " ++ (show (length ns'))) $ 
+    (v mkShallowCFG) <*> ns <*> es
 
-{-
-toShallowCFG :: CFG -> V C.CFG
-toShallowCFG c =
-    let ns = _nodes c
-        ns' = map toShallowNode ns
+
+toShallowCFG :: CFG -> V CFG
+toShallowCFG (CFG ns es) =
+    let ns' = map toShallowNode (map (\n -> (n, allConfigs)) ns)
+        es' = map toShallowEdge (map (\e -> (e, allConfigs)) es)
         vl  = lv2vl ns'
-        ret = mkShallowCFG' vl
+        ve  = lv2vl es' 
+        ret = mkShallowCFG' vl ve
     in  --trace ("V Node count: " ++ (show (length vl'))) $
         ret
--}
 
 {-
 _succs' :: V CFG -> V CFGNode -> [V CFGNode]
@@ -114,7 +120,7 @@ fixCompleteness v = v
     then    v
     else    SPL.union v (dummyNode ^| (undefinedAt v))
 -}
-dummyNode = CFGNode 0 T.empty T.empty (C.CFGDummy T.empty) [] []
+--dummyNode = CFGNode 0 T.empty T.empty (C.CFGDummy T.empty) --[] []
 
 --node2Vnode :: CFGNode -> V CFGNode
 --node2Vnode n = 
@@ -127,6 +133,7 @@ mkV dummy (x, pc) =
     then v x
     else mkVars [(x, pc), (dummy, negPC pc)]
 
+{-
 _nodes' :: V CFG -> [V CFGNode]
 _nodes' vs = 
     case vs of 
@@ -135,6 +142,7 @@ _nodes' vs =
             let ns = (snd . unzip . M.toList) $ nodes cfg
             in  --map (\x -> V [x]) ns 
                 map (\v -> mkV dummyNode v) ns
+-}
 
 --_nID' :: V CFGNode -> V Int
 --_nID' (V n) = foldr union emptyV $ map (\(n', pc) -> (_nID n') ^| pc) n

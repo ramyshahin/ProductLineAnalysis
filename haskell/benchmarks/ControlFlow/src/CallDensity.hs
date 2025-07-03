@@ -8,6 +8,7 @@ import Data.Maybe
 import Debug.Trace
 import Data.Ratio
 
+{-
 find :: Int -> [Int] -> Bool
 find n _ns =
     case _ns of
@@ -54,3 +55,4 @@ analyze cfg = --trace (show ns) $
         fnCount = length _fns
         total   = foldr (\a b -> a + b) 0 (map (callDensity cfg) _fns)
     in  total % (toInteger fnCount)
+-}

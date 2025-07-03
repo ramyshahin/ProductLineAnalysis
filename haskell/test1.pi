@@ -1,0 +1,13 @@
+#line 1 "test1.c" 1
+int
+#if definedEx(A)
+#if !definedEx(B)
+x = ((a * 3) + 1);
+#endif
+#if definedEx(B)
+foo() { return a * 2; }
+#endif
+#endif
+#if !definedEx(A)
+*p = 0;
+#endif

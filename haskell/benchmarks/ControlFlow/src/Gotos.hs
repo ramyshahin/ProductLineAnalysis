@@ -8,6 +8,7 @@ import Data.Maybe
 import Debug.Trace
 import Data.Ratio
 
+{-
 find :: Int -> [Int] -> Bool
 find n _ns =
     case _ns of
@@ -72,3 +73,4 @@ analyze cfg = --trace (show ns) $
         labelCount = length _ls
         gotoCount  = length _gs
     in  if labelCount == 0 then 0 else (toInteger gotoCount) % (toInteger labelCount)
+-}

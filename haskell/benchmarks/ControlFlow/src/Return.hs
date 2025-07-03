@@ -8,6 +8,7 @@ import Language.C.Syntax.AST
 import Data.Maybe
 import Debug.Trace
 
+{-
 find :: Int -> [Int] -> Bool
 find n _ns =
     case _ns of
@@ -66,3 +67,4 @@ analyze cfg = --trace (show ns) $
         fns = --trace (show _ns) $ 
             filter isFnRoot _ns 
     in  filter (not . (hasReturn cfg)) fns
+-}

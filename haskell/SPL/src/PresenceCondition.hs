@@ -93,6 +93,7 @@ bTerm =  parens pcExpr
      <|> (reserved "ff" >> return ff)
      <|> (reserved "False" >> return ff)
      <|> (reserved "definedEx" >> parens (liftM mkBDDVar identifier))
+     <|> (reserved "defined" >> (liftM mkBDDVar identifier))
      <|> (reserved "def" >> parens (liftM mkBDDVar identifier))
      <|> (integer >>= \i -> if i == 0 then return ff else return tt)
      <|> liftM mkBDDVar identifier

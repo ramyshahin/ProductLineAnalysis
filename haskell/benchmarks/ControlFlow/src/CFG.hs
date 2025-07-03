@@ -23,21 +23,26 @@ data CFGNode = CFGNode {
     _nID     :: Int,
     _fname   :: T.Text,
     text    :: T.Text,
-    ast     :: NodeType,
-    _preds  :: [Int],
-    __succs :: [Int]
+    ast     :: NodeType --,
+    -- _preds  :: [Int],
+    -- __succs :: [Int]
     }
     deriving (Generic, NFData)
 
+data CFGEdge = CFGEdge CFGNode CFGNode
+
+data CFG = CFG [CFGNode] [CFGEdge]
+
+type NodeMap = M.ListMultimap Int CFGNode
 
 --instance NFData CFGNode where
 --    rnf (CFGNode !id !t !a !ps !ss) = seq id (seq t (seq a (seq ps (seq ss ()))))
 
 --getID (CFGNode i _ _ _ _) = i
 
-data CFG = CFG {
-    nodes :: M.ListMultimap Int CFGNode
-    } 
+--data CFG = CFG {
+--    nodes :: NodeMap
+--    } 
     
 instance NFData CFG where
     rnf n = (_nodes n) `seq` n `seq` ()
@@ -57,17 +62,18 @@ _find n _ns = --trace "find" $
 --            [] -> []
 --            (y : _ys) -> if _find y _ys then uniquesOnly _ys else y : (uniquesOnly _ys)
     
-findNode cfg id = 
-    let ns = (nodes cfg) M.! id
-    in  --if null ns then trace (show id) ns else 
-        ns
+--findNode cfg id = 
+--    let ns = (nodes cfg) M.! id
+--    in  --if null ns then trace (show id) ns else 
+--        ns
 
+{-
 _succs :: CFG -> CFGNode -> [CFGNode]
 _succs cfg n = 
     let rs  = map (findNode cfg) (__succs n)
         rs' =  filter (not . null) rs
     in  map head rs'
-{-
+
 vl2lv :: Var [a] -> [Var a]
 vl2v vs = 
 _succs' :: Var CFG -> Var CFGNode -> [Var CFGNode]
@@ -90,20 +96,20 @@ uniquesOnly xs =
 -}
 
 _nodes :: CFG -> [CFGNode]
-_nodes cfg = (snd . unzip . M.toList) $ nodes cfg
+_nodes (CFG ns _) = ns
 
 --_nodes' :: Var CFG -> [Var CFGNode]
 --_nodes (Var cs) = assert (null cs) $ 
 
-preds :: CFG -> CFGNode -> [CFGNode]
-preds cfg n = map (head . ((nodes cfg) M.!)) (_preds n)
+--preds :: CFG -> CFGNode -> [CFGNode]
+--preds cfg n = map (head . ((nodes cfg) M.!)) (_preds n)
 
 --_succs :: CFG -> CFGNode -> [CFGNode]
 --_succs cfg n = map (head . ((_nodes cfg) M.!)) (uniquesOnly (__succs n))
 
 instance Show CFGNode where
-    show (CFGNode i fname t nt ps ss) =
+    show (CFGNode i fname t nt) =
         "Node: " ++ (show i) ++ "\t" ++ (show t) ++ "\t" ++ (show fname)
         ++ "\n\tAST: " ++ (show nt)
-        ++ "\n\tpredecessors: " ++ (L.intercalate ", " (map show ps))
-        ++ "\n\tsuccessors  : " ++ (L.intercalate ", " (map show ss)) ++ "\n"
+        -- ++ "\n\tpredecessors: " ++ (L.intercalate ", " (map show ps))
+        -- ++ "\n\tsuccessors  : " ++ (L.intercalate ", " (map show ss)) ++ "\n"

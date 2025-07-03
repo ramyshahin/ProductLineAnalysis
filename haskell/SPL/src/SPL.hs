@@ -40,7 +40,7 @@ module SPL(
     mkVars,
     emptyV,
     getFeatures,
-    definedAt, undefinedAt,
+    complementV,
     liftV5 -- TODO
     --liftedCond
 ) where
@@ -328,12 +328,19 @@ mkVars vs = V vs
 annotate :: Partition -> [t] -> V t
 annotate p xs = mkVars $ zip xs p
 
-definedAt :: V t -> PresenceCondition
-definedAt (V xs) = PC.intersect pcs
+definedAt :: [Val t] -> PresenceCondition
+definedAt xs = PC.intersect pcs
     where   pcs     = map snd xs
 
-undefinedAt :: V t -> PresenceCondition
+undefinedAt :: [Val t] -> PresenceCondition
 undefinedAt = negPC . definedAt
+
+complementV :: t -> [Val t] -> V t
+complementV e vs =
+    let u = undefinedAt vs in
+    if u == noConfigs
+    then mkV vs
+    else mkV $ (e, u) : vs
 
 {-
 mkVarT :: a -> Var a
@@ -476,7 +483,7 @@ evalCond c'@(V c) =
     in  --trace ("tPC: " ++ (show tPC)) $ 
         --trace ("fPC: " ++ (show fPC)) $
         assert (tPC /\ fPC == noConfigs) $
-        assert (tPC \/ fPC == definedAt c') $
+        assert (tPC \/ fPC == definedAt c) $
         (tPC, fPC)
 
 {-
@@ -489,8 +496,8 @@ liftedCond c x y =
 -}
 
 partitionInv :: V a -> [V a] -> Bool
-partitionInv x xs = (definedAt x) == cover
-    where cover = foldr (\/) noConfigs (map definedAt xs)
+partitionInv (V x) xs = (definedAt x) == cover
+    where cover = foldr (\/) noConfigs (map (\(V x) -> definedAt x) xs)
 
 {-
 neg' :: Num a => Var a -> Var a

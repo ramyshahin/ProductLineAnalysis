@@ -8,6 +8,7 @@
 
 module Main where
 
+import SuperCAST
 import CFG
 import qualified VCFG as V
 import CFGParser
@@ -22,6 +23,8 @@ import GHC.Generics (Generic)
 import Control.DeepSeq
 import System.IO
 import System.Environment
+import TokensShallow
+import TokensDeep
 
 #ifdef CASE_TERMINATION
 import CaseTermination
@@ -61,8 +64,8 @@ analysis = "Call Density"
 
 getFunctionNodes :: [CFGNode] -> [CFGNode]
 getFunctionNodes = filter (\n -> case n of 
-                                    (CFGNode _ _ _ (CFGFunc _) _ _)   -> True
-                                    _                                 -> False)
+                                    (CFGNode _ _ _ (CFGFunc _))   -> True
+                                    _                             -> False)
 getFunctionNodes' = v getFunctionNodes
 
 #ifdef ANALYZE
@@ -83,10 +86,10 @@ deep c = Deep.analyze c
 -- ANALYZE
 #endif
 
-nodes' = v nodes
+--nodes' = v nodes
 
 data Env = Env {
-    deepCFG     :: V V.CFG,
+    --deepCFG     :: V V.CFG,
     shallowCFG  :: V CFG,
     fileName    :: String,
     features    :: [String],
@@ -97,10 +100,9 @@ data Env = Env {
     --, NFData
     )
 
-{-
 setupEnv filename = do
     !cfg <- readCFG filename
-    let !nodes = (V._nodes cfg)
+    let !nodes = (_nodes cfg)
     let !nodeCount = nodes `seq` length nodes
     !features <- cfg `seq` getFeatures
     let !deep = cfg ^| allConfigs
@@ -110,7 +112,7 @@ setupEnv filename = do
     let presentConfigs = length sh'
     let hdr = foldr (\s t -> s ++ "," ++ t) "" 
             [filename, show nodeCount, show featCount, show configCount, show presentConfigs]
-    let env = Env deep shallow filename features configCount nodeCount hdr
+    let env = Env shallow filename features configCount nodeCount hdr
     --putStrLn $ "Analysis:        " ++ analysis
     putStrLn $ "File:            " ++ filename
     putStrLn $ "Node#:           " ++ (show $ nodeCount)
@@ -119,7 +121,6 @@ setupEnv filename = do
     putStrLn $ "Config#:         " ++ (show $ configCount)
     putStrLn $ "Present config#: " ++ (show $ presentConfigs)
     return env
--}
 
 reportResults s cfg = do
     let result = s cfg
@@ -185,9 +186,15 @@ main = defaultMain [ bgroup "main"
                             ] ]
 -}
 
-fname = "test1.cfg"
+fname = "test.c"
 
 main = do
+    tokens <- parseTokensFile (fname ++ ".l")
+    mapM (\t -> putStrLn (show t)) tokens
+    tokensShallow tokens
+    tokensDeep tokens
+    --node <- parseASTFile (fname ++ ".ast")
+    --putStrLn $ show node
     --env <- setupEnv fname
     --putStrLn $ "Features: " ++ (show feats)
     --let result = deep $ deepCFG env
