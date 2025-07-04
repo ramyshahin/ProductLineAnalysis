@@ -18,8 +18,8 @@ vcons vs xs =
     in complementV (Proxy_List xs) [(I_Cons v xs, f)]
 
 
-mkVList :: [Val t] -> VList t
-mkVList tokens = foldr (\x xs -> vcons [x] xs) vnil tokens
+mkVList :: [[Val t]] -> VList t
+mkVList tokens = foldr (\x xs -> vcons x xs) vnil tokens
 
 tokensDeep sh = do
     let sh_len = len sh

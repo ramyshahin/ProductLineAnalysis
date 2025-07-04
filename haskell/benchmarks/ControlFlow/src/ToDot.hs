@@ -3,6 +3,7 @@ module ToDot where
 import CFG
 import ListDeep
 import SPL
+import qualified Data.List as L
 import System.IO
 
 nodeID :: t -> String
@@ -18,9 +19,9 @@ vToString (V xs) =
 node :: Handle -> String -> String -> IO ()
 node h id label = do
     let isProxy = label == ""
-    hPutStr h $ id ++ "[label=" ++ label
+    hPutStr h $ id ++ "[label=\"" ++ label ++ "\""
     if isProxy then
-        hPutStrLn h "\"\";style=filled;fillcolor=blue]"
+        hPutStrLn h ";style=filled;fillcolor=blue]"
     else
         hPutStrLn h "]"
 
@@ -42,7 +43,7 @@ toDotCFG filename (CFG nodes edges) = do
 -------------------
 -- VList
 -------------------
-toDotVList ::Show t => Handle -> Maybe (Val (I_List t)) -> VList t -> IO ()
+toDotVList :: Handle -> Maybe (Val (I_List String)) -> VList String -> IO ()
 toDotVList h parent v@(V xs) = do
     hPutStr h $ "subgraph " ++ (clusterID v) ++ " { rank = same; "
     mapM_ (\(x,_) -> hPutStr h $ (nodeID x) ++ "; ") xs
@@ -60,7 +61,7 @@ proxyEdge h (x,pc) v@(V xs) = do
                 else return ()
           ) xs 
 
-toDotIList :: Show t => Handle -> Maybe (Val (I_List t)) -> VList t -> I_List t -> PresenceCondition -> IO ()
+toDotIList :: Handle -> Maybe (Val (I_List String)) -> VList String -> I_List String -> PresenceCondition -> IO ()
 toDotIList h parent v l pc =
     case l of
         Proxy_List xs -> do
@@ -73,8 +74,9 @@ toDotIList h parent v l pc =
                     else return ()
             proxyEdge h (l, pc) xs
         I_Nil -> return ()
-        I_Cons x xs -> do
-            node h (nodeID l) (vToString x)
+        I_Cons v@(V ys) xs -> do
+            let lbl = L.intercalate ", " $ map fst ys
+            node h (nodeID l) lbl
             case parent of
                 Nothing -> return ()
                 Just (p, pc') -> 
@@ -83,7 +85,7 @@ toDotIList h parent v l pc =
                     else return ()      
             toDotVList h (Just (l, pc)) xs
 
-toDotDeepList :: Show a => String -> VList a -> IO ()
+toDotDeepList :: String -> VList String -> IO ()
 toDotDeepList filename xs = do
     handle <- openFile filename WriteMode
     hPutStrLn handle "digraph {"

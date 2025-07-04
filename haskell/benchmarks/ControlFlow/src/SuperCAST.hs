@@ -96,6 +96,19 @@ processTokenLine l context =
         let tokens = words l
         in (zip tokens (repeat context), context)
 
+complPCs pc1 pc2 = pc1 /\ pc2 == noConfigs
+
+tryToMerge :: [Val Token] -> [Val Token] -> [Val Token]
+tryToMerge xs ys = 
+    case (xs, ys) of
+        ([], []) -> []
+        (xs', []) -> xs'
+        ([], ys') -> ys'
+        ((x':xs'), (y':ys')) ->
+            if complPCs (snd x') (snd y')
+            then x' :  y' : (tryToMerge xs' ys')
+            else xs ++ ys
+
 processTokenLines :: [String] -> PresenceCondition -> ([(Token, PresenceCondition)], PresenceCondition, [String])
 processTokenLines ls context =
     case ls of
@@ -107,14 +120,25 @@ processTokenLines ls context =
             else if context /= cntxt' then
                 let (ts', pc, rest) = processTokenLines ls' cntxt' 
                     (ts'', pc', rest') = processTokenLines rest context
-                in  (ts' ++ ts'', context, rest')
+                in  (tryToMerge ts' ts'', context, rest')
             else 
                 let (ts', pc, rest) = processTokenLines ls' context 
-                in  (ts ++ ts', pc, rest)
+                in  (tryToMerge ts ts', pc, rest)
 
-parseTokensFile :: String -> IO [(Token, PresenceCondition)]
+packTokens :: [Val Token] -> [[Val Token]]
+packTokens xs =
+    case xs of
+        [] -> []
+        y:[] -> [[y]]
+        y:y':ys -> 
+            if complPCs (snd y) (snd y') then
+                [y, y'] : packTokens ys
+            else
+                [y] : packTokens (y':ys)
+
+parseTokensFile :: String -> IO [[Val Token]]
 parseTokensFile filename = do
     fileTxt <- TIO.readFile filename
     let lines = map (trim . T.unpack) $ (L.nub . T.lines) fileTxt
     let (ts, _, _) = processTokenLines lines allConfigs 
-    return ts
+    return $ packTokens ts

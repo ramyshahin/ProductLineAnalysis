@@ -17,6 +17,6 @@ mkVToken :: [(Token, PresenceCondition)] -> VToken
 mkVToken = complementV ""
 
 tokensShallow tokens = do
-    let sh  = foldr (\x xs -> vcons <*> (complementV "" [x]) <*> xs) (v []) tokens
+    let sh  = foldr (\x xs -> vcons <*> (complementV "" x) <*> xs) (v []) tokens
     let sh_len = vlength <*> sh
     putStrLn (show sh_len)
