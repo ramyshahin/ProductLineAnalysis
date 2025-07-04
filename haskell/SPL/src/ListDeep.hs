@@ -1,5 +1,10 @@
-{-# LANGUAGE NoImplicitPrelude #-}module ListDeep where
-import SPL
+{-# LANGUAGE NoImplicitPrelude, CPP #-}
+module ListDeep where
+#ifdef COMPACTION
+import SPLOpt
+#else
+import SPL 
+#endif
 import ShallowTypes
 
 data I_List a = Proxy_List (VList a) | I_Nil | I_Cons (V a) (VList a)

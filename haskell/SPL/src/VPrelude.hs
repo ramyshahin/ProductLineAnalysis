@@ -1,4 +1,4 @@
-{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE NoImplicitPrelude, CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 
 module VPrelude (
@@ -9,7 +9,12 @@ module VPrelude (
 )where
 
 import qualified Prelude as P
-import SPL
+#ifdef COMPACTION
+import SPLOpt
+#else
+import SPL 
+#endif
+
 import ShallowTypes 
 import BoolDeep
 import ListDeep

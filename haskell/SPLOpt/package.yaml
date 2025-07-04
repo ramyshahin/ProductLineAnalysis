@@ -1,13 +1,10 @@
-name:                SPL
+name:                SPLOpt
 version:             0.1.0.0
 github:              "githubuser/SPL"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "example@example.com"
 copyright:           "2019 Author name here"
-
-extra-source-files:
-- README.md
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -23,6 +20,7 @@ dependencies:
 
 library:
     source-dirs: src
+    ghc-options: -DCOMPACTION
     dependencies:
       - cudd
       - parsec
@@ -39,9 +37,9 @@ library:
           other-modules: Paths_SPL
 
 tests:
-  SPL-test:
+  SPLOpt-test:
     main:                SPL_test.hs
-    source-dirs:         test
+    source-dirs:         ../SPL/test
     ghc-options:
     - -threaded
     - -rtsopts

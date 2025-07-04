@@ -14,7 +14,13 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, FlexibleInstances, ExplicitForAll #-}
 
-module SPL(
+module 
+#ifdef COMPACTION
+SPLOpt
+#else
+SPL
+#endif
+(
     V (..),
     v,
     PresenceCondition,
@@ -29,7 +35,7 @@ module SPL(
     match,
     union,  
     toSubV,
-    --unions,
+    mkSubV,
     apply,
     annotate,
     (^|),
@@ -37,10 +43,12 @@ module SPL(
     (/\),
     (===),
     allConfigs,
+    noConfigs,
     mkVars,
     emptyV,
     getFeatures,
     complementV,
+    addr,
     liftV5 -- TODO
     --liftedCond
 ) where
@@ -110,6 +118,11 @@ class VClass b where
     ny <- makeStableName $! y 
     return (nx == ny)
 
+addr :: a -> Int
+addr x = unsafePerformIO $ do
+    sn <- makeStableName x
+    return $ hashStableName sn
+
 {-
 (====) :: Eq a => a -> a -> Bool
 (====) x y = x === y || x == y
@@ -154,7 +167,11 @@ toSubV (V xs) = mkSubV xs
 
 mkV :: [Val a] -> V a
 mkV xs =
-    let r = V xs
+    let r = 
+#ifdef COMPACTION
+            compact
+#endif
+            (V xs)
     in assert (disjInv (toSubV r) && compInv r) r
 
 emptyV :: SubV a

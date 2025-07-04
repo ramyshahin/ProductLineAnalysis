@@ -11,11 +11,17 @@ type VTokens = VList Token
 vnil :: VList t
 vnil@(V vnil_xs) = v I_Nil
 
-vcons :: (t, PresenceCondition) -> VList t -> VList t
-vcons (x,pc) xs = complementV (Proxy_List xs) [(I_Cons (V [(x,pc)]) xs, pc)]
+vcons :: [Val t] -> VList t -> VList t
+vcons vs xs = 
+    let v = mkSubV vs 
+        f = footprint v
+    in complementV (Proxy_List xs) [(I_Cons v xs, f)]
 
-tokensDeep tokens = do
-    let sh  = foldr (\x xs -> vcons x xs) vnil tokens
+
+mkVList :: [Val t] -> VList t
+mkVList tokens = foldr (\x xs -> vcons [x] xs) vnil tokens
+
+tokensDeep sh = do
     let sh_len = len sh
     putStrLn (show sh_len)
     --return ()

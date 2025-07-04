@@ -1,9 +1,13 @@
 -- shallow lifting of primitive types
-{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE NoImplicitPrelude, CPP #-}
 
 module ShallowTypes where
 import qualified Prelude as P
-import SPL
+#ifdef COMPACTION
+import SPLOpt
+#else
+import SPL 
+#endif
 
 type Int = P.Int
 type Bool = P.Bool

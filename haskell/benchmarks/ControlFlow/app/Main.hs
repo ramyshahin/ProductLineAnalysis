@@ -25,6 +25,7 @@ import System.IO
 import System.Environment
 import TokensShallow
 import TokensDeep
+import ToDot
 
 #ifdef CASE_TERMINATION
 import CaseTermination
@@ -189,10 +190,14 @@ main = defaultMain [ bgroup "main"
 fname = "test.c"
 
 main = do
-    tokens <- parseTokensFile (fname ++ ".l")
+    let tokens_fname = fname ++ ".l"
+    let dot_fname = tokens_fname ++ ".dot"
+    tokens <- parseTokensFile tokens_fname
+    let vlist = mkVList tokens
     mapM (\t -> putStrLn (show t)) tokens
     tokensShallow tokens
-    tokensDeep tokens
+    tokensDeep vlist
+    toDotDeepList dot_fname vlist
     --node <- parseASTFile (fname ++ ".ast")
     --putStrLn $ show node
     --env <- setupEnv fname

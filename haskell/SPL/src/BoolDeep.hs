@@ -1,7 +1,11 @@
-{-# LANGUAGE NoImplicitPrelude #-}{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE NoImplicitPrelude, CPP #-}
 
 module BoolDeep where
-import SPL
+#ifdef COMPACTION
+import SPLOpt
+#else
+import SPL 
+#endif
 
 data I_Bool = I_False | I_True
 
