@@ -23,6 +23,8 @@ dependencies:
 
 library:
     source-dirs: src
+    ghc-options:
+      - -O2
     dependencies:
       - cudd
       - parsec

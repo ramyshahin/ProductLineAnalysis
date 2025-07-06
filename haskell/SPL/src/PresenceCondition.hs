@@ -84,8 +84,38 @@ bOperators = [ [ Prefix (reservedOp "!"   >> return (negPC)) ],
                [ Infix  (reservedOp "&&" >> return (/\)) AssocLeft],
                [ Infix  (reservedOp "||" >> return (\/))  AssocLeft],
                [ Infix  (reservedOp "&" >> return (/\)) AssocLeft],
-               [ Infix  (reservedOp "|" >> return (\/))  AssocLeft]
+               [ Infix  (reservedOp "|" >> return (\/))  AssocLeft],
+               [ Infix (reservedOp "<" >> return ignore) AssocLeft],
+               [ Infix (reservedOp ">" >> return ignore) AssocLeft],
+               [ Infix (reservedOp "<=" >> return ignore) AssocLeft],
+               [ Infix (reservedOp ">=" >> return ignore) AssocLeft],
+               [ Infix (reservedOp "==" >> return ignore) AssocLeft],
+               [ Infix (reservedOp "!=" >> return ignore) AssocLeft],
+               [ Infix (reservedOp "<<" >> return ignore) AssocLeft],
+               [ Infix (reservedOp ">>" >> return ignore) AssocLeft],
+               [ Infix (reservedOp "+" >> return ignore) AssocLeft],
+               [ Infix (reservedOp "-" >> return ignore) AssocLeft],
+               [ Infix (reservedOp "*" >> return ignore) AssocLeft],
+               [ Infix (reservedOp "/" >> return ignore) AssocLeft]
              ]
+
+ignore _ _ = tt
+
+{-
+cOperators = [ [Infix (reservedOp "<" >> return ignore) AssocLeft],
+               [Infix (reservedOp ">" >> return ignore) AssocLeft],
+               [Infix (reservedOp "<=" >> return ignore) AssocLeft],
+               [Infix (reservedOp ">=" >> return ignore) AssocLeft],
+               [Infix (reservedOp "==" >> return ignore) AssocLeft],
+               [Infix (reservedOp "!=" >> return ignore) AssocLeft]
+             ]
+
+nterm = parens integer
+    <|> liftM (\_ -> 0) identifier
+
+nExpr :: Parser PCExpr
+nExpr = buildExpressionParser cOperators nterm
+-}
 
 bTerm =  parens pcExpr 
      <|> (reserved "tt" >> return tt)

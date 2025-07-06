@@ -1,10 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude, CPP #-}
 module VList where
-#ifdef COMPACTION
-import SPLOpt
-#else
 import SPL 
-#endif
 import VPrelude
 
 {-

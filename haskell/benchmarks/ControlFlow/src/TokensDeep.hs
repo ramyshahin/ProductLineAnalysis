@@ -6,7 +6,7 @@ import SuperCAST
 import ListDeep
 
 --type VToken = V Token
-type VTokens = VList Token
+type DTokens = VList Token
 
 vnil :: VList t
 vnil@(V vnil_xs) = v I_Nil
@@ -21,7 +21,4 @@ vcons vs xs =
 mkVList :: [[Val t]] -> VList t
 mkVList tokens = foldr (\x xs -> vcons x xs) vnil tokens
 
-tokensDeep sh = do
-    let sh_len = len sh
-    putStrLn (show sh_len)
-    --return ()
+tokensDeep sh = len sh

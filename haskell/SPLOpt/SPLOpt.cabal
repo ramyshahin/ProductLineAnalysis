@@ -28,14 +28,14 @@ library
       PresenceCondition
       PropBDD
       ShallowTypes
-      SPLOpt
+      SPL
       VList
       VPrelude
   other-modules:
       Paths_SPLOpt
   hs-source-dirs:
       src
-  ghc-options: -DCOMPACTION
+  ghc-options: -O2 -DCOMPACTION
   build-depends:
       base >=4.7 && <5
     , containers

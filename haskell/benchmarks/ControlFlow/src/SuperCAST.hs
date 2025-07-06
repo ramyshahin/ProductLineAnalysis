@@ -85,16 +85,26 @@ parseASTFile filename = do
 type Token = String
 type Tokens = [Token]
 
-processTokenLine :: String -> PresenceCondition -> ([(Token, PresenceCondition)], PresenceCondition)
+data LType = NewSec | EndSec | Code
+    deriving (Eq)
+
+processTokenLine :: String -> PresenceCondition -> ([(Token, PresenceCondition)], PresenceCondition, LType)
 processTokenLine l context =
     if L.isPrefixOf "#if" l then
-        let pc = parsePC $ drop 4 l
-        in  ([], context /\ pc)
+        let l' = drop 4 l
+            pc = parsePC l'
+            newCtxt = 
+                case L.findIndex (L.isPrefixOf "__") (L.tails l') of 
+                    Nothing -> context /\ pc
+                    _ -> context
+        in  --trace ("Input:  " ++ l') $ 
+            --trace ("Output: " ++ show pc) 
+            ([], newCtxt, NewSec)
     else if L.isPrefixOf "#endif" l then
-        ([], noConfigs)
+        ([], noConfigs, EndSec)
     else
         let tokens = words l
-        in (zip tokens (repeat context), context)
+        in (zip tokens (repeat context), context, Code)
 
 complPCs pc1 pc2 = pc1 /\ pc2 == noConfigs
 
@@ -109,21 +119,39 @@ tryToMerge xs ys =
             then x' :  y' : (tryToMerge xs' ys')
             else xs ++ ys
 
+processTokenSection :: [String] -> PresenceCondition -> ([(Token, PresenceCondition)], [String])
+processTokenSection ls context =
+    case ls of
+        [] -> ([], [])
+        l : ls' -> 
+            let (ts, cntxt', t) = processTokenLine l context in
+                case t of
+                    NewSec -> 
+                        let (ts', rest) = processTokenSection ls' cntxt'
+                            (ts'', rest') = processTokenSection rest context
+                        in (tryToMerge ts' ts'', rest')
+                    EndSec -> ([], ls')
+                    Code   -> 
+                        let (ts', rest) = processTokenSection ls' context
+                        in (tryToMerge ts ts', rest)
+
+{-
 processTokenLines :: [String] -> PresenceCondition -> ([(Token, PresenceCondition)], PresenceCondition, [String])
 processTokenLines ls context =
     case ls of
         [] -> ([], allConfigs, [])
         l : ls' -> 
-            let (ts, cntxt') = processTokenLine l context in
-            if cntxt' == noConfigs then
+            let (ts, cntxt', t) = processTokenLine l context in
+            if t == EndSec then
                 (ts, noConfigs, ls')
-            else if context /= cntxt' then
+            else if t == NewSec then
                 let (ts', pc, rest) = processTokenLines ls' cntxt' 
                     (ts'', pc', rest') = processTokenLines rest context
                 in  (tryToMerge ts' ts'', context, rest')
             else 
                 let (ts', pc, rest) = processTokenLines ls' context 
                 in  (tryToMerge ts ts', pc, rest)
+-}
 
 packTokens :: [Val Token] -> [[Val Token]]
 packTokens xs =
@@ -139,6 +167,7 @@ packTokens xs =
 parseTokensFile :: String -> IO [[Val Token]]
 parseTokensFile filename = do
     fileTxt <- TIO.readFile filename
-    let lines = map (trim . T.unpack) $ (L.nub . T.lines) fileTxt
-    let (ts, _, _) = processTokenLines lines allConfigs 
+    let lines = map (trim . T.unpack) $ (T.lines) fileTxt 
+    let (ts, _) = processTokenSection lines allConfigs 
+    --putStrLn $ show ts
     return $ packTokens ts

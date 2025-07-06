@@ -20,7 +20,9 @@ dependencies:
 
 library:
     source-dirs: src
-    ghc-options: -DCOMPACTION
+    ghc-options:
+      - -O2 
+      - -DCOMPACTION
     dependencies:
       - cudd
       - parsec

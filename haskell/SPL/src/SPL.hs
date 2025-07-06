@@ -7,19 +7,28 @@
 --{-# LANGUAGE PolyKinds #-}
 --{-# LANGUAGE RankNTypes #-}
 --{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE InstanceSigs, FunctionalDependencies, TypeFamilies #-}
+{-# LANGUAGE BangPatterns, DataKinds, IncoherentInstances #-}
 {-# LANGUAGE KindSignatures, MultiParamTypeClasses, AllowAmbiguousTypes #-}
 --{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass, FlexibleInstances, ExplicitForAll #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 
 module 
-#ifdef COMPACTION
-SPLOpt
-#else
+-- #ifdef COMPACTION
+-- SPLOpt
+-- #else
 SPL
-#endif
+-- #endif
 (
     V (..),
     v,
@@ -37,14 +46,14 @@ SPL
     toSubV,
     mkSubV,
     apply,
-    annotate,
+    --annotate,
     (^|),
     (/^),
     (/\),
     (===),
     allConfigs,
     noConfigs,
-    mkVars,
+    --mkVars,
     emptyV,
     getFeatures,
     complementV,
@@ -55,6 +64,7 @@ SPL
 
 
 --import PropBDD
+import Control.DeepSeq 
 import PresenceCondition as PC
 import Control.Applicative
 import Control.Exception
@@ -123,10 +133,10 @@ addr x = unsafePerformIO $ do
     sn <- makeStableName x
     return $ hashStableName sn
 
-{-
+
 (====) :: Eq a => a -> a -> Bool
 (====) x y = x === y || x == y
-
+{-
 --type FeatureSet         = Universe
 --type PresenceCondition  = Prop
 
@@ -236,8 +246,8 @@ instance VClass V where
     
         --Var $ filter (\(_,pc') -> sat pc') (map (\(x,pc') -> (x, pc'/\ pc)) v)
 
---instance NFData (V a) where
---    rnf (Var !xs) = xs `seq` (map (\(!x,!pc) -> x `seq` pc `seq` ()) xs) `seq` ()
+instance NFData (V a) where
+    rnf (V !xs) = xs `seq` (map (\(!x,!pc) -> x `seq` pc `seq` ()) xs) `seq` ()
 
 --disjInv :: V t -> Bool
 --disjInv v'@(V v) =
@@ -268,9 +278,9 @@ isSubsetOf (Var x) y' = and (map (`exists` y') x)
 -}
 
 instance Show a => Show (V a) where
-    show v' = 
-        let (V v) = compact v' 
-        in "{" ++ (L.intercalate ", " (map show v)) ++ "}" 
+    show (V v) = 
+        --let (V v) = compact v' in 
+        "{" ++ (L.intercalate ", " (map show v)) ++ "}" 
 {-
 -- a < b means that a is a subset of b in terms of products
 --instance Eq a => Ord (Var a) where
@@ -333,17 +343,17 @@ instance Monad VarM where
 -}
 mkVar :: t -> PresenceCondition -> SubV t
 {-# INLINE mkVar #-}
-mkVar v pc = V [(v,pc)]
+mkVar v pc = mkV [(v,pc)]
 
 (^|) :: t -> PresenceCondition -> SubV t
 x ^| pc = mkVar x pc
 infixl 9 ^|
 
-mkVars :: [(t,PresenceCondition)] -> V t
-mkVars vs = V vs
+--mkVars :: [(t,PresenceCondition)] -> V t
+--mkVars vs = V vs
 
-annotate :: Partition -> [t] -> V t
-annotate p xs = mkVars $ zip xs p
+--annotate :: Partition -> [t] -> V t
+--annotate p xs = mkVars $ zip xs p
 
 definedAt :: [Val t] -> PresenceCondition
 definedAt xs = PC.intersect pcs
@@ -390,9 +400,106 @@ groupVals :: [Val t] -> (t -> t -> Bool) -> V t
 groupVals xs cmp = groupVals_ xs [] cmp
 
 
+-------------------------
+-- using constraint unions 
+-- https://github.com/rampion/constraint-unions#readme
+-------------------------
+class c || d where
+  resolve :: (c => r) -> (d => r) -> r
+infixr 2 ||
+
+--inLeft :: forall c d r. c => (c => r) -> (d => r) -> r
+--inLeft r _ = r
+
+--inRight :: forall c d r. d => (c => r) -> (d => r) -> r
+--inRight _ r = r
+
+{-
+instance ((c0 || d), (c1 || d)) => (c0, c1) || d where
+  resolve = resolve @c0 @d (resolve @c1 @d inLeft inRight) inRight where
+
+instance ((c0 || d), ((c1,c2) || d)) => (c0, c1, c2) || d where
+  resolve = resolve @c0 @d (resolve @(c1,c2) @d inLeft inRight) inRight where
+-}
+
+--instance {- # OVERLAPPING #-} (b || ()) where resolve = \_ r -> r
+--instance {-# OVERLAPPING #-} Eq b => ((Eq b) || ()) where resolve = \r _ -> r
+
+--instance {-# OVERLAPPABLE #-} d => (a ~ b) || d where resolve = \_ a -> a
+--instance {-# OVERLAPPING #-} (a ~ a) || d where resolve = \a _ -> a
+
+instance {-# OVERLAPS #-} (Eq Int || d) where resolve = \r _ -> r
+instance {-# OVERLAPS #-} (Eq String || d) where resolve = \r _ -> r
+instance d => (Eq (a->b) || d) where resolve = \_ r -> r
+
+type MaybeC c = c || ()
+
+given :: forall c r. MaybeC c => (c => r) -> r -> r
+given = resolve @c @() inJust inNothing where
+
+  inJust :: forall c r. c => (c => r) -> r -> r
+  inJust r _ = r
+
+  inNothing :: forall c r. (c => r) -> r -> r
+  inNothing _ r = r
+
+type p? a = MaybeC (p a)
+
+-------------------------------------
+-- advanced overlap
+-- https://wiki.haskell.org/GHC/AdvancedOverlap
+-------------------------------------
+{-
+class Compaction a where
+    compact :: V a -> V a
+
+class Compaction' flag a where
+    compact' :: flag -> V a -> V a
+
+instance (ShowPred a ~ flag, Compaction' flag a) => Compaction a where
+    {-# INLINE compact #-}    
+    compact = compact' (undefined::flag)
+
+data HTrue    
+data HFalse 
+
+type family ShowPred a where
+  ShowPred Int    = HTrue
+  ShowPred Bool   = HTrue
+  ShowPred String = HTrue
+  ShowPred a      = HFalse
+-}
+{-
+class TypeCast   a b   | a -> b, b->a   where typeCast   :: a -> b
+
+
+class ShowPred a flag | a->flag where {}
+
+instance TypeCast flag HFalse => ShowPred a flag
+instance ShowPred Int  HTrue
+instance ShowPred Bool HTrue
+instance ShowPred String  HTrue 
+-}
+
+{-
+instance (Eq a) => Compaction' HTrue a where
+    {-# INLINE compact' #-} 
+    compact' _ (V vs) = groupVals vs (====)
+
+instance Compaction' f a where
+    {-# INLINE compact' #-} 
+    compact' _ (V vs) = groupVals vs (===)
+-}
+
 {-# INLINE compact #-}
-compact :: V t -> V t
-compact (V vs) = (groupVals vs (===))
+compact :: V a -> V a
+compact (V vs) = groupVals vs (===)
+{-
+compact :: forall a. Eq? a => V a -> V a
+compact = given @(Eq a)
+    (\(V vs) -> groupVals vs (====))
+    (\(V vs) -> groupVals vs (===))
+-}
 
 {-
 compactEq :: Eq t => Var t -> Var t

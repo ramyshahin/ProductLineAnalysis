@@ -127,11 +127,11 @@ fixCompleteness v = v
 --    let (V ids) = _nID n
 --    in  V $ map (\(id, pc) -> if id == 0 then (dummyNode, pc) else (n, pc)) ids
 
-mkV :: a -> (a, PresenceCondition) -> V a
-mkV dummy (x, pc) = 
-    if   pc == allConfigs
-    then v x
-    else mkVars [(x, pc), (dummy, negPC pc)]
+--mkV :: a -> (a, PresenceCondition) -> V a
+--mkV dummy (x, pc) = 
+--    if   pc == allConfigs
+--    then v x
+--    else mkVars [(x, pc), (dummy, negPC pc)]
 
 {-
 _nodes' :: V CFG -> [V CFGNode]

@@ -1,48 +1,48 @@
 digraph {
 compound=true;
 node[shape=box]
-subgraph cluster5 { rank = same; n6; }
-n6[label="int"]
-subgraph cluster7 { rank = same; n8; }
-n8[label="main"]
-n6 -> n8 [label = "TT"; lhead = cluster9]
-subgraph cluster10 { rank = same; n11; }
-n11[label="("]
-n8 -> n11 [label = "TT"; lhead = cluster12]
-subgraph cluster13 { rank = same; n14; }
-n14[label=")"]
-n11 -> n14 [label = "TT"; lhead = cluster15]
-subgraph cluster16 { rank = same; n17; }
-n17[label="{"]
-n14 -> n17 [label = "TT"; lhead = cluster18]
-subgraph cluster19 { rank = same; n20; }
-n20[label="return"]
-n17 -> n20 [label = "TT"; lhead = cluster21]
-subgraph cluster22 { rank = same; n23; }
-n23[label="3, 3"]
-n20 -> n23 [label = "TT"; lhead = cluster24]
-subgraph cluster25 { rank = same; n26; }
-n26[label="+, +"]
-n23 -> n26 [label = "TT"; lhead = cluster27]
-subgraph cluster28 { rank = same; n29; }
-n29[label="7, 5"]
-n26 -> n29 [label = "TT"; lhead = cluster30]
-subgraph cluster31 { rank = same; n32; n33; }
-n32[label="";style=filled;fillcolor=blue]
-n29 -> n32 [label = "(!A \/ (A /\ !B))"; lhead = cluster31]
-n32 -> n34 [label = "(!A \/ (A /\ !B))"; lhead = cluster35]
-n33[label="-"]
-n29 -> n33 [label = "(A /\ B)"; lhead = cluster36]
-subgraph cluster35 { rank = same; n34; n37; }
-n34[label="";style=filled;fillcolor=blue]
-n34 -> n38 [label = "(!A \/ (A /\ !B))"; lhead = cluster39]
-n37[label="7"]
-n33 -> n37 [label = "(A /\ B)"; lhead = cluster40]
-subgraph cluster39 { rank = same; n38; }
-n38[label=";"]
-n37 -> n38 [label = "TT"; lhead = cluster41]
+subgraph cluster1 { rank = same; n2; }
+n2[label="int"]
+subgraph cluster3 { rank = same; n4; }
+n4[label="main"]
+n2 -> n4 [label = "TT"; lhead = cluster5]
+subgraph cluster6 { rank = same; n7; }
+n7[label="("]
+n4 -> n7 [label = "TT"; lhead = cluster8]
+subgraph cluster9 { rank = same; n10; }
+n10[label=")"]
+n7 -> n10 [label = "TT"; lhead = cluster11]
+subgraph cluster12 { rank = same; n13; }
+n13[label="{"]
+n10 -> n13 [label = "TT"; lhead = cluster14]
+subgraph cluster15 { rank = same; n16; }
+n16[label="return"]
+n13 -> n16 [label = "TT"; lhead = cluster17]
+subgraph cluster18 { rank = same; n19; }
+n19[label="3, 3"]
+n16 -> n19 [label = "TT"; lhead = cluster20]
+subgraph cluster21 { rank = same; n22; }
+n22[label="+, +"]
+n19 -> n22 [label = "TT"; lhead = cluster23]
+subgraph cluster24 { rank = same; n25; }
+n25[label="7, 5"]
+n22 -> n25 [label = "TT"; lhead = cluster26]
+subgraph cluster27 { rank = same; n28; n29; }
+n28[label="";style=filled;fillcolor=blue]
+n25 -> n28 [label = "(!A \/ (A /\ !B))"; lhead = cluster30]
+n28 -> n31 [label = "(!A \/ (A /\ !B))"; lhead = cluster33]
+n29[label="-"]
+n25 -> n29 [label = "(A /\ B)"; lhead = cluster34]
+subgraph cluster33 { rank = same; n31; n32; }
+n31[label="";style=filled;fillcolor=blue]
+n31 -> n35 [label = "(!A \/ (A /\ !B))"; lhead = cluster36]
+n32[label="7"]
+n29 -> n32 [label = "(A /\ B)"; lhead = cluster37]
+subgraph cluster36 { rank = same; n35; }
+n35[label=";"]
+n32 -> n35 [label = "TT"; lhead = cluster38]
+subgraph cluster39 { rank = same; n40; }
+n40[label="}"]
+n35 -> n40 [label = "TT"; lhead = cluster41]
 subgraph cluster42 { rank = same; n43; }
-n43[label="}"]
-n38 -> n43 [label = "TT"; lhead = cluster44]
-subgraph cluster45 { rank = same; n46; }
 }

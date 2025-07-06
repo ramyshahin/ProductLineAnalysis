@@ -8,6 +8,10 @@
 
 module Main where
 
+import qualified Data.Text.IO       as TIO
+import qualified Data.Text          as T
+import qualified Data.List          as L
+
 import SuperCAST
 import CFG
 import qualified VCFG as V
@@ -26,6 +30,7 @@ import System.Environment
 import TokensShallow
 import TokensDeep
 import ToDot
+import ListDeep
 
 #ifdef CASE_TERMINATION
 import CaseTermination
@@ -90,17 +95,20 @@ deep c = Deep.analyze c
 --nodes' = v nodes
 
 data Env = Env {
+    shList :: V [Maybe Token],
+    dList :: VList Token
     --deepCFG     :: V V.CFG,
-    shallowCFG  :: V CFG,
-    fileName    :: String,
-    features    :: [String],
-    configs     :: Int,
-    nodeCount   :: Int,
-    hdr         :: String
-    } deriving (Generic
-    --, NFData
+    --shallowCFG  :: V CFG,
+    --fileName    :: String,
+    --features    :: [String],
+    --configs     :: Int,
+    --nodeCount   :: Int,
+    --hdr         :: String
+    } deriving (
+        Generic, NFData
     )
 
+{-
 setupEnv filename = do
     !cfg <- readCFG filename
     let !nodes = (_nodes cfg)
@@ -122,6 +130,7 @@ setupEnv filename = do
     putStrLn $ "Config#:         " ++ (show $ configCount)
     putStrLn $ "Present config#: " ++ (show $ presentConfigs)
     return env
+-}
 
 reportResults s cfg = do
     let result = s cfg
@@ -187,17 +196,45 @@ main = defaultMain [ bgroup "main"
                             ] ]
 -}
 
-fname = "test.c"
+files = "files1.txt"
 
-main = do
+criterion :: String -> IO ()
+criterion fname = defaultMain [
+    env (setupEnv fname) $ \ ~(Env sh d) -> bgroup "main" [
+          bench "shallow list"   $ whnf tokensShallow sh
+        , bench "deep list"      $ whnf tokensDeep d
+        ]
+    ]
+
+setupEnv fname = do
     let tokens_fname = fname ++ ".l"
     let dot_fname = tokens_fname ++ ".dot"
     tokens <- parseTokensFile tokens_fname
-    let vlist = mkVList tokens
-    mapM (\t -> putStrLn (show t)) tokens
-    tokensShallow tokens
-    tokensDeep vlist
-    toDotDeepList dot_fname vlist
+    --mapM (\t -> putStrLn (show t)) tokens
+    
+    let dTokens  = mkVList tokens
+    let shTokens = mkShList tokens
+
+    let resultsSh@(V xs) = tokensShallow shTokens
+    let resultsDeep@(V ys) = tokensShallow shTokens
+
+    putStrLn $ "Shallow results: " ++ show (map fst xs)
+    putStrLn $ "Deep    results: " ++ show (map fst ys)
+
+    bddVars <- getFeatures
+    putStrLn $ "Feature count: " ++ show (length bddVars)
+    putStrLn $ "Features: " ++ show bddVars 
+    putStrLn $ "Config sets: " ++ show (length xs)
+
+    return $ Env shTokens dTokens
+
+processFile fname = do
+    putStrLn $ "Processing: " ++ fname
+    criterion fname 
+
+    --tokensDeep dTokens
+    --toDotDeepList dot_fname dTokens
+    
     --node <- parseASTFile (fname ++ ".ast")
     --putStrLn $ show node
     --env <- setupEnv fname
@@ -205,5 +242,9 @@ main = do
     --let result = deep $ deepCFG env
     --let result = bruteforce (shallowCFG env, features env) 
     --putStrLn $ show result
-    putStrLn "Done."
 
+main = do
+    fileTxt <- TIO.readFile files
+    let fs = map (trim . T.unpack) $ (L.nub . T.lines) fileTxt
+    mapM_ processFile fs
+    putStrLn "Done."

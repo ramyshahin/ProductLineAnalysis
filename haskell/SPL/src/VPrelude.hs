@@ -9,11 +9,11 @@ module VPrelude (
 )where
 
 import qualified Prelude as P
-#ifdef COMPACTION
-import SPLOpt
-#else
+-- #ifdef COMPACTION
+-- import SPLOpt
+-- #else
 import SPL 
-#endif
+-- #endif
 
 import ShallowTypes 
 import BoolDeep
