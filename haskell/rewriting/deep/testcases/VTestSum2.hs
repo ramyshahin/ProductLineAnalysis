@@ -1,0 +1,12 @@
+{-# LANGUAGE NoImplicitPrelude #-}module VTestSum2 where
+import SPL
+import VPrelude
+import Data.List -- TODO: without a dummy import, indentation goes wrong
+
+data I_B = I_BFalse | I_BTrue
+
+type VB = V I_B
+f :: VB -> VInt
+f b  = match b (\(b, pc) -> let __cntxt__ = __cntxt__ /\ pc in case b of I_BFalse -> (0 ^| __cntxt__)
+                                                                         I_BTrue -> (1 ^| __cntxt__))
+

@@ -1,0 +1,8 @@
+{-# LANGUAGE NoImplicitPrelude #-}module VTestSum1 where
+import SPL
+import VPrelude
+import Data.List -- TODO: without a dummy import, indentation goes wrong
+
+data I_B = I_False | I_True
+type VB = V I_B
+
