@@ -201,8 +201,8 @@ files = "files1.txt"
 criterion :: String -> IO ()
 criterion fname = defaultMain [
     env (setupEnv fname) $ \ ~(Env sh d) -> bgroup "main" [
-          bench "shallow list"   $ whnf tokensShallow sh
-        , bench "deep list"      $ whnf tokensDeep d
+        --bench "shallow list"   $ whnf tokensShallow sh,
+        bench "deep list"      $ whnf tokensDeep d
         ]
     ]
 
@@ -215,16 +215,19 @@ setupEnv fname = do
     let dTokens  = mkVList tokens
     let shTokens = mkShList tokens
 
-    let resultsSh@(V xs) = tokensShallow shTokens
-    let resultsDeep@(V ys) = tokensShallow shTokens
+    --let resultsSh@(V xs) = tokensShallow shTokens
+    let resultsDeep@(V ys) = tokensDeep dTokens
 
-    putStrLn $ "Shallow results: " ++ show (map fst xs)
-    putStrLn $ "Deep    results: " ++ show (map fst ys)
+    --putStrLn $ "Shallow results: " ++ show (map fst xs)
+    --putStrLn $ "Deep    results: " ++ show (map fst ys)
+    --if xs /= ys then 
+    --    putStrLn "output mismatch"
+    --else return ()
 
+    putStrLn $ "Config sets: " ++ show (length ys)
     bddVars <- getFeatures
     putStrLn $ "Feature count: " ++ show (length bddVars)
     putStrLn $ "Features: " ++ show bddVars 
-    putStrLn $ "Config sets: " ++ show (length xs)
 
     return $ Env shTokens dTokens
 

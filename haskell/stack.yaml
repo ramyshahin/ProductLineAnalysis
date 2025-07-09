@@ -40,7 +40,6 @@ extra-lib-dirs: [/usr/local/lib]
 #  - wai
 packages:
 - SPL
-- SPLOpt
 - rewriting/common
 - rewriting/shallow
 - rewriting/deep

@@ -30,7 +30,7 @@ processEdge t = --trace "processEdge" $
     let (!e : from' : to' : pc' : []) = T.splitOn ";" t
         !from = (read (T.unpack from')) :: Int
         !to   = (read (T.unpack to'))   :: Int
-        !pc   = parsePC $! (T.unpack pc')
+        !pc   = parsePC (\_ -> True) $! (T.unpack pc')
     in  assert (e == "E") $ ((from, to), pc)
 
 
@@ -41,7 +41,7 @@ processNode edges record =
         id          = (read (T.unpack id')) :: Int
         lineNum     = (read (T.unpack lineNum')) :: Int
         cCode       = T.intercalate ";" $ L.init rest
-        !pc         = parsePC $! T.unpack (L.last rest)
+        !pc         = parsePC (\_ -> True) $! T.unpack (L.last rest)
         (!ast, !pc', fname) = parseNode cCode lineNum t
         -- !preds      = map (\((f,_), pc) -> mkV 0 (f,pc)) $ filter (\((_,t),_) -> t == id) edges
         -- !succs      = map (\((_,t), pc) -> mkV 0 (t,pc)) $ filter (\((f,_),_) -> f == id) edges
@@ -109,7 +109,7 @@ extractPC t =
     let i        = findMatchingParen 1 0 t
         (pc, t') = T.splitAt i t
     in  --trace (show t) $ trace ("PC : " ++ (show pc)) 
-        (t', parsePC (T.unpack (T.strip pc)))
+        (t', parsePC (\_ -> True) (T.unpack (T.strip pc)))
     where findMatchingParen i c t = 
             case T.head t of
                 '(' -> findMatchingParen (i+1) (c+1) $ T.tail t

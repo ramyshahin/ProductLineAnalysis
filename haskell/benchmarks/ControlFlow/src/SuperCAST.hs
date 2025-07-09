@@ -46,7 +46,7 @@ processLines ls =
         s : ls' ->
             if isPC s then 
                 let (rs, ns) = processLines ls'
-                in (rs, (ASTNode ((show . parsePC) s) []) : ns)
+                in (rs, (ASTNode ((show . (parsePC validFeatureName)) s) []) : ns)
             else if isClosingWithComma s then (ls', [])
             else if endsWithComma s then
                 let s' = take ((length s) - 1) s
@@ -88,17 +88,25 @@ type Tokens = [Token]
 data LType = NewSec | EndSec | Code
     deriving (Eq)
 
+searchStr :: String -> String -> Bool
+searchStr s p =
+    case L.findIndex (L.isPrefixOf p) (L.tails s) of 
+            Nothing -> False
+            _ -> True
+
+processPC :: String -> String
+processPC pc = if searchStr pc "ENABLE_FEATURE_" && not (searchStr pc "CONFIG_FEATURE_") then pc else ""
+
+validFeatureName :: String -> Bool
+validFeatureName f = L.isPrefixOf "ENABLE_FEATURE_" f
+
 processTokenLine :: String -> PresenceCondition -> ([(Token, PresenceCondition)], PresenceCondition, LType)
 processTokenLine l context =
     if L.isPrefixOf "#if" l then
-        let l' = drop 4 l
-            pc = parsePC l'
-            newCtxt = 
-                case L.findIndex (L.isPrefixOf "__") (L.tails l') of 
-                    Nothing -> context /\ pc
-                    _ -> context
-        in  --trace ("Input:  " ++ l') $ 
-            --trace ("Output: " ++ show pc) 
+        let l' = processPC $ drop 4 l
+            pc = parsePC validFeatureName l'
+            newCtxt = if l' == "" then context else context /\ pc
+        in  --trace (show newCtxt) $
             ([], newCtxt, NewSec)
     else if L.isPrefixOf "#endif" l then
         ([], noConfigs, EndSec)
