@@ -1,0 +1,13 @@
+{-# LANGUAGE NoImplicitPrelude #-}module VTree where
+
+import SPL
+import VPrelude
+import List
+
+data I_Tree a = Proxy_Tree (VTree a) | I_Empty | I_Tree (V a) (VTree a) (VTree a) (VTree a) (VTree a) (VTree a)
+
+type VTree a = V (I_Tree a)
+tlen :: VTree a -> VInt
+tlen t  = match t (\(t, pc) -> let __cntxt__ = __cntxt__ /\ pc in case t of I_Empty -> (0 ^| __cntxt__)
+                                                                            I_Tree x t1 t2 t3 t4 t5 -> toSubV (toSubV (toSubV (toSubV (toSubV ((1 ^| __cntxt__) + tlen (t1 /^ __cntxt__)) + tlen (t2 /^ __cntxt__)) + tlen (t3 /^ __cntxt__)) + tlen (t4 /^ __cntxt__)) + tlen (t5 /^ __cntxt__))) 
+
