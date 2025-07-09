@@ -1,28 +1,36 @@
-{-# LANGUAGE NoImplicitPrelude, CPP #-}
-module VList where
-import SPL 
-import VPrelude
+{-# LANGUAGE NoImplicitPrelude #-}module VList where
+import SPL
+import ShallowTypes
 
-{-
-data I_Nil a = I_Nil
+data I_List a = Proxy_List (VList a) | I_Nil | I_Cons (V a) (VList a)
 
-data I_Cons a = I_Cons a ((VList a))
-data VList a = VList_PoS { f_VProxyVList :: SumOption (I_VProxy (VList a)), f_Nil :: SumOption (I_Nil a), f_Cons :: SumOption (I_Cons a) }
+type VList a = V (I_List a)
+head :: VList a -> (V a)
 
-instance  VClass a =>VClass ((VList a)) where nil = VList_PoS nil nil nil
-                                              comb a b = VList_PoS (comb (f_VProxyVList a) (f_VProxyVList b)) (comb (f_Nil a) (f_Nil b)) (comb (f_Cons a) (f_Cons b))
-                                              proxy = resolveVProxy . f_VProxyVList
-instance  VClass a =>VClass (I_Nil a) where nil = I_Nil
-                                            comb I_Nil I_Nil = I_Nil
+head xs  = match xs (\(xs, pc) -> let __cntxt__ = __cntxt__ /\ pc in case xs of Proxy_List p -> head (p /^ __cntxt__)
+                                                                                I_Cons x xs -> (x /^ __cntxt__))
+tail :: VList a -> VList a
 
-instance  VClass a =>VClass (I_Cons a) where nil = I_Cons nil nil
-                                             comb (I_Cons a1 a2) (I_Cons b1 b2) = I_Cons ((comb a1 b1)) ((comb a2 b2))
-consI_Nil x r = r { f_Nil = x }
-consI_Cons x r = r { f_Cons = x }
-head :: VClass a => (VList a) -> a
-head xs  = match [(\(Present (I_Cons x xs, pc)) r -> x) (f_Cons (xs))]
-tail :: VClass a => (VList a) -> (VList a)
-tail xs  = match [(\(Present (I_Nil, pc)) r -> (consI_Nil (Present (I_Nil, allConfigs)) nil)) (f_Nil (xs)), (\(Present (I_Cons x xs, pc)) r -> xs) (f_Cons (xs))]
-len :: VClass a => (VList a) -> VInt
-len xs  = match [(\(Present (I_Nil, pc)) r -> ((v 0))) (f_Nil (xs)), (\(Present (I_Cons x xs', pc)) r -> ((v 1)) + len xs') (f_Cons (xs))]
--}
+tail xs  = match xs (\(xs, pc) -> let __cntxt__ = __cntxt__ /\ pc in case xs of Proxy_List p -> tail (p /^ __cntxt__)
+                                                                                I_Nil -> (I_Nil ^| __cntxt__)
+                                                                                I_Cons x xs -> (xs /^ __cntxt__))
+lmap :: ((V a) -> (V b)) -> VList a -> VList b
+
+lmap f xs  = match xs (\(xs, pc) -> let __cntxt__ = __cntxt__ /\ pc in case xs of Proxy_List p -> lmap (f /^ __cntxt__) (p /^ __cntxt__)
+                                                                                  I_Nil -> (I_Nil ^| __cntxt__)
+                                                                                  I_Cons y ys -> (I_Cons (f (y /^ __cntxt__)) (lmap (f /^ __cntxt__) (ys /^ __cntxt__)) ^| __cntxt__))
+lfoldr :: ((V a) -> (V b) -> (V b)) -> (V b) -> VList a -> (V b)
+
+lfoldr f i xs  = match xs (\(xs, pc) -> let __cntxt__ = __cntxt__ /\ pc in case xs of Proxy_List p -> lfoldr (f /^ __cntxt__) (i /^ __cntxt__) (p /^ __cntxt__)
+                                                                                      I_Nil -> (i /^ __cntxt__)
+                                                                                      I_Cons y ys -> f (y /^ __cntxt__) (lfoldr (f /^ __cntxt__) (i /^ __cntxt__) (ys /^ __cntxt__)))
+lfoldl :: ((V b) -> (V a) -> (V b)) -> (V b) -> VList a -> (V b)
+
+lfoldl f i xs  = match xs (\(xs, pc) -> let __cntxt__ = __cntxt__ /\ pc in case xs of Proxy_List p -> lfoldl (f /^ __cntxt__) (i /^ __cntxt__) (p /^ __cntxt__)
+                                                                                      I_Nil -> (i /^ __cntxt__)
+                                                                                      I_Cons y ys -> lfoldl (f /^ __cntxt__) (f (i /^ __cntxt__) (y /^ __cntxt__)) (ys /^ __cntxt__))
+len :: VList a -> VInt
+len xs  = match xs (\(xs, pc) -> let __cntxt__ = __cntxt__ /\ pc in case xs of Proxy_List p -> len (p /^ __cntxt__)
+                                                                               I_Nil -> (0 ^| __cntxt__)
+                                                                               I_Cons x xs' -> toSubV ((1 ^| __cntxt__) + len (xs' /^ __cntxt__)))
+

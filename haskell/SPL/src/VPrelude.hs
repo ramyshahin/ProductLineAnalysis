@@ -4,8 +4,8 @@
 module VPrelude (
     module VPrelude,
     module ShallowTypes,
-    module BoolDeep,
-    module ListDeep
+    module VBool,
+    module VList
 )where
 
 import qualified Prelude as P
@@ -16,8 +16,8 @@ import SPL
 -- #endif
 
 import ShallowTypes 
-import BoolDeep
-import ListDeep
+import VBool
+import VList
 --import VList
 
 --

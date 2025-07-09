@@ -117,28 +117,28 @@ nExpr :: Parser PCExpr
 nExpr = buildExpressionParser cOperators nterm
 -}
 
-bTerm =  parens pcExpr 
+mkFeature :: (String -> Bool) -> String -> PCExpr
+mkFeature p f = if p f then mkBDDVar f else tt
+
+bTerm p =  parens (pcExpr p) 
      <|> (reserved "tt" >> return tt)
      <|> (reserved "True" >> return tt)
      <|> (reserved "ff" >> return ff)
      <|> (reserved "False" >> return ff)
-     <|> (reserved "definedEx" >> parens (liftM mkBDDVar identifier))
-     <|> (reserved "defined" >> (liftM mkBDDVar identifier))
-     <|> (reserved "def" >> parens (liftM mkBDDVar identifier))
+     <|> (reserved "definedEx" >> parens (liftM (mkFeature p) identifier))
+     <|> (reserved "defined" >> (liftM (mkFeature p) identifier))
+     <|> (reserved "def" >> parens (liftM (mkFeature p) identifier))
      <|> (integer >>= \i -> if i == 0 then return ff else return tt)
-     <|> liftM mkBDDVar identifier
+     <|> liftM (mkFeature p) identifier
 
-pcExpr :: Parser PCExpr
-pcExpr = buildExpressionParser bOperators bTerm 
+pcExpr :: (String -> Bool) -> Parser PCExpr
+pcExpr p = buildExpressionParser bOperators (bTerm p)
 
-parsePC :: String -> PCExpr
-parsePC str =
-  case parse pcExpr "" str of
+parsePC :: (String -> Bool) -> String -> PCExpr
+parsePC p str =
+  case parse (pcExpr p) "" str of
     Left e  -> error $ show e
     Right r -> r
-
-mkFeature :: String -> PCExpr
-mkFeature f = mkBDDVar f
 
 {-
 getPCFeatures' :: Prop' -> S.Set String
@@ -158,7 +158,7 @@ getPCFeatures = S.toList . getPCFeatures' . p
 getAllConfigs :: [String] -> [PCExpr]
 getAllConfigs [] = []
 getAllConfigs (f : fs) = 
-    let p   = mkFeature f
+    let p   = mkFeature (\_ -> True) f
         n   = negPC p
         fs' = getAllConfigs fs
     in  if   null fs 

@@ -25,6 +25,8 @@ library:
     source-dirs: src
     ghc-options:
       - -O2
+    cpp-options:
+      - -DCOMPACTION
     dependencies:
       - cudd
       - parsec

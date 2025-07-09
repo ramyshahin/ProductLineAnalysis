@@ -223,6 +223,17 @@ instance VClass V where
         else    mkSubV [(x, p) | (x, pc') <- v, let p = pc' /\ pc, (not . PC.empty) p] 
     footprint x = foldr (\/) noConfigs (pcs x)    
 
+-- instance for deep-rewritten functions, 
+-- needed particularly for restrict
+instance (VClass ((->) (V a))) where
+    items _ = []
+    pcs _ = []
+    nil = \(V x) -> undefined
+    comb x _ = x
+    combs = head
+    restrict _ x = x
+    footprint _ = allConfigs
+
    -- nil  = V []
     {-
     isNil (V xs) = null xs 
