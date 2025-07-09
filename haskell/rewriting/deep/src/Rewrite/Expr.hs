@@ -206,6 +206,15 @@ rewriteFun fun =
         Var n   -> if isConstructorName n then mkVar $ innerName n else fun
         _       -> rewriteExpr phi phi False False fun
 
+flattenArgs :: Expr -> [Expr]
+flattenArgs e = 
+    case e of
+        App e1 e2 -> 
+            let es = flattenArgs e1 
+                es' = flattenArgs e2
+            in es ++ es'
+        _ -> [e]
+
 rewriteExpr :: Declarations -> Declarations -> Bool -> Bool -> Expr -> Expr
 rewriteExpr globals locals inConstructor bRestrict e = 
     case e of 
@@ -228,29 +237,20 @@ rewriteExpr globals locals inConstructor bRestrict e =
                 then mkApp toSubV (mkParen e') 
                 else e'
         PrefixApp op arg -> mkApp liftedNeg (rewriteExpr globals locals inConstructor bRestrict arg)
-        App fun arg ->  let inCons = isConstructor fun
-                            fun' = rewriteFun fun       
-                            arg' = rewriteExpr globals locals inCons bRestrict arg
-                            e'   = mkApp fun' arg'
-                            e''  =  if inCons
-                                    then if bRestrict
-                                         then mkLiftedExpr e'
-                                         else liftExpr globals locals inConstructor False e'
-                                    else e' 
-                        in  {-if inCons then rewriteConstructor {-globals locals inConstructor e False-} e' else-} e''
-                            {-
-                            case fun of
-                             
-                                Var n -> if (externalDecl globals locals n)
-                                         then   if isPrimitiveFunc (prettyPrint n)
-                                                then mkApp (rewritePrimitiveFuncName (prettyPrint n)) arg'
-                                                else mkInfixApp fun' appOp arg'
-                                         else mkApp fun' arg'
-                                _ -> case fun' of 
-                                            App _ _ -> mkApp fun' arg'
-                                            InfixApp _ op _ -> mkInfixApp fun' appOp arg' 
-                                            _       -> mkInfixApp fun' appOp arg'
-                                            -}
+        App fun_ arg ->  
+            let inCons = isConstructor fun_
+                es = flattenArgs fun_ ++ flattenArgs arg
+                (fun, args) = (head es, tail es)
+                fun' = rewriteFun fun
+                args' = map (rewriteExpr globals locals inCons bRestrict) args
+                e'   = foldl mkApp fun' args'
+                e''  =  if inCons
+                        then --if bRestrict then 
+                             mkLiftedExpr e'
+                             --else liftExpr globals locals inConstructor False e'
+                        else 
+                            e' 
+            in e''
         If c t e -> mkApp   (mkApp  
                         (mkApp  liftedCond  (mkParen (rewriteExpr globals locals inConstructor bRestrict c)))
                         (mkParen $ rewriteBranch globals locals bRestrict t))

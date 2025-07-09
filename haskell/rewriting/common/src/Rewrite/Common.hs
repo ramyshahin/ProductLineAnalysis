@@ -7,10 +7,11 @@ import qualified SPL as L
 import qualified Data.Set as S 
 
 moduleNameSPL = mkModuleName "SPL"
+importSPL :: ImportDecl
 importSPL = mkImportDecl False False False Nothing moduleNameSPL Nothing Nothing
 
-appendModName :: String -> ModuleName -> ModuleName
-appendModName s mn = mkModuleName $ (mn ^. moduleNameString) ++ s
+prependModName :: String -> ModuleName -> ModuleName
+prependModName s mn = mkModuleName $ s++ (mn ^. moduleNameString)
 
 appOp  = mkUnqualOp "<*>"
 fmapOp = mkUnqualOp "<$>"
@@ -24,9 +25,9 @@ pat2expr (VarPat n) = mkVar n
 -- | Rename module
 --
 updateHead :: String -> Maybe ModuleHead -> Maybe ModuleHead
-updateHead suffix mh =  
+updateHead prefix mh =  
     case mh of
-        Just mh' -> Just $ (mhName .- (appendModName suffix)) $ mh'
+        Just mh' -> Just $ (mhName .- (prependModName prefix)) $ mh'
         _ -> mh
     
 renameModule :: String -> Module -> Module

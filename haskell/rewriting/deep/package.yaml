@@ -48,6 +48,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - SPL
     - deep
     when:
       - condition: false

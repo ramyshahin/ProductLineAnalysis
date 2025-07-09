@@ -62,7 +62,7 @@ rewriteHeader :: Maybe ModuleHead -> Maybe ModuleHead
 rewriteHeader header =
     case header of
         Nothing -> Nothing
-        Just h  -> Just $ mhName .- (appendModName "Deep") $ h
+        Just h  -> Just $ mhName .- prependModName "V" $ h
 
 moduleNamePrelude = mkModuleName "VPrelude"
 importPrelude = mkImportDecl False False False Nothing moduleNamePrelude Nothing Nothing

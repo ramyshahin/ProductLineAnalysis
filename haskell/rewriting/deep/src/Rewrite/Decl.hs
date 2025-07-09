@@ -49,22 +49,24 @@ getDeclaredName d =
 --isTypeVar n = isLower $ head $ prettyPrint n
 
 rewriteType :: Type -> Bool -> Type
-rewriteType t hd = case t of
+rewriteType t inApp = case t of
     -- arrow types (e.g., Int -> Int)
     FunctionType a b    -> 
-        mkFunctionType (rewriteType a hd) (rewriteType b hd)
+        mkFunctionType (rewriteType a False) (rewriteType b False)
     -- parenthesized type application (e.g., (Int), Maybe (Maybe Int))
-    ParenType t         -> mkParenType (rewriteType t hd)
+    ParenType t         -> mkParenType (rewriteType t inApp)
     -- tuple notation (e.g., (Int, Int))
     TupleType ts        -> 
-        mkTupleType (map (\t -> rewriteType t False) (_annListElems ts))
+        mkTupleType (map (`rewriteType` False) (_annListElems ts))
     -- list notation (e.g., [Int])
     -- TODO: we only lift the element type for now
     ListType t          -> mkTypeApp vlistT (rewriteType t False)
     -- first-order types (e.g., Int, String)
-    VarType  n          -> if isTypeVar n && hd then mkParenType $ mkTypeApp varT t else mkVarType (liftedTypeName n)
+    VarType  n          -> if inApp then t else
+                                if isTypeVar n then mkParenType $ mkTypeApp varT t 
+                                else mkVarType (liftedTypeName n)
     TypeApp t1 t2       -> --mkParenType $
-        mkTypeApp (rewriteType t1 hd) t2 --(rewriteType t2 False)
+        mkTypeApp (rewriteType t1 False) (rewriteType t2 True)--(rewriteType t2 False)
     -- TODO: handle other cases
     _ -> notSupported "rewriteType" t
 
@@ -83,7 +85,7 @@ getHeadTypeName t =
 rewriteTypeSig :: Declarations -> TypeSignature -> Decl
 rewriteTypeSig globals (TypeSignature ns t) = 
     let n       = head $ _annListElems ns
-        t'      = rewriteType t True
+        t'      = rewriteType t False
         --ctxt    = mkTypeClassContext t
         sig     = mkTypeSignature n t'
         --    case ctxt of 
@@ -167,7 +169,7 @@ mkInnerType globals dh tn' recursive cs =
                     ConDecl n ts ->
                         let name     = innerName n 
                             ts'      = _annListElems ts
-                            ts''     = map (\t -> rewriteType t True) ts'
+                            ts''     = map (\t -> rewriteType t False) ts'
                             tNames   = map getTypeName ts''
                             newCons  = mkConDecl name ts'' 
                             --fullTypename = mkName $ getTypeName' False True declHead
@@ -256,19 +258,20 @@ getType dh =
         DeclHeadApp f op -> mkParenType $ mkTypeApp (getType f) (mkVarType ((mkName . prettyPrint) op))
         _ -> notSupported' "getType" dh (mkVarType (mkName ""))
 
-eqType :: Type -> Type -> Bool
-eqType t1 t2 = 
+inType :: Type -> Type -> Bool
+inType t1 t2 = 
     case (t1, t2) of
         (VarType m, VarType n) -> (isTypeVar m && isTypeVar n) || (prettyPrint m == prettyPrint n) 
-        (TypeApp t1 t2, TypeApp t3 t4) -> eqType t1 t3 && eqType t2 t4 
-        (ParenType t, t') -> eqType t t'
-        (t', ParenType t) -> eqType t' t  
+        (VarType m, TypeApp t3 t4) -> inType t1 t3 || inType t1 t4 
+        (TypeApp t1' _, TypeApp t3 t4) -> inType t1' t2
+        (ParenType t, t') -> inType t t'
+        (t', ParenType t) -> inType t' t  
         _ -> False
 
 isRecursiveCons :: DeclHead -> ConDecl -> Bool 
 isRecursiveCons dh cd =
     case cd of
-        ConDecl _ ts -> any (eqType (getType dh)) (_annListElems ts)
+        ConDecl _ ts -> any (inType (getType dh)) (_annListElems ts)
 
 isRecursive :: Decl -> Bool
 isRecursive d =
